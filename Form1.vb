@@ -274,8 +274,9 @@ Public Class Form1
         Dim report As String
 
         connStr = "Data Source=" & GetXMLAttribute(xn_report, "data", "source") & ";"
-        connStr = connStr & "Initial Catalog=" & GetXMLAttribute(xn_report, "data", "catalog") & ";"
-        connStr = connStr & "Integrated Security=SSPI;"
+        connStr &= "Initial Catalog=" & GetXMLAttribute(xn_report, "data", "catalog") & ";"
+        connStr &= "Integrated Security=SSPI;"
+        connStr &= "Connection Timeout=120;"
         dbConn = New SqlConnection(connStr)
         sql = xn_report.SelectSingleNode("data").InnerText()
         sqlCMD = New SqlCommand(sql, dbConn)
