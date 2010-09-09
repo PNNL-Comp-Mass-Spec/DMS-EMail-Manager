@@ -78,7 +78,7 @@ Public Class IniFileReader
                     m_initialized = True
                 End If
             Catch e As Exception
-                MessageBox.Show(e.Message)
+                Console.WriteLine(e.Message)
             Finally
                 If (Not tr Is Nothing) Then
                     tr.Close()
@@ -389,7 +389,7 @@ Public Class IniFileReader
                     End If
 
                 Catch e As Exception
-                    MessageBox.Show(e.Message)
+                    Console.WriteLine(e.Message)
                 End Try
             End If
             Return False
@@ -410,7 +410,7 @@ Public Class IniFileReader
                 sections.Add(Natt.Value)
                 Return True
             Catch e As Exception
-                MessageBox.Show(e.Message)
+                Console.WriteLine(e.Message)
                 Return False
             End Try
         End If
@@ -431,7 +431,7 @@ Public Class IniFileReader
             End If
             Return False
         Catch e As Exception
-            MessageBox.Show(e.Message)
+            Console.WriteLine(e.Message)
             Return False
         End Try
     End Function
@@ -492,7 +492,7 @@ Public Class IniFileReader
             If Not Initialized Then Throw New IniFileReaderNotInitializedException()
             fi = New FileInfo(Value)
             If Not fi.Directory.Exists Then
-                MessageBox.Show("Invalid path.")
+                Console.WriteLine("Invalid path.")
             Else
                 m_SaveFilename = Value
             End If
@@ -504,7 +504,7 @@ Public Class IniFileReader
         If Not OutputFilename Is Nothing AndAlso Not m_XmlDoc Is Nothing Then
             Dim fi As FileInfo = New FileInfo(OutputFilename)
             If Not fi.Directory.Exists Then
-                MessageBox.Show("Invalid path.")
+                Console.WriteLine("Invalid path.")
                 Return
             End If
             If fi.Exists Then
@@ -527,7 +527,7 @@ Public Class IniFileReader
             sw.Close()
             Return sb.ToString
         Catch e As Exception
-            MessageBox.Show(e.Message)
+            Console.WriteLine(e.Message)
             Return Nothing
         End Try
     End Function

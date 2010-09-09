@@ -281,10 +281,10 @@ Namespace Logging
 			Dim err As SqlError
 			Dim s As String
 			For Each err In args.Errors
-				'''Console.WriteLine("The {0} has received a severity {1}, state {2} error number {3}\n" & _
-				'''                  "on line {4} of procedure {5} on server {6}:\n{7}", _
-				'''                  err.Source, err.Class, err.State, err.Number, err.LineNumber, _
-				'''                  err.Procedure, err.Server, err.Message)
+                ''Console.WriteLine("The {0} has received a severity {1}, state {2} error number {3}\n" & _
+                ''                  "on line {4} of procedure {5} on server {6}:\n{7}", _
+                ''                  err.Source, err.Class, err.State, err.Number, err.LineNumber, _
+                ''                  err.Procedure, err.Server, err.Message)
 				s = ""
 				s &= "Message: " & err.Message
 				s &= ", Source: " & err.Source
