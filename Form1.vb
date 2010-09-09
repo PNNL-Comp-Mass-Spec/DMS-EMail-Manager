@@ -198,7 +198,7 @@ Public Class Form1
         Dim testValue As String
         Dim valueDivisor As Double
         Dim roundDigits As Integer
-        Dim units As String
+        Dim units As String = String.Empty
 
         ' Note; we assemble the report using FormatReportGeneric
         columnHeaderCount = 0
@@ -331,12 +331,18 @@ Public Class Form1
     End Sub
 
     Private Sub ProcessReportSection(ByVal xn_report As XmlNode)
-        Dim report As String
         Dim beginStr As String
         Dim titleStr As String
         Dim ErrMsg As String
-        Dim msg As New MailMessage
-        Dim reportName As String
+
+        Dim strReportName As String
+        Dim strReportType As String
+        Dim strReportText As String = String.Empty
+
+        Dim objClient As System.Net.Mail.SmtpClient
+        Dim msg As System.Net.Mail.MailMessage
+        Dim strFrom As String
+        Dim strTo As String
 
         Dim reportFrequency As String
         Dim generateReport As Boolean
@@ -360,51 +366,59 @@ Public Class Form1
                 generateReport = True
             End If
         Catch ex As Exception
-            ErrMsg = "Exception: " & Ex.Message & vbCrLf & vbCrLf & "reading frequency or dayofweeklist section from XML file."
+            ErrMsg = "Exception: " & ex.Message & vbCrLf & vbCrLf & "reading frequency or dayofweeklist section from XML file."
             myLogger.PostEntry(ErrMsg, Logging.ILogger.logMsgType.logError, True)
             generateReport = True
         End Try
         If Not generateReport Then Exit Sub
 
-        reportName = xn_report.Attributes.GetNamedItem("name").Value
+        strReportName = xn_report.Attributes.GetNamedItem("name").Value
 
-        Select Case GetXMLAttribute(xn_report, "data", "type")
-            Case "WMI"
-                report = GetWMIReport(xn_report)
-            Case "query"
-                report = GetSQLReport(xn_report, CommandType.Text)
-            Case "StoredProcedure"
-                report = GetSQLReport(xn_report, CommandType.StoredProcedure)
+        strReportType = GetXMLAttribute(xn_report, "data", "type")
+        Select Case strReportType.ToLower()
+            Case "WMI".ToLower()
+                strReportText = GetWMIReport(xn_report)
+            Case "query".ToLower()
+                strReportText = GetSQLReport(xn_report, CommandType.Text)
+            Case "StoredProcedure".ToLower()
+                strReportText = GetSQLReport(xn_report, CommandType.StoredProcedure)
             Case Else
                 ' abort, retry, ignore?
+                strReportText = "Unknown report type: " & strReportType
         End Select
-        msg.BodyEncoding = ASCII
-        msg.BodyFormat = MailFormat.Html
-        msg.From = GetXMLAttribute(xn_report, "mail", "from")
-        msg.To = GetXMLAttribute(xn_report, "mail", "to")
-        msg.Subject = GetXMLAttribute(xn_report, "mail", "subject")
-        titleStr = "<h3>" & GetXMLAttribute(xn_report, "mail", "title") & "</h3>" & vbCrLf
-        beginStr = "<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01//EN"" ""http://www.w3.org/TR/html4/strict.dtd"">" & vbCrLf
-        beginStr = beginStr & "<html><head>"
-        beginStr = beginStr & xn_report.SelectSingleNode("styles").InnerXml()
-        beginStr = beginStr & "</head><body>" & vbCrLf
-        report = beginStr & titleStr & report & "</body></html>"
-        msg.Body = report
-        Try
-            SmtpMail.SmtpServer = GetXMLAttribute(xn_report, "mail", "server")
-            SmtpMail.Send(msg)
-        Catch Ex As Exception
-            ErrMsg = "Exception: " & Ex.Message & vbCrLf & vbCrLf & "Sending mail message."
-            myLogger.PostEntry(ErrMsg, Logging.ILogger.logMsgType.logError, True)
-        End Try
+
+        If strReportText.Length > 0 Then
+            strFrom = GetXMLAttribute(xn_report, "mail", "from")
+            strTo = GetXMLAttribute(xn_report, "mail", "to")
+            msg = New System.Net.Mail.MailMessage(strFrom, strTo)
+
+            msg.BodyEncoding = ASCII
+            msg.IsBodyHtml = True
+            msg.Subject = GetXMLAttribute(xn_report, "mail", "subject")
+
+            titleStr = "<h3>" & GetXMLAttribute(xn_report, "mail", "title") & "</h3>" & vbCrLf
+            beginStr = "<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01//EN"" ""http://www.w3.org/TR/html4/strict.dtd"">" & vbCrLf
+            beginStr = beginStr & "<html><head>"
+            beginStr = beginStr & xn_report.SelectSingleNode("styles").InnerXml()
+            beginStr = beginStr & "</head><body>" & vbCrLf
+            strReportText = beginStr & titleStr & strReportText & "</body></html>"
+
+            msg.Body = strReportText
+
+            Try
+                objClient = New System.Net.Mail.SmtpClient(GetXMLAttribute(xn_report, "mail", "server"))
+                objClient.Send(msg)
+            Catch Ex As Exception
+                ErrMsg = "Exception: " & Ex.Message & vbCrLf & vbCrLf & "Sending mail message."
+                myLogger.PostEntry(ErrMsg, Logging.ILogger.logMsgType.logError, True)
+            End Try
+        End If
+       
     End Sub
 
     Private Sub ProcessXMLFile(ByVal fileName As String)
         Dim m_XmlDoc As New XmlDocument
         Dim xn_reports As XmlNode
-        Dim xn_report As XmlNode
-        Dim sectionList As System.Collections.Specialized.StringCollection
-        Dim sectionName As String
         Dim i As Integer
 
         If File.Exists(fileName) Then
@@ -439,13 +453,15 @@ Public Class Form1
         programName = Path.GetFileNameWithoutExtension(Application.ExecutablePath)
         dirName = Path.GetDirectoryName(Application.ExecutablePath) & Path.DirectorySeparatorChar
         logfile = dirName & programName & ".log"
-        XMLfile = dirName & programName & ".xml"
-        'XMLfile = dirName & "suggested.xml"
+        XMLfile = dirName & programName & "_Settings.xml"
 
         Me.Text = programName & " V" & Application.ProductVersion
         myLogger = New Logging.clsFileLogger(logfile)
         If command = "/oneshot" Then
             ProcessXMLFile(XMLfile)
+            Me.Close()
+        ElseIf command = "/?" Then
+            System.Windows.Forms.MessageBox.Show("Syntax: DMS_EMail_Manager.exe [/oneshot]")
             Me.Close()
         End If
     End Sub
