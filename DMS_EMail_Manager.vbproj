@@ -119,9 +119,6 @@
     <Compile Include="AssemblyInfo.vb">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="clsDBTools.vb">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="clsParseCommandLine.vb" />
     <Compile Include="modMain.vb" />
     <Content Include="MAIL17.ICO" />
