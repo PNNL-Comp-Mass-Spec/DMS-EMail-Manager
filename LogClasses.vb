@@ -104,7 +104,7 @@ Namespace Logging
 			End If
 
 			'Set up date values for file name
-			FileName = "_" & Format(Now(), "MM-dd-yyyy") & ".txt"
+			FileName = "_" & System.DateTime.Now().ToString("MM-dd-yyyy") & ".txt"
 
 			'Create log file name by appending specified file name and date
 			FileName = m_logFileName & FileName
@@ -115,7 +115,7 @@ Namespace Logging
 				Else
 					LogFile = File.AppendText(FileName)
 				End If
-				LogFile.Write(Now)
+				LogFile.Write(System.DateTime.Now())
 				LogFile.Write(", ")
 
 				LogFile.Write(message)

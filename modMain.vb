@@ -5,10 +5,10 @@
 
 Module modMain
 
-    Private Const PROGRAM_DATE As String = "September 9, 2010"
+	Private Const PROGRAM_DATE As String = "September 15, 2011"
     Private Const DEFAULT_SETTINGS_FILE_NAME As String = "DMS_EMail_Manager_Settings.xml"
 
-    Private myLogger As Logging.ILogger
+	Private myLogger As PRISM.Logging.ILogger
 
     Private mXMLSettingsFilePath As String = String.Empty
     Private mPreviewMode As Boolean = False
@@ -176,7 +176,7 @@ Module modMain
         logFilePath = System.IO.Path.Combine(dirName, programName & ".log")
 
         Try
-            myLogger = New Logging.clsFileLogger(logFilePath)
+			myLogger = New PRISM.Logging.clsFileLogger(logFilePath)
         Catch ex As Exception
             ShowError("Error initializing log file", False)
         End Try
@@ -299,7 +299,7 @@ Module modMain
         If blnLogToFile Then
             Try
                 If Not myLogger Is Nothing Then
-                    myLogger.PostEntry(strMessage, Logging.ILogger.logMsgType.logError, True)
+					myLogger.PostEntry(strMessage, PRISM.Logging.ILogger.logMsgType.logError, True)
                 End If
             Catch ex As Exception
                 Console.WriteLine("Error writing to log file")
@@ -399,7 +399,7 @@ Module modMain
                 ' Compare the first three letters of today's day of the week with the list in dayOfWeekList
                 ' Thus, dayOfWeekList can contain either abbreviated day names or full day names, and the separation character doesn't matter
                 dayOfWeekList = GetXMLAttribute(xn_report, "frequency", "dayofweeklist")
-                If dayOfWeekList.ToLower.IndexOf(Now.DayOfWeek.ToString.ToLower.Substring(0, 3)) >= 0 Then
+                If dayOfWeekList.ToLower.IndexOf(System.DateTime.Now().DayOfWeek.ToString.ToLower.Substring(0, 3)) >= 0 Then
                     generateReport = True
                 Else
                     generateReport = False
