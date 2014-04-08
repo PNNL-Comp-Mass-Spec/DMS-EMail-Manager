@@ -21,7 +21,7 @@
     <OutputType>Exe</OutputType>
     <OptionCompare>Binary</OptionCompare>
     <OptionExplicit>On</OptionExplicit>
-    <OptionStrict>Off</OptionStrict>
+    <OptionStrict>On</OptionStrict>
     <RootNamespace>DMS_EMail_Manager</RootNamespace>
     <StartupObject>DMS_EMail_Manager.modMain</StartupObject>
     <FileUpgradeFlags>
@@ -30,7 +30,7 @@
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -64,9 +64,10 @@
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningLevel>1</WarningLevel>
-    <NoWarn>42016,42017,42018,42019,42032,42353,42354,42355</NoWarn>
+    <NoWarn>42353,42354,42355</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
+    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\</OutputPath>
@@ -84,8 +85,12 @@
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningLevel>1</WarningLevel>
-    <NoWarn>42016,42017,42018,42019,42032,42353,42354,42355</NoWarn>
+    <NoWarn>42353,42354,42355</NoWarn>
     <DebugType>none</DebugType>
+    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PRISM, Version=2.0.4275.22296, Culture=neutral, processorArchitecture=x86">
@@ -114,6 +119,7 @@
     <Import Include="System.Collections" />
     <Import Include="System.Data" />
     <Import Include="System.Diagnostics" />
+    <Import Include="System.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.vb">
