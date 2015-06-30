@@ -1,12 +1,14 @@
 ﻿Option Strict On
 
+Imports System.IO
+Imports System.Xml
+
 ' Program written in 2004 by Dave Clark and Nate Trimble
 ' Ported to .NET 2008 in 2010 by Matthew Monroe
 
 Module modMain
 
-	Private Const PROGRAM_DATE As String = "September 15, 2011"
-    Private Const DEFAULT_SETTINGS_FILE_NAME As String = "DMS_EMail_Manager_Settings.xml"
+    Private Const PROGRAM_DATE As String = "June 30, 2015"
 
 	Private myLogger As PRISM.Logging.ILogger
 
@@ -16,13 +18,8 @@ Module modMain
 
     Public Function Main() As Integer
 
-        Dim intReturnCode As Integer
         Dim objParseCommandLine As New clsParseCommandLine
         Dim blnProceed As Boolean
-
-        Dim command As String = Microsoft.VisualBasic.Command
-
-        intReturnCode = 0
 
         mXMLSettingsFilePath = ""
         mPreviewMode = False
@@ -39,19 +36,19 @@ Module modMain
                  objParseCommandLine.ParameterCount + objParseCommandLine.NonSwitchParameterCount = 0 OrElse _
                  mXMLSettingsFilePath.Length = 0 Then
                 ShowProgramHelp()
-                intReturnCode = -1
             Else
                 GenerateReports(mXMLSettingsFilePath)
-                intReturnCode = 0
             End If
 
         Catch ex As Exception
             Console.WriteLine("Error occurred in modMain->Main: " & ControlChars.NewLine & ex.Message)
-            intReturnCode = -1
+            Return -1
         End Try
 
         ' Sleep for 750 msec
-        System.Threading.Thread.Sleep(750)
+        Threading.Thread.Sleep(750)
+
+        Return 0
 
     End Function
 
@@ -84,10 +81,11 @@ Module modMain
                 lastCharPos = -1
                 matchCount = 0
                 Do
-                    lastCharPos = reportRows(i).IndexOf("</td>", lastCharPos + 1)
+                    lastCharPos = reportRows(i).IndexOf("</td>", lastCharPos + 1, StringComparison.Ordinal)
                     If lastCharPos >= 0 Then matchCount += 1
                 Loop While lastCharPos >= 0
 
+                ' ReSharper disable once RedundantAssignment
                 For j = matchCount + 1 To columnHeaders.Length
                     reportRows(i) &= "<td></td>"
                 Next j
@@ -103,7 +101,7 @@ Module modMain
 
     End Function
 
-    Private Function FormatSQLReport(ByVal sqlReader As System.Data.SqlClient.SqlDataReader) As String
+    Private Function FormatSQLReport(ByVal sqlReader As IDataReader) As String
         Dim rowStr As String
         Dim reportRowCount As Integer
         Dim reportRows() As String
@@ -171,9 +169,9 @@ Module modMain
         Dim programName As String
         Dim dirName As String
 
-        programName = System.IO.Path.GetFileNameWithoutExtension(GetAppPath)
-        dirName = System.IO.Path.GetDirectoryName(GetAppPath)
-        logFilePath = System.IO.Path.Combine(dirName, programName & ".log")
+        programName = Path.GetFileNameWithoutExtension(GetAppPath)
+        dirName = Path.GetDirectoryName(GetAppPath)
+        logFilePath = Path.Combine(dirName, programName & ".log")
 
         Try
 			myLogger = New PRISM.Logging.clsFileLogger(logFilePath)
@@ -181,7 +179,7 @@ Module modMain
             ShowError("Error initializing log file", False)
         End Try
 
-        If System.IO.File.Exists(strSettingsFilePath) Then
+        If File.Exists(strSettingsFilePath) Then
             Console.WriteLine("Processing settings file " & strSettingsFilePath)
             ProcessXMLFile(strSettingsFilePath)
         Else
@@ -190,10 +188,10 @@ Module modMain
       
     End Sub
 
-    Private Function GetXMLAttribute(ByRef xn As System.Xml.XmlNode, ByRef xPath As String, ByRef attributeName As String, _
+    Private Function GetXMLAttribute(ByRef xn As XmlNode, ByRef xPath As String, ByRef attributeName As String, _
                 Optional ByRef defaultValue As String = "") As String
-        Dim subNode As System.Xml.XmlNode
-        Dim attribute As System.Xml.XmlNode
+        Dim subNode As XmlNode
+        Dim attribute As XmlNode
 
         subNode = xn.SelectSingleNode(xPath)
         If Not subNode Is Nothing Then
@@ -209,7 +207,7 @@ Module modMain
         Exit Function
     End Function
 
-    Private Function GetWMIReport(ByVal xn_report As System.Xml.XmlNode) As String
+    Private Function GetWMIReport(ByVal xn_report As XmlNode) As String
         Dim rowStr As String
         Dim reportRowCount As Integer
         Dim reportRows() As String
@@ -217,8 +215,8 @@ Module modMain
         Dim columnHeaders() As String
         Dim wmiPath As String
         Dim queryStr As String
-        Dim mo As System.Management.ManagementObject
-        Dim prop As System.Management.PropertyData
+        Dim mo As Management.ManagementObject
+        Dim prop As Management.PropertyData
 
         Dim i As Integer
         Dim testValue As String
@@ -234,11 +232,11 @@ Module modMain
         ReDim reportRows(0)
 
         wmiPath = "\\" & GetXMLAttribute(xn_report, "data", "source") & "\root\cimv2"
-        Dim oMs As New System.Management.ManagementScope(wmiPath)
+        Dim oMs As New Management.ManagementScope(wmiPath)
         queryStr = xn_report.SelectSingleNode("data").InnerText()
-        Dim oQuery As New System.Management.ObjectQuery(queryStr)
-        Dim oSearcher As New System.Management.ManagementObjectSearcher(oMs, oQuery)
-        Dim oReturnCollection As System.Management.ManagementObjectCollection = oSearcher.Get()
+        Dim oQuery As New Management.ObjectQuery(queryStr)
+        Dim oSearcher As New Management.ManagementObjectSearcher(oMs, oQuery)
+        Dim oReturnCollection As Management.ManagementObjectCollection = oSearcher.Get()
 
         LookupValueDivisors(xn_report, valueDivisor, roundDigits, units)
 
@@ -266,7 +264,7 @@ Module modMain
                 Try
                     If Not IsNothing(prop.Value()) Then
                         testValue = prop.Value().ToString
-                        If valueDivisor <> 0 AndAlso IsNumeric(testValue) Then
+                        If Math.Abs(valueDivisor) > Single.Epsilon AndAlso IsNumeric(testValue) Then
                             testValue = Math.Round(CDbl(testValue) / valueDivisor, roundDigits).ToString & " " & units
                         End If
                         rowStr &= testValue
@@ -307,21 +305,21 @@ Module modMain
         End If
     End Sub
 
-    Private Function GetSQLReport(ByVal xn_report As System.Xml.XmlNode, ByVal cmdType As CommandType) As String
+    Private Function GetSQLReport(ByVal xn_report As XmlNode, ByVal cmdType As CommandType) As String
         Dim connStr As String
         Dim sql As String
-        Dim dbConn As System.Data.SqlClient.SqlConnection
-        Dim sqlReader As System.Data.SqlClient.SqlDataReader
-        Dim sqlCMD As System.Data.SqlClient.SqlCommand
+        Dim dbConn As SqlClient.SqlConnection
+        Dim sqlReader As SqlClient.SqlDataReader
+        Dim sqlCMD As SqlClient.SqlCommand
         Dim report As String
 
         connStr = "Data Source=" & GetXMLAttribute(xn_report, "data", "source") & ";"
         connStr &= "Initial Catalog=" & GetXMLAttribute(xn_report, "data", "catalog") & ";"
         connStr &= "Integrated Security=SSPI;"
         connStr &= "Connection Timeout=120;"
-        dbConn = New System.Data.SqlClient.SqlConnection(connStr)
+        dbConn = New SqlClient.SqlConnection(connStr)
         sql = xn_report.SelectSingleNode("data").InnerText()
-        sqlCMD = New System.Data.SqlClient.SqlCommand(sql, dbConn)
+        sqlCMD = New SqlClient.SqlCommand(sql, dbConn)
         sqlCMD.CommandType = cmdType
         sqlCMD.CommandTimeout = 600
         Try
@@ -337,7 +335,7 @@ Module modMain
         Return report
     End Function
 
-    Private Sub LookupValueDivisors(ByVal xn_report As System.Xml.XmlNode, ByRef valueDivisor As Double, ByRef roundDigits As Integer, ByRef units As String)
+    Private Sub LookupValueDivisors(ByVal xn_report As XmlNode, ByRef valueDivisor As Double, ByRef roundDigits As Integer, ByRef units As String)
 
         Dim testValue As String
 
@@ -371,17 +369,16 @@ Module modMain
 
     End Sub
 
-    Private Sub ProcessReportSection(ByVal xn_report As System.Xml.XmlNode)
+    Private Sub ProcessReportSection(ByVal xn_report As XmlNode)
         Dim beginStr As String
         Dim titleStr As String
 
         Dim strReportName As String = String.Empty
         Dim strReportType As String
-        Dim strReportText As String = String.Empty
         Dim strSkipMessage As String = "??"
 
-        Dim objClient As System.Net.Mail.SmtpClient
-        Dim msg As System.Net.Mail.MailMessage
+        Dim objClient As Net.Mail.SmtpClient
+        Dim msg As Net.Mail.MailMessage
         Dim strFrom As String
         Dim strTo As String
 
@@ -399,7 +396,7 @@ Module modMain
                 ' Compare the first three letters of today's day of the week with the list in dayOfWeekList
                 ' Thus, dayOfWeekList can contain either abbreviated day names or full day names, and the separation character doesn't matter
                 dayOfWeekList = GetXMLAttribute(xn_report, "frequency", "dayofweeklist")
-                If dayOfWeekList.ToLower.IndexOf(System.DateTime.Now().DayOfWeek.ToString.ToLower.Substring(0, 3)) >= 0 Then
+                If dayOfWeekList.ToLower.IndexOf(DateTime.Now().DayOfWeek.ToString.ToLower.Substring(0, 3), StringComparison.Ordinal) >= 0 Then
                     generateReport = True
                 Else
                     generateReport = False
@@ -424,8 +421,9 @@ Module modMain
             Console.WriteLine("Skipping report '" & strReportName & "' since " & strSkipMessage)
         Else
 
-
+            Dim strReportText As String
             strReportType = GetXMLAttribute(xn_report, "data", "type")
+
             Select Case strReportType.ToLower()
                 Case "WMI".ToLower()
                     Console.WriteLine("Running report '" & strReportName & "' using WMI")
@@ -446,9 +444,9 @@ Module modMain
 
                 strFrom = GetXMLAttribute(xn_report, "mail", "from")
                 strTo = GetXMLAttribute(xn_report, "mail", "to")
-                msg = New System.Net.Mail.MailMessage(strFrom, strTo)
+                msg = New Net.Mail.MailMessage(strFrom, strTo)
 
-                msg.BodyEncoding = System.Text.Encoding.ASCII
+                msg.BodyEncoding = Text.Encoding.ASCII
                 msg.IsBodyHtml = True
                 msg.Subject = GetXMLAttribute(xn_report, "mail", "subject")
 
@@ -467,7 +465,7 @@ Module modMain
                         Console.WriteLine("Preview of data to be e-mailed to " & strTo)
                         Console.WriteLine(strReportText)
                     Else
-                        objClient = New System.Net.Mail.SmtpClient(GetXMLAttribute(xn_report, "mail", "server"))
+                        objClient = New Net.Mail.SmtpClient(GetXMLAttribute(xn_report, "mail", "server"))
                         objClient.Send(msg)
                     End If
                 Catch Ex As Exception
@@ -477,17 +475,17 @@ Module modMain
         End If
 
         If mPreviewMode Then
-            System.Threading.Thread.Sleep(500)
+            Threading.Thread.Sleep(500)
         End If
 
     End Sub
 
     Private Sub ProcessXMLFile(ByVal fileName As String)
-        Dim m_XmlDoc As New System.Xml.XmlDocument
-        Dim xn_reports As System.Xml.XmlNode
+        Dim m_XmlDoc As New XmlDocument
+        Dim xn_reports As XmlNode
         Dim i As Integer
 
-        If System.IO.File.Exists(fileName) Then
+        If File.Exists(fileName) Then
             Try
                 m_XmlDoc.Load(fileName)
                 xn_reports = m_XmlDoc.SelectSingleNode("/reports")
@@ -508,13 +506,13 @@ Module modMain
     End Sub
 
     Private Function GetAppPath() As String
-        Return System.Reflection.Assembly.GetExecutingAssembly().Location
+        Return Reflection.Assembly.GetExecutingAssembly().Location
     End Function
 
     Private Function GetAppVersion() As String
         'Return System.Windows.Forms.Application.ProductVersion & " (" & PROGRAM_DATE & ")"
 
-        Return System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & " (" & PROGRAM_DATE & ")"
+        Return Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & " (" & PROGRAM_DATE & ")"
     End Function
 
     Private Function SetOptionsUsingCommandLineParameters(ByVal objParseCommandLine As clsParseCommandLine) As Boolean
@@ -545,6 +543,7 @@ Module modMain
 
         Catch ex As Exception
             Console.WriteLine("Error parsing the command line parameters: " & ControlChars.NewLine & ex.Message)
+            Return False
         End Try
 
     End Function
@@ -554,7 +553,7 @@ Module modMain
         Try
 
             Console.WriteLine()
-            Console.WriteLine("Syntax: " & System.IO.Path.GetFileName(GetAppPath()) & " SettingsFileName.xml [/X] [/P]")
+            Console.WriteLine("Syntax: " & Path.GetFileName(GetAppPath()) & " SettingsFileName.xml [/X] [/P]")
             Console.WriteLine()
             Console.WriteLine("This program uses the specified settings file to generate and e-mail reports.  Reports can be e-mailed daily or only on certain days. " & _
                               "Shown below is an example settings file; to see an extended example, use the /X switch at the command line. " & _
@@ -588,7 +587,7 @@ Module modMain
                 Console.WriteLine()
                 Console.WriteLine("    <report name=""Gigasax Disk Space Report"">")
                 Console.WriteLine("        <data source=""gigasax"" type=""WMI""><![CDATA[SELECT Name, FreeSpace, Size FROM Win32_LogicalDisk WHERE DriveType=3]]></data>")
-                Console.WriteLine("        <mail server=""emailgw.pnl.gov"" from=""dms@pnl.gov"" to=""dave.clark@pnl.gov"" subject=""Gigasax Disk Space"" title=""Free space on Gigasax (GiB):"" />")
+                Console.WriteLine("        <mail server=""emailgw.pnl.gov"" from=""dms@pnl.gov"" to=""matthew.monroe@pnnl.gov"" subject=""Gigasax Disk Space"" title=""Free space on Gigasax (GiB):"" />")
                 Console.WriteLine("        <styles>")
                 Console.WriteLine("            <style type=""text/css"" media=""all"">")
                 Console.WriteLine("         body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }")
@@ -609,11 +608,11 @@ Module modMain
             Console.WriteLine("Version: " & GetAppVersion())
             Console.WriteLine()
 
-            Console.WriteLine("E-mail: matthew.monroe@pnl.gov or matt@alchemistmatt.com")
-            Console.WriteLine("Website: http://ncrr.pnl.gov/ or http://www.sysbio.org/resources/staff/")
+            Console.WriteLine("E-mail: matthew.monroe@pnnl.gov or matt@alchemistmatt.com")
+            Console.WriteLine("Website: http://omics.pnl.gov/ or http://panomics.pnnl.gov/")
 
             ' Delay for 1500 msec in case the user double clicked this file from within Windows Explorer (or started the program via a shortcut)
-            System.Threading.Thread.Sleep(750)
+            Threading.Thread.Sleep(750)
 
         Catch ex As Exception
             Console.WriteLine("Error displaying the program syntax: " & ex.Message)
