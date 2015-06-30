@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reports>
+
+    <report name="MTS Current Activity Report">
+        <data source="pogo" catalog="MTS_Master" type="StoredProcedure">GetCurrentActivitySummary</data>
+        <mail server="emailgw.pnl.gov" from="dms@pnl.gov"
+        to="matthew.monroe@pnl.gov"
+        subject="MTS Current Activity Report"
+        title="Report generated automatically on Pogo:" />
+        <styles>
+            <style type="text/css" media="all">body { font: 12px Verdana, Arial,
+            Helvetica, sans-serif; margin: 20px; } h3 { font: 20px Verdana, Arial,
+            Helvetica, sans-serif; } table { margin: 4px; border-style: ridge;
+            border-width: 2px; } .table-header { color: white; background-color:
+            #8080FF; } .table-row { background-color: #D8D8FF; } .table-alternate-row
+            { background-color: #C0C0FF; }</style>
+        </styles>
+        <frequency daily="false" dayofweeklist="Monday,Wednesday,Friday" />
+    </report>
+
+    <report name="MTS Error Report">
+        <data source="pogo" catalog="MTS_Master" type="StoredProcedure">GetErrorsFromActiveDBLogs</data>
+        <mail server="emailgw.pnl.gov" from="dms@pnl.gov"
+        to="matthew.monroe@pnl.gov"
+        subject="MTS Error Report - Previous 24 hour summary"
+        title="Report generated automatically on Pogo:" />
+        <styles>
+            <style type="text/css" media="all">body { font: 12px Verdana, Arial,
+            Helvetica, sans-serif; margin: 20px; } h3 { font: 20px Verdana, Arial,
+            Helvetica, sans-serif; } table { margin: 4px; border-style: ridge;
+            border-width: 2px; } .table-header { color: white; background-color:
+            #8080FF; } .table-row { background-color: #D8D8FF; } .table-alternate-row
+            { background-color: #C0C0FF; }</style>
+        </styles>
+        <frequency daily="false"
+        dayofweeklist="Monday,Tuesday,Wednesday,Thursday,Friday" />
+    </report>
+
+    <report name="MTS Overdue Database Backups">
+        <data source="pogo" catalog="MTS_Master" type="StoredProcedure">GetOverdueDatabaseBackups</data>
+        <mail server="emailgw.pnl.gov" from="dms@pnl.gov"
+        to="matthew.monroe@pnl.gov" subject="MTS Overdue Database Backups"
+        title="Report generated automatically on Pogo:" />
+        <styles>
+            <style type="text/css" media="all">body { font: 12px Verdana, Arial,
+            Helvetica, sans-serif; margin: 20px; } h3 { font: 20px Verdana, Arial,
+            Helvetica, sans-serif; } table { margin: 4px; border-style: ridge;
+            border-width: 2px; } .table-header { color: white; background-color:
+            #8080FF; } .table-row { background-color: #D8D8FF; } .table-alternate-row
+            { background-color: #C0C0FF; }</style>
+        </styles>
+        <frequency daily="false" dayofweeklist="Tuesday,Saturday" />
+    </report>
+</reports>
