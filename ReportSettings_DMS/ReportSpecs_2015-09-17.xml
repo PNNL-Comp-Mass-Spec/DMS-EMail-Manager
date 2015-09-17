@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reports>
+
+    <report name="Processor Status Warnings">
+        <data source="gigasax" catalog="DMS_Pipeline" type="query">
+		SELECT * FROM V_Processor_Status_Warnings ORDER BY Processor_name
+		</data>
+        <mail server="emailgw.pnl.gov" from="dms@pnl.gov" 
+        to="matthew.monroe@pnnl.gov, bryson.gibbons@pnnl.gov" 
+        subject="DMS: Processor Status Warnings" 
+        title="Processor Status Warnings (DMS)" />
+        <styles>
+            <style type="text/css" media="all">
+			body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }
+			h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }
+			table { margin: 4px; border-style: ridge; border-width: 2px; }
+			.table-header { color: white; background-color: #8080FF; }
+			.table-row { background-color: #D8D8FF; vertical-align:top;}
+			.table-alternate-row { background-color: #C0C0FF; vertical-align:top;}
+		</style>
+        </styles>
+        <frequency daily="false" dayofweeklist="Monday,Wednesday,Friday" />
+    </report>
+
+    <report name="Job Steps Stale and Failed">
+        <data source="gigasax" catalog="DMS_Pipeline" type="query">
+		SELECT * FROM V_Job_Steps_Stale_and_Failed ORDER BY StateName, Job
+		</data>
+        <mail server="emailgw.pnl.gov" from="dms@pnl.gov" 
+        to="matthew.monroe@pnnl.gov" 
+        subject="DMS: Job Steps Stale and Failed" 
+        title="Job Steps Stale and Failed (DMS)" />
+        <styles>
+            <style type="text/css" media="all">
+			body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }
+			h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }
+			table { margin: 4px; border-style: ridge; border-width: 2px; }
+			.table-header { color: white; background-color: #8080FF; }
+			.table-row { background-color: #D8D8FF; vertical-align:top;}
+			.table-alternate-row { background-color: #C0C0FF; vertical-align:top;}
+		</style>
+        </styles>
+        <frequency daily="false" dayofweeklist="Monday,Wednesday,Friday" />
+    </report>
+
+    <report name="Datasets Stale and Failed">
+        <data source="gigasax" catalog="DMS5" type="query">
+		SELECT * FROM V_Datasets_Stale_and_Failed ORDER BY State, Dataset
+		</data>
+        <mail server="emailgw.pnl.gov" from="dms@pnl.gov" 
+        to="matthew.monroe@pnnl.gov" 
+        subject="DMS: Datasets Stale and Failed" 
+        title="Datasets Stale and Failed (DMS)" />
+        <styles>
+            <style type="text/css" media="all">
+			body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }
+			h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }
+			table { margin: 4px; border-style: ridge; border-width: 2px; }
+			.table-header { color: white; background-color: #8080FF; }
+			.table-row { background-color: #D8D8FF; vertical-align:top;}
+			.table-alternate-row { background-color: #C0C0FF; vertical-align:top;}
+		</style>
+        </styles>
+        <frequency daily="false" dayofweeklist="Monday,Wednesday,Friday" />
+    </report>
+
+    <report name="Predefined Job Creation Errors">
+        <data source="gigasax" catalog="DMS5" type="query">
+		SELECT * FROM V_Predefined_Job_Creation_Errors ORDER BY Item
+		</data>
+        <mail server="emailgw.pnl.gov" from="dms@pnl.gov" 
+        to="matthew.monroe@pnnl.gov" 
+        subject="DMS: Predefined Job Creation Errors" 
+        title="Predefined Job Creation Errors (DMS)" />
+        <styles>
+            <style type="text/css" media="all">
+			body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }
+			h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }
+			table { margin: 4px; border-style: ridge; border-width: 2px; }
+			.table-header { color: white; background-color: #8080FF; }
+			.table-row { background-color: #D8D8FF; vertical-align:top;}
+			.table-alternate-row { background-color: #C0C0FF; vertical-align:top;}
+		</style>
+        </styles>
+        <frequency daily="false" dayofweeklist="Thursday" />
+    </report>
+
+    <report name="DMS Production DB Errors">
+        <data source="gigasax" catalog="DMS5" type="query">
+		SELECT * FROM V_Log_Errors_ProductionDBs ORDER BY DB, Entry_ID
+		</data>
+        <mail server="emailgw.pnl.gov" from="dms@pnl.gov" 
+        to="matthew.monroe@pnnl.gov" 
+        subject="DMS: Production DB Errors" 
+        title="Production DB Errors (DMS)" />
+        <styles>
+            <style type="text/css" media="all">
+			body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }
+			h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }
+			table { margin: 4px; border-style: ridge; border-width: 2px; }
+			.table-header { color: white; background-color: #8080FF; }
+			.table-row { background-color: #D8D8FF; vertical-align:top;}
+			.table-alternate-row { background-color: #C0C0FF; vertical-align:top;}
+		</style>
+        </styles>
+        <frequency daily="false" dayofweeklist="Tuesday,Friday" />
+    </report>
+    
+</reports>
