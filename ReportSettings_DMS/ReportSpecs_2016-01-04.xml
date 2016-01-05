@@ -2,13 +2,13 @@
 <reports>
 
     <report name="Processor Status Warnings">
-        <data source="cbdms" catalog="DMS_Pipeline" type="query">
+        <data source="gigasax" catalog="DMS_Pipeline" type="query">
 		SELECT TOP 500 * FROM V_Processor_Status_Warnings ORDER BY Processor_name
 		</data>
         <mail server="emailgw.pnl.gov" from="dms@pnl.gov" 
-        to="matthew.monroe@pnnl.gov" 
-        subject="CBDMS: Processor Status Warnings" 
-        title="Processor Status Warnings (CBDMS)" />
+        to="matthew.monroe@pnnl.gov, bryson.gibbons@pnnl.gov" 
+        subject="DMS: Processor Status Warnings" 
+        title="Processor Status Warnings (DMS)" />
         <styles>
             <style type="text/css" media="all">
 			body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }
@@ -23,13 +23,13 @@
     </report>
 
     <report name="Job Steps Stale and Failed">
-        <data source="cbdms" catalog="DMS_Pipeline" type="query">
+        <data source="gigasax" catalog="DMS_Pipeline" type="query">
 		SELECT TOP 500 * FROM V_Job_Steps_Stale_and_Failed ORDER BY StateName, Job
 		</data>
         <mail server="emailgw.pnl.gov" from="dms@pnl.gov" 
         to="matthew.monroe@pnnl.gov" 
-        subject="CBDMS: Job Steps Stale and Failed" 
-        title="Job Steps Stale and Failed (CBDMS)" />
+        subject="DMS: Job Steps Stale and Failed" 
+        title="Job Steps Stale and Failed (DMS)" />
         <styles>
             <style type="text/css" media="all">
 			body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }
@@ -44,13 +44,13 @@
     </report>
 
     <report name="Datasets Stale and Failed">
-        <data source="cbdms" catalog="DMS5" type="query">
+        <data source="gigasax" catalog="DMS5" type="query">
 		SELECT TOP 500 * FROM V_Datasets_Stale_and_Failed ORDER BY State, Dataset
 		</data>
         <mail server="emailgw.pnl.gov" from="dms@pnl.gov" 
         to="matthew.monroe@pnnl.gov" 
-        subject="CBDMS: Datasets Stale and Failed" 
-        title="Datasets Stale and Failed (CBDMS)" />
+        subject="DMS: Datasets Stale and Failed" 
+        title="Datasets Stale and Failed (DMS)" />
         <styles>
             <style type="text/css" media="all">
 			body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }
@@ -65,13 +65,13 @@
     </report>
 
     <report name="Predefined Job Creation Errors">
-        <data source="cbdms" catalog="DMS5" type="query">
+        <data source="gigasax" catalog="DMS5" type="query">
 		SELECT TOP 500 * FROM V_Predefined_Job_Creation_Errors ORDER BY Item
 		</data>
         <mail server="emailgw.pnl.gov" from="dms@pnl.gov" 
         to="matthew.monroe@pnnl.gov" 
-        subject="CBDMS: Predefined Job Creation Errors" 
-        title="Predefined Job Creation Errors (CBDMS)" />
+        subject="DMS: Predefined Job Creation Errors" 
+        title="Predefined Job Creation Errors (DMS)" />
         <styles>
             <style type="text/css" media="all">
 			body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }
@@ -86,13 +86,13 @@
     </report>
 
     <report name="DMS Production DB Errors">
-        <data source="cbdms" catalog="DMS5" type="query">
+        <data source="gigasax" catalog="DMS5" type="query">
 		SELECT TOP 500 * FROM V_Log_Errors_ProductionDBs ORDER BY DB, Entry_ID
 		</data>
         <mail server="emailgw.pnl.gov" from="dms@pnl.gov" 
         to="matthew.monroe@pnnl.gov" 
-        subject="CBDMS: Production DB Errors" 
-        title="Production DB Errors (CBDMS)" />
+        subject="DMS: Production DB Errors" 
+        title="Production DB Errors (DMS)" />
         <styles>
             <style type="text/css" media="all">
 			body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }
