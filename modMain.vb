@@ -45,7 +45,8 @@ Module modMain
             End If
 
         Catch ex As Exception
-            Console.WriteLine("Error occurred in modMain->Main: " & ControlChars.NewLine & ex.Message)
+            ShowError("Error occurred in modMain->Main: " & ex.Message)
+            ShowError(PRISM.clsStackTraceFormatter.GetExceptionStackTraceMultiLine(ex))
             Return -1
         End Try
 
@@ -130,6 +131,7 @@ Module modMain
                     Catch ex As Exception
                         ' Unable to translate data into string; ignore errors here
                         ShowError("Exception in GetReport: " & ex.Message)
+                        ShowError(PRISM.clsStackTraceFormatter.GetExceptionStackTraceMultiLine(ex))
                     End Try
 
                     rowStr &= "</td>"
@@ -326,6 +328,7 @@ Module modMain
             reportHasData = True
             report = "Exception getting report from database: " & ex.Message
             ShowError(report)
+            ShowError(PRISM.clsStackTraceFormatter.GetExceptionStackTraceMultiLine(ex))
         End Try
 
         Return report
@@ -399,6 +402,7 @@ Module modMain
             End If
         Catch ex As Exception
             ShowError("Exception sending mail message: " & ex.Message)
+            ShowError(PRISM.clsStackTraceFormatter.GetExceptionStackTraceMultiLine(ex))
         End Try
 
     End Sub
