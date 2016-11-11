@@ -1,6 +1,9 @@
 ﻿Option Strict On
 
+Imports System.Collections.Generic
 Imports System.IO
+Imports System.Runtime.InteropServices
+Imports System.Text
 Imports System.Xml
 
 ' Program written in 2004 by Dave Clark and Nate Trimble
@@ -8,9 +11,10 @@ Imports System.Xml
 
 Module modMain
 
-    Private Const PROGRAM_DATE As String = "June 30, 2015"
+    Private Const PROGRAM_DATE As String = "November 11, 2016"
+    Private Const NO_DATA As String = "No Data Returned"
 
-	Private myLogger As PRISM.Logging.ILogger
+    Private myLogger As PRISM.Logging.ILogger
 
     Private mXMLSettingsFilePath As String = String.Empty
     Private mPreviewMode As Boolean = False
@@ -21,7 +25,7 @@ Module modMain
         Dim objParseCommandLine As New clsParseCommandLine
         Dim blnProceed As Boolean
 
-        mXMLSettingsFilePath = ""
+        mXMLSettingsFilePath = String.Empty
         mPreviewMode = False
         mShowExtendedXMLExample = False
 
@@ -31,9 +35,9 @@ Module modMain
                 If SetOptionsUsingCommandLineParameters(objParseCommandLine) Then blnProceed = True
             End If
 
-            If Not blnProceed OrElse _
-                 objParseCommandLine.NeedToShowHelp OrElse _
-                 objParseCommandLine.ParameterCount + objParseCommandLine.NonSwitchParameterCount = 0 OrElse _
+            If Not blnProceed OrElse
+                 objParseCommandLine.NeedToShowHelp OrElse
+                 objParseCommandLine.ParameterCount + objParseCommandLine.NonSwitchParameterCount = 0 OrElse
                  mXMLSettingsFilePath.Length = 0 Then
                 ShowProgramHelp()
             Else
@@ -52,74 +56,65 @@ Module modMain
 
     End Function
 
-    Private Function FormatReportGeneric(ByRef columnHeaders() As String, ByRef reportRows() As String) As String
+    Private Function FormatReportGeneric(columnHeaders As ICollection(Of String), reportRows As IEnumerable(Of String)) As String
 
-        Dim reportContents As String
-        Dim i As Integer
-        Dim j As Integer
+        Dim reportContents = New StringBuilder()
 
-        Dim lastCharPos As Integer
-        Dim matchCount As Integer
-
-        If columnHeaders(0) Is Nothing Then
-            reportContents = "No Data Returned"
-            Return reportContents
+        If columnHeaders.Count = 0 Then
+            Return NO_DATA
         End If
 
         ' Construct the header row
-        reportContents = "<table>"
-        reportContents &= "<tr class = table-header>"
-        For i = 0 To columnHeaders.Length - 1
-            reportContents &= "<td>" & columnHeaders(i) & "</td>"
-        Next i
-        reportContents &= "</tr>" & vbCrLf
+        reportContents.AppendLine("<table>")
+        reportContents.AppendLine("<tr class = table-header>")
+        For Each header In columnHeaders
+            reportContents.Append("<td>" & header & "</td>")
+        Next
+        reportContents.AppendLine("</tr>")
 
         ' Append each row in reportRows to reportContents
-        ' While doing this, make sure each row has columnHeaderCount sets of <td></td> pairs
-        For i = 0 To reportRows.Length - 1
-            If Not reportRows(i) Is Nothing Then
-                lastCharPos = -1
-                matchCount = 0
-                Do
-                    lastCharPos = reportRows(i).IndexOf("</td>", lastCharPos + 1, StringComparison.Ordinal)
-                    If lastCharPos >= 0 Then matchCount += 1
-                Loop While lastCharPos >= 0
+        ' While doing this, make sure each row has columnHeaders.Count sets of <td></td> pairs
+        For Each row In reportRows
+            If String.IsNullOrWhiteSpace(row) Then Continue For
 
-                ' ReSharper disable once RedundantAssignment
-                For j = matchCount + 1 To columnHeaders.Length
-                    reportRows(i) &= "<td></td>"
-                Next j
+            reportContents.Append(row)
 
-                reportRows(i) &= "</tr>" & vbCrLf
-                reportContents &= reportRows(i)
-            End If
-        Next i
+            Dim lastCharPos = -1
+            Dim matchCount = 0
+            Do
+                lastCharPos = row.IndexOf("</td>", lastCharPos + 1, StringComparison.Ordinal)
+                If lastCharPos >= 0 Then matchCount += 1
+            Loop While lastCharPos >= 0
 
-        reportContents &= "</table>" & vbCrLf
+            ' Add any missing fields as empty <td></td> pairs
+            ' This will result in mis-aligned report data, but at least all of the data will be there
+            For i = matchCount + 1 To columnHeaders.Count
+                reportContents.Append("<td></td>")
+            Next
 
-        Return reportContents
+            reportContents.AppendLine("</tr>")
+
+        Next
+
+        reportContents.AppendLine("</table>")
+
+        Return reportContents.ToString()
 
     End Function
 
-    Private Function FormatSQLReport(ByVal sqlReader As IDataReader) As String
-        Dim rowStr As String
-        Dim reportRowCount As Integer
-        Dim reportRows() As String
-        Dim columnHeaderCount As Integer
-        Dim columnHeaders() As String
-        Dim i As Integer
+    Private Function FormatSQLReport(sqlReader As IDataReader, <Out()> ByRef reportHasData As Boolean) As String
 
-        ' Note; we assemble the report using FormatReportGeneric
-        columnHeaderCount = 0
-        ReDim columnHeaders(0)
+        Dim columnHeaders = New List(Of String)
+        Dim reportRows = New List(Of String)
+        Dim resultSets = 1
 
-        reportRowCount = 0
-        ReDim reportRows(0)
         Do
             Do While sqlReader.Read()
 
+                Dim rowStr As String
+
                 ' Alternate row colors
-                If (reportRowCount Mod 2) = 0 Then
+                If (reportRows.Count Mod 2) = 0 Then
                     rowStr = "<tr class = table-row>"
                 Else
                     rowStr = "<tr class = table-alternate-row>"
@@ -134,36 +129,47 @@ Module modMain
                         End If
                     Catch ex As Exception
                         ' Unable to translate data into string; ignore errors here
-                        Debug.WriteLine("Exception in GetReport: " & ex.Message)
+                        ShowError("Exception in GetReport: " & ex.Message)
                     End Try
 
                     rowStr &= "</td>"
                 Next i
 
-                ' Note: we'll append </tr> to the row below
+                ' Note: we'll append </tr> to the row in FormatReportGeneric
+                reportRows.Add(rowStr)
 
-                ReDim Preserve reportRows(reportRowCount)
-                reportRows(reportRowCount) = rowStr
-                reportRowCount += 1
+                ' See if we need to read the column headers
+                ' sqlReader will typically only have one ResultSet, so typically the data in columnHeaders will match sqlReader.FieldCount
+                If sqlReader.FieldCount > columnHeaders.Count Then
+                    If resultSets = 1 OrElse reportRows.Count = 0 Then
+                        ' Define all of the columns
+                        columnHeaders.Clear()
+                        For i = 0 To sqlReader.FieldCount - 1
+                            columnHeaders.Add(sqlReader.GetName(i))
+                        Next
+                    Else
+                        ' Only append new columns
+                        For i = columnHeaders.Count To sqlReader.FieldCount - 1
+                            columnHeaders.Add(sqlReader.GetName(i))
+                        Next
+                    End If
+
+                End If
             Loop
 
-            ' See if we need to read the column headers
-            ' If the first row in the dataset doesn't contain data for all the columns, then it won't contain all the column headers
-            ' For each row, keep checking whether we have all the headers or not
-            If sqlReader.FieldCount > columnHeaderCount Then
-                columnHeaderCount = sqlReader.FieldCount
-                ReDim columnHeaders(columnHeaderCount - 1)
-                For i = 0 To columnHeaderCount - 1
-                    columnHeaders(i) = sqlReader.GetName(i)
-                Next i
-            End If
-
+            resultSets += 1
         Loop Until Not sqlReader.NextResult
 
+        If reportRows.Count = 0 Then
+            reportHasData = False
+            Return NO_DATA
+        End If
+
+        reportHasData = True
         Return FormatReportGeneric(columnHeaders, reportRows)
     End Function
 
-    Private Sub GenerateReports(ByVal strSettingsFilePath As String)
+    Private Sub GenerateReports(strSettingsFilePath As String)
 
         Dim logFilePath As String
         Dim programName As String
@@ -174,7 +180,7 @@ Module modMain
         logFilePath = Path.Combine(dirName, programName & ".log")
 
         Try
-			myLogger = New PRISM.Logging.clsFileLogger(logFilePath)
+            myLogger = New PRISM.Logging.clsFileLogger(logFilePath)
         Catch ex As Exception
             ShowError("Error initializing log file", False)
         End Try
@@ -185,11 +191,10 @@ Module modMain
         Else
             ShowError("XML settings file not found: " & strSettingsFilePath)
         End If
-      
+
     End Sub
 
-    Private Function GetXMLAttribute(ByRef xn As XmlNode, ByRef xPath As String, ByRef attributeName As String, _
-                Optional ByRef defaultValue As String = "") As String
+    Private Function GetXMLAttribute(xn As XmlNode, xPath As String, attributeName As String, Optional defaultValue As String = "") As String
         Dim subNode As XmlNode
         Dim attribute As XmlNode
 
@@ -207,33 +212,18 @@ Module modMain
         Exit Function
     End Function
 
-    Private Function GetWMIReport(ByVal xn_report As XmlNode) As String
-        Dim rowStr As String
-        Dim reportRowCount As Integer
-        Dim reportRows() As String
-        Dim columnHeaderCount As Integer
-        Dim columnHeaders() As String
-        Dim wmiPath As String
-        Dim queryStr As String
-        Dim mo As Management.ManagementObject
-        Dim prop As Management.PropertyData
+    Private Function GetWMIReport(xn_report As XmlNode, <Out()> ByRef reportHasData As Boolean) As String
 
-        Dim i As Integer
-        Dim testValue As String
         Dim valueDivisor As Double
         Dim roundDigits As Integer
         Dim units As String = String.Empty
 
-        ' Note; we assemble the report using FormatReportGeneric
-        columnHeaderCount = 0
-        ReDim columnHeaders(0)
+        Dim columnHeaders = New List(Of String)
+        Dim reportRows = New List(Of String)
 
-        reportRowCount = 0
-        ReDim reportRows(0)
-
-        wmiPath = "\\" & GetXMLAttribute(xn_report, "data", "source") & "\root\cimv2"
+        Dim wmiPath = "\\" & GetXMLAttribute(xn_report, "data", "source") & "\root\cimv2"
         Dim oMs As New Management.ManagementScope(wmiPath)
-        queryStr = xn_report.SelectSingleNode("data").InnerText()
+        Dim queryStr = xn_report.SelectSingleNode("data").InnerText()
         Dim oQuery As New Management.ObjectQuery(queryStr)
         Dim oSearcher As New Management.ManagementObjectSearcher(oMs, oQuery)
         Dim oReturnCollection As Management.ManagementObjectCollection = oSearcher.Get()
@@ -241,18 +231,17 @@ Module modMain
         LookupValueDivisors(xn_report, valueDivisor, roundDigits, units)
 
         For Each mo In oReturnCollection
-            If mo.Properties.Count > columnHeaderCount Then
-                columnHeaderCount = mo.Properties.Count
-                ReDim columnHeaders(columnHeaderCount - 1)
-                i = 0
+            If mo.Properties.Count > columnHeaders.Count Then
+                columnHeaders.Clear()
                 For Each prop In mo.Properties
-                    If i < columnHeaderCount Then columnHeaders(i) = prop.Name()
-                    i += 1
+                    columnHeaders.Add(prop.Name())
                 Next prop
             End If
 
+            Dim rowStr As String
+
             ' Alternate row colors
-            If (reportRowCount Mod 2) = 0 Then
+            If (reportRows.Count Mod 2) = 0 Then
                 rowStr = "<tr class = table-row>"
             Else
                 rowStr = "<tr class = table-alternate-row>"
@@ -263,41 +252,45 @@ Module modMain
 
                 Try
                     If Not IsNothing(prop.Value()) Then
-                        testValue = prop.Value().ToString
-                        If Math.Abs(valueDivisor) > Single.Epsilon AndAlso IsNumeric(testValue) Then
-                            testValue = Math.Round(CDbl(testValue) / valueDivisor, roundDigits).ToString & " " & units
+                        Dim value = prop.Value().ToString
+                        If Math.Abs(valueDivisor) > Single.Epsilon AndAlso IsNumeric(value) Then
+                            ' The value is a number; round the value and append units
+                            value = Math.Round(CDbl(value) / valueDivisor, roundDigits).ToString & " " & units
                         End If
-                        rowStr &= testValue
+                        rowStr &= value
                     End If
                 Catch ex As Exception
                     ' Unable to translate data into string; ignore errors here
-                    Debug.WriteLine("Exception in GetWMIReport: " & ex.Message)
+                    ShowError("Exception in GetWMIReport: " & ex.Message)
                 End Try
 
                 rowStr &= "</td>"
             Next prop
 
-            ' Note: we'll append </tr> to the row below
+            ' Note: we'll append </tr> to the row in FormatReportGeneric
+            reportRows.Add(rowStr)
+        Next
 
-            ReDim Preserve reportRows(reportRowCount)
-            reportRows(reportRowCount) = rowStr
+        If reportRows.Count = 0 Then
+            reportHasData = False
+            Return NO_DATA
+        End If
 
-            reportRowCount += 1
-        Next mo
-
+        reportHasData = True
         Return FormatReportGeneric(columnHeaders, reportRows)
+
     End Function
 
-    Private Sub ShowError(ByVal strMessage As String)
+    Private Sub ShowError(strMessage As String)
         ShowError(strMessage, True)
     End Sub
 
-    Private Sub ShowError(ByVal strMessage As String, ByVal blnLogToFile As Boolean)
+    Private Sub ShowError(strMessage As String, blnLogToFile As Boolean)
         Console.WriteLine(strMessage)
         If blnLogToFile Then
             Try
                 If Not myLogger Is Nothing Then
-					myLogger.PostEntry(strMessage, PRISM.Logging.ILogger.logMsgType.logError, True)
+                    myLogger.PostEntry(strMessage, PRISM.Logging.ILogger.logMsgType.logError, True)
                 End If
             Catch ex As Exception
                 Console.WriteLine("Error writing to log file")
@@ -305,37 +298,45 @@ Module modMain
         End If
     End Sub
 
-    Private Function GetSQLReport(ByVal xn_report As XmlNode, ByVal cmdType As CommandType) As String
-        Dim connStr As String
-        Dim sql As String
-        Dim dbConn As SqlClient.SqlConnection
-        Dim sqlReader As SqlClient.SqlDataReader
-        Dim sqlCMD As SqlClient.SqlCommand
+    Private Function GetSQLReport(xn_report As XmlNode, cmdType As CommandType, <Out()> ByRef reportHasData As Boolean) As String
+
         Dim report As String
 
-        connStr = "Data Source=" & GetXMLAttribute(xn_report, "data", "source") & ";"
-        connStr &= "Initial Catalog=" & GetXMLAttribute(xn_report, "data", "catalog") & ";"
-        connStr &= "Integrated Security=SSPI;"
-        connStr &= "Connection Timeout=120;"
-        dbConn = New SqlClient.SqlConnection(connStr)
-        sql = xn_report.SelectSingleNode("data").InnerText()
-        sqlCMD = New SqlClient.SqlCommand(sql, dbConn)
-        sqlCMD.CommandType = cmdType
-        sqlCMD.CommandTimeout = 600
+        Dim connStr = "Data Source=" & GetXMLAttribute(xn_report, "data", "source") & ";" &
+            "Initial Catalog=" & GetXMLAttribute(xn_report, "data", "catalog") & ";" &
+            "Integrated Security=SSPI;" &
+            "Connection Timeout=120;"
+
         Try
-            dbConn.Open()
-            sqlReader = sqlCMD.ExecuteReader()
-            report = FormatSQLReport(sqlReader)
-            sqlReader.Close()
-            dbConn.Close()
+
+            Using dbConn = New SqlClient.SqlConnection(connStr)
+                Dim sqlQuery = xn_report.SelectSingleNode("data").InnerText()
+                Using sqlCMD = New SqlClient.SqlCommand(sqlQuery, dbConn)
+                    sqlCMD.CommandType = cmdType
+                    sqlCMD.CommandTimeout = 600
+
+                    dbConn.Open()
+                    Dim sqlReader = sqlCMD.ExecuteReader()
+                    report = FormatSQLReport(sqlReader, reportHasData)
+                End Using
+            End Using
+
         Catch ex As Exception
-            ShowError("Exception getting report from database: " & ex.Message)
+            ' Set this to true so that the exception message is returned in the e-mail
+            reportHasData = True
             report = "Exception getting report from database: " & ex.Message
+            ShowError(report)
         End Try
+
         Return report
+
     End Function
 
-    Private Sub LookupValueDivisors(ByVal xn_report As XmlNode, ByRef valueDivisor As Double, ByRef roundDigits As Integer, ByRef units As String)
+    Private Sub LookupValueDivisors(
+      xn_report As XmlNode,
+      <Out()> ByRef valueDivisor As Double,
+      <Out()> ByRef roundDigits As Integer,
+      <Out()> ByRef units As String)
 
         Dim testValue As String
 
@@ -364,38 +365,61 @@ Module modMain
             ' Ignore any errors here
             valueDivisor = 0
             roundDigits = 2
-            units = ""
+            units = String.Empty
         End Try
 
     End Sub
 
-    Private Sub ProcessReportSection(ByVal xn_report As XmlNode)
-        Dim beginStr As String
-        Dim titleStr As String
+    Private Sub MailReport(xn_report As XmlNode, reportText As String)
+
+        Dim strFrom = GetXMLAttribute(xn_report, "mail", "from")
+        Dim strTo = GetXMLAttribute(xn_report, "mail", "to")
+        Dim msg = New Net.Mail.MailMessage(strFrom, strTo) With {
+            .BodyEncoding = Encoding.ASCII,
+            .IsBodyHtml = True,
+            .Subject = GetXMLAttribute(xn_report, "mail", "subject")
+        }
+
+        Dim titleStr = "<h3>" & GetXMLAttribute(xn_report, "mail", "title") & "</h3>" & vbCrLf
+        Dim beginStr = "<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01//EN"" ""http://www.w3.org/TR/html4/strict.dtd"">" & vbCrLf
+        beginStr = beginStr & "<html><head>"
+        beginStr = beginStr & xn_report.SelectSingleNode("styles").InnerXml()
+        beginStr = beginStr & "</head><body>" & vbCrLf
+
+        msg.Body = beginStr & titleStr & reportText & "</body></html>"
+
+        Try
+            If mPreviewMode Then
+                Console.WriteLine()
+                Console.WriteLine("Preview of data to be e-mailed to " & strTo)
+                Console.WriteLine(reportText)
+            Else
+                Dim objClient = New Net.Mail.SmtpClient(GetXMLAttribute(xn_report, "mail", "server"))
+                objClient.Send(msg)
+            End If
+        Catch ex As Exception
+            ShowError("Exception sending mail message: " & ex.Message)
+        End Try
+
+    End Sub
+
+    Private Sub ProcessReportSection(xn_report As XmlNode)
 
         Dim strReportName As String = String.Empty
-        Dim strReportType As String
-        Dim strSkipMessage As String = "??"
+        Dim strSkipMessage = "??"
 
-        Dim objClient As Net.Mail.SmtpClient
-        Dim msg As Net.Mail.MailMessage
-        Dim strFrom As String
-        Dim strTo As String
-
-        Dim reportFrequency As String
         Dim generateReport As Boolean
-        Dim dayOfWeekList As String
 
         Console.WriteLine()
 
         ' See if we should run this report today
         Try
-            reportFrequency = GetXMLAttribute(xn_report, "frequency", "daily")
+            Dim reportFrequency = GetXMLAttribute(xn_report, "frequency", "daily")
             If reportFrequency.ToLower = "false" Then
                 ' Do not generate the report daily
                 ' Compare the first three letters of today's day of the week with the list in dayOfWeekList
                 ' Thus, dayOfWeekList can contain either abbreviated day names or full day names, and the separation character doesn't matter
-                dayOfWeekList = GetXMLAttribute(xn_report, "frequency", "dayofweeklist")
+                Dim dayOfWeekList = GetXMLAttribute(xn_report, "frequency", "dayofweeklist")
                 If dayOfWeekList.ToLower.IndexOf(DateTime.Now().DayOfWeek.ToString.ToLower.Substring(0, 3), StringComparison.Ordinal) >= 0 Then
                     generateReport = True
                 Else
@@ -421,88 +445,63 @@ Module modMain
             Console.WriteLine("Skipping report '" & strReportName & "' since " & strSkipMessage)
         Else
 
-            Dim strReportText As String
-            strReportType = GetXMLAttribute(xn_report, "data", "type")
+            Dim reportText As String
+            Dim reportHasData = False
+            Dim strReportType = GetXMLAttribute(xn_report, "data", "type")
 
             Select Case strReportType.ToLower()
                 Case "WMI".ToLower()
                     Console.WriteLine("Running report '" & strReportName & "' using WMI")
-                    strReportText = GetWMIReport(xn_report)
+                    reportText = GetWMIReport(xn_report, reportHasData)
                 Case "query".ToLower()
                     Console.WriteLine("Running report '" & strReportName & "' using a query")
-                    strReportText = GetSQLReport(xn_report, CommandType.Text)
+                    reportText = GetSQLReport(xn_report, CommandType.Text, reportHasData)
                 Case "StoredProcedure".ToLower()
                     Console.WriteLine("Running report '" & strReportName & "' using a stored procedure")
-                    strReportText = GetSQLReport(xn_report, CommandType.StoredProcedure)
+                    reportText = GetSQLReport(xn_report, CommandType.StoredProcedure, reportHasData)
                 Case Else
                     ' abort, retry, ignore?
                     ShowError("Unknown report type: " & strReportType)
-                    strReportText = "Unknown report type: " & strReportType
+                    reportText = "Unknown report type: " & strReportType
             End Select
 
-            If strReportText.Length > 0 Then
-
-                strFrom = GetXMLAttribute(xn_report, "mail", "from")
-                strTo = GetXMLAttribute(xn_report, "mail", "to")
-                msg = New Net.Mail.MailMessage(strFrom, strTo)
-
-                msg.BodyEncoding = Text.Encoding.ASCII
-                msg.IsBodyHtml = True
-                msg.Subject = GetXMLAttribute(xn_report, "mail", "subject")
-
-                titleStr = "<h3>" & GetXMLAttribute(xn_report, "mail", "title") & "</h3>" & vbCrLf
-                beginStr = "<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01//EN"" ""http://www.w3.org/TR/html4/strict.dtd"">" & vbCrLf
-                beginStr = beginStr & "<html><head>"
-                beginStr = beginStr & xn_report.SelectSingleNode("styles").InnerXml()
-                beginStr = beginStr & "</head><body>" & vbCrLf
-                strReportText = beginStr & titleStr & strReportText & "</body></html>"
-
-                msg.Body = strReportText
-
-                Try
-                    If mPreviewMode Then
-                        Console.WriteLine()
-                        Console.WriteLine("Preview of data to be e-mailed to " & strTo)
-                        Console.WriteLine(strReportText)
-                    Else
-                        objClient = New Net.Mail.SmtpClient(GetXMLAttribute(xn_report, "mail", "server"))
-                        objClient.Send(msg)
-                    End If
-                Catch Ex As Exception
-                    ShowError("Exception sending mail message: " & Ex.Message)
-                End Try
+            If Not reportHasData Then
+                Console.WriteLine("Skipping report '" & strReportName & "' since no data was returned")
+                Return
             End If
-        End If
 
-        If mPreviewMode Then
-            Threading.Thread.Sleep(500)
+            MailReport(xn_report, reportText)
+
+            If mPreviewMode Then
+                Threading.Thread.Sleep(500)
+            End If
         End If
 
     End Sub
 
-    Private Sub ProcessXMLFile(ByVal fileName As String)
+    Private Sub ProcessXMLFile(filePath As String)
         Dim m_XmlDoc As New XmlDocument
-        Dim xn_reports As XmlNode
-        Dim i As Integer
 
-        If File.Exists(fileName) Then
-            Try
-                m_XmlDoc.Load(fileName)
-                xn_reports = m_XmlDoc.SelectSingleNode("/reports")
-                If xn_reports.ChildNodes.Count > 0 Then
-                    'For Each xn_report In xn_reports.ChildNodes
-                    For i = 0 To xn_reports.ChildNodes.Count - 1
-                        ProcessReportSection(xn_reports.ChildNodes.ItemOf(i))
-                    Next i
-                Else
-                    ShowError("Configuration file contains no report sections to process.")
-                End If
-            Catch Ex As Exception
-                ShowError("Exception reading XML file: " & Ex.Message)
-            End Try
-        Else
-            ShowError("Could not locate file: " & fileName)
+        If Not File.Exists(filePath) Then
+            ShowError("Could not locate file: " & filePath)
+            Return
         End If
+
+        Try
+            m_XmlDoc.Load(filePath)
+            Dim xn_reports = m_XmlDoc.SelectSingleNode("/reports")
+            If xn_reports.ChildNodes.Count > 0 Then
+                For Each xn_report As XmlNode In xn_reports.ChildNodes
+                    ProcessReportSection(xn_report)
+                Next
+            Else
+                ShowError("Configuration file contains no report sections to process.")
+            End If
+        Catch ex As Exception
+            ShowError("Exception reading XML file: " & ex.Message)
+            ShowError(PRISM.clsStackTraceFormatter.GetExceptionStackTraceMultiLine(ex))
+        End Try
+
     End Sub
 
     Private Function GetAppPath() As String
@@ -515,28 +514,29 @@ Module modMain
         Return Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & " (" & PROGRAM_DATE & ")"
     End Function
 
-    Private Function SetOptionsUsingCommandLineParameters(ByVal objParseCommandLine As clsParseCommandLine) As Boolean
+    Private Function SetOptionsUsingCommandLineParameters(objParseCommandLine As clsParseCommandLine) As Boolean
         ' Returns True if no problems; otherwise, returns false
 
         Dim strValue As String = String.Empty
-        Dim strValidParameters() As String = New String() {"I", "X", "P"}
+        Dim strValidParameters = New List(Of String) From {"I", "X", "P", "Preview"}
 
         Try
             ' Make sure no invalid parameters are present
             If objParseCommandLine.InvalidParametersPresent(strValidParameters) Then
                 Return False
             Else
-                With objParseCommandLine
-                    ' Query objParseCommandLine to see if various parameters are present
-                    If .RetrieveValueForParameter("I", strValue) Then
-                        mXMLSettingsFilePath = strValue
-                    ElseIf .NonSwitchParameterCount > 0 Then
-                        mXMLSettingsFilePath = .RetrieveNonSwitchParameter(0)
-                    End If
+                ' Query objParseCommandLine to see if various parameters are present
+                If objParseCommandLine.NonSwitchParameterCount > 0 Then
+                    mXMLSettingsFilePath = objParseCommandLine.RetrieveNonSwitchParameter(0)
+                End If
 
-                    If .RetrieveValueForParameter("P", strValue) Then mPreviewMode = True
-                    If .RetrieveValueForParameter("X", strValue) Then mShowExtendedXMLExample = True
-                End With
+                If objParseCommandLine.RetrieveValueForParameter("I", strValue) Then
+                    mXMLSettingsFilePath = strValue
+                End If
+
+                If objParseCommandLine.IsParameterPresent("P") Then mPreviewMode = True
+                If objParseCommandLine.IsParameterPresent("Preview") Then mPreviewMode = True
+                If objParseCommandLine.IsParameterPresent("X") Then mShowExtendedXMLExample = True
 
                 Return True
             End If
@@ -553,11 +553,11 @@ Module modMain
         Try
 
             Console.WriteLine()
-            Console.WriteLine("Syntax: " & Path.GetFileName(GetAppPath()) & " SettingsFileName.xml [/X] [/P]")
+            Console.WriteLine("Syntax: " & Path.GetFileName(GetAppPath()) & " SettingsFileName.xml [/X] [/P] [/Preview]")
             Console.WriteLine()
-            Console.WriteLine("This program uses the specified settings file to generate and e-mail reports.  Reports can be e-mailed daily or only on certain days. " & _
-                              "Shown below is an example settings file; to see an extended example, use the /X switch at the command line. " & _
-                              "To preview the reports that would be e-mailed, use the /P switch.")
+            Console.WriteLine("This program uses the specified settings file to generate and e-mail reports.  Reports can be e-mailed daily or only on certain days. " &
+                              "Shown below is an example settings file; to see an extended example, use the /X switch at the command line. " &
+                              "To preview the reports that would be e-mailed, use the /P (or /Preview) switch.")
 
             Console.WriteLine()
             Console.WriteLine("<?xml version=""1.0"" encoding=""UTF-8""?>")
