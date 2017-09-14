@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reports>
+
+    <report name="MTS Error Report">
+        <data source="pogo" catalog="MTS_Master" type="StoredProcedure">GetErrorsFromActiveDBLogs</data>
+        <mail server="emailgw.pnl.gov" from="dms@pnl.gov"
+        to="proteomics@pnnl.gov"
+        subject="MTS Error Report - Previous 24 hour summary"
+        title="Report generated automatically on Pogo:" />
+        <styles>
+            <style type="text/css" media="all">body { font: 12px Verdana, Arial,
+            Helvetica, sans-serif; margin: 20px; } h3 { font: 20px Verdana, Arial,
+            Helvetica, sans-serif; } table { margin: 4px; border-style: ridge;
+            border-width: 2px; } .table-header { color: white; background-color:
+            #8080FF; } .table-row { background-color: #D8D8FF; } .table-alternate-row
+            { background-color: #C0C0FF; }</style>
+        </styles>
+        <frequency daily="false"
+        dayofweeklist="Monday,Tuesday,Wednesday,Thursday,Friday" />
+    </report>
+
+    <report name="MTS Overdue Database Backups">
+        <data source="pogo" catalog="MTS_Master" type="StoredProcedure">GetOverdueDatabaseBackups</data>
+        <mail server="emailgw.pnl.gov" from="dms@pnl.gov"
+        to="proteomics@pnnl.gov" 
+        subject="MTS Overdue Database Backups"
+        title="Report generated automatically on Pogo:" />
+        <styles>
+            <style type="text/css" media="all">body { font: 12px Verdana, Arial,
+            Helvetica, sans-serif; margin: 20px; } h3 { font: 20px Verdana, Arial,
+            Helvetica, sans-serif; } table { margin: 4px; border-style: ridge;
+            border-width: 2px; } .table-header { color: white; background-color:
+            #8080FF; } .table-row { background-color: #D8D8FF; } .table-alternate-row
+            { background-color: #C0C0FF; }</style>
+        </styles>
+        <frequency daily="false" dayofweeklist="Tuesday,Saturday" />
+    </report>
+        
+    <report name="Disabled Indices on Pogo">
+        <data source="pogo" catalog="MT_Main" type="query">
+		SELECT *
+		FROM (SELECT 'MT_Main' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM MT_Main.sys.indexes
+		      WHERE is_disabled = 1
+		      UNION
+		      SELECT 'MTS_Master' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM MTS_Master.sys.indexes
+		      WHERE is_disabled = 1
+		      UNION
+		      SELECT 'PT_Template_01' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM PT_Template_01.sys.indexes
+		      WHERE is_disabled = 1
+		      UNION
+		      SELECT 'MT_Template_01' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM MT_Template_01.sys.indexes
+		      WHERE is_disabled = 1
+		      UNION
+		      SELECT 'Prism_IFC' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM Prism_IFC.sys.indexes
+		      WHERE is_disabled = 1
+		      UNION
+		      SELECT 'Prism_RPT' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM Prism_RPT.sys.indexes
+		      WHERE is_disabled = 1 ) LookupQ
+		WHERE Disabled_Indices > 0
+		</data>
+        <mail server="emailgw.pnl.gov" from="dms@pnl.gov" 
+        to="proteomics@pnnl.gov" 
+        subject="Pogo: Disabled indices" 
+        title="Disabled indices on Pogo" />
+        <styles>
+            <style type="text/css" media="all">
+			body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }
+			h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }
+			table { margin: 4px; border-style: ridge; border-width: 2px; }
+			.table-header { color: white; background-color: #8080FF; }
+			.table-row { background-color: #D8D8FF; vertical-align:top;}
+			.table-alternate-row { background-color: #C0C0FF; vertical-align:top;}
+		</style>
+        </styles>
+        <frequency daily="false" dayofweeklist="Wednesday" />
+    </report>
+
+    <report name="Disabled Indices on ProteinSeqs2">
+        <data source="ProteinSeqs2" catalog="Master_Sequences" type="query">
+		SELECT *
+		FROM (SELECT 'MT_Main' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM MT_Main.sys.indexes
+		      WHERE is_disabled = 1
+		      UNION
+		      SELECT 'Master_Sequences' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM Master_Sequences.sys.indexes
+		      WHERE is_disabled = 1 ) LookupQ
+		WHERE Disabled_Indices > 0
+		</data>
+        <mail server="emailgw.pnl.gov" from="dms@pnl.gov" 
+        to="proteomics@pnnl.gov" 
+        subject="ProteinSeqs2: Disabled indices" 
+        title="Disabled indices on ProteinSeqs2" />
+        <styles>
+            <style type="text/css" media="all">
+			body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }
+			h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }
+			table { margin: 4px; border-style: ridge; border-width: 2px; }
+			.table-header { color: white; background-color: #8080FF; }
+			.table-row { background-color: #D8D8FF; vertical-align:top;}
+			.table-alternate-row { background-color: #C0C0FF; vertical-align:top;}
+		</style>
+        </styles>
+        <frequency daily="false" dayofweeklist="Wednesday" />
+    </report>
+        
+</reports>
