@@ -195,11 +195,11 @@ Module modMain
 
     End Sub
 
-    Private Function GetXMLAttribute(xn As XmlNode, xPath As String, attributeName As String, Optional defaultValue As String = "") As String
+    Private Function GetXMLAttribute(node As XmlNode, xPath As String, attributeName As String, Optional defaultValue As String = "") As String
         Dim subNode As XmlNode
         Dim attribute As XmlNode
 
-        subNode = xn.SelectSingleNode(xPath)
+        subNode = node.SelectSingleNode(xPath)
         If Not subNode Is Nothing Then
             If subNode.Attributes.Count > 0 Then
                 attribute = subNode.Attributes.GetNamedItem(attributeName)
@@ -213,7 +213,7 @@ Module modMain
         Exit Function
     End Function
 
-    Private Function GetWMIReport(xn_report As XmlNode, <Out()> ByRef reportHasData As Boolean) As String
+    Private Function GetWMIReport(reportNode As XmlNode, <Out()> ByRef reportHasData As Boolean) As String
 
         Dim valueDivisor As Double
         Dim roundDigits As Integer
@@ -222,14 +222,14 @@ Module modMain
         Dim columnHeaders = New List(Of String)
         Dim reportRows = New List(Of String)
 
-        Dim wmiPath = "\\" & GetXMLAttribute(xn_report, "data", "source") & "\root\cimv2"
+        Dim wmiPath = "\\" & GetXMLAttribute(reportNode, "data", "source") & "\root\cimv2"
         Dim oMs As New Management.ManagementScope(wmiPath)
-        Dim queryStr = xn_report.SelectSingleNode("data").InnerText()
+        Dim queryStr = reportNode.SelectSingleNode("data").InnerText()
         Dim oQuery As New Management.ObjectQuery(queryStr)
         Dim oSearcher As New Management.ManagementObjectSearcher(oMs, oQuery)
         Dim oReturnCollection As Management.ManagementObjectCollection = oSearcher.Get()
 
-        LookupValueDivisors(xn_report, valueDivisor, roundDigits, units)
+        LookupValueDivisors(reportNode, valueDivisor, roundDigits, units)
 
         For Each mo In oReturnCollection
             If mo.Properties.Count > columnHeaders.Count Then
@@ -303,42 +303,42 @@ Module modMain
         End If
     End Sub
 
-    Private Function GetSQLReport(xn_report As XmlNode, cmdType As CommandType, <Out()> ByRef reportHasData As Boolean) As String
+    Private Function GetSQLReport(reportNode As XmlNode, cmdType As CommandType, <Out()> ByRef reportHasData As Boolean) As String
 
-        Dim report As String
+        Dim reportText As String
 
-        Dim connStr = "Data Source=" & GetXMLAttribute(xn_report, "data", "source") & ";" &
-            "Initial Catalog=" & GetXMLAttribute(xn_report, "data", "catalog") & ";" &
+        Dim connStr = "Data Source=" & GetXMLAttribute(reportNode, "data", "source") & ";" &
+            "Initial Catalog=" & GetXMLAttribute(reportNode, "data", "catalog") & ";" &
             "Integrated Security=SSPI;" &
             "Connection Timeout=120;"
 
         Try
 
             Using dbConn = New SqlClient.SqlConnection(connStr)
-                Dim sqlQuery = xn_report.SelectSingleNode("data").InnerText()
+                Dim sqlQuery = reportNode.SelectSingleNode("data").InnerText()
                 Using sqlCMD = New SqlClient.SqlCommand(sqlQuery, dbConn)
                     sqlCMD.CommandType = cmdType
                     sqlCMD.CommandTimeout = 600
 
                     dbConn.Open()
                     Dim sqlReader = sqlCMD.ExecuteReader()
-                    report = FormatSQLReport(sqlReader, reportHasData)
+                    reportText = FormatSQLReport(sqlReader, reportHasData)
                 End Using
             End Using
 
         Catch ex As Exception
             ' Set this to true so that the exception message is returned in the e-mail
             reportHasData = True
-            report = "Exception getting report from database: " & ex.Message
+            reportText = "Exception getting report from database: " & ex.Message
             ShowError(reportText, ex)
         End Try
 
-        Return report
+        Return reportText
 
     End Function
 
     Private Sub LookupValueDivisors(
-      xn_report As XmlNode,
+      reportNode As XmlNode,
       <Out()> ByRef valueDivisor As Double,
       <Out()> ByRef roundDigits As Integer,
       <Out()> ByRef units As String)
@@ -346,7 +346,7 @@ Module modMain
         Dim testValue As String
 
         Try
-            testValue = GetXMLAttribute(xn_report, "valuedivisor", "value").ToString
+            testValue = GetXMLAttribute(reportNode, "valuedivisor", "value").ToString
             If IsNumeric(testValue) Then
                 valueDivisor = CDbl(testValue)
             Else
@@ -355,7 +355,7 @@ Module modMain
             End If
 
             Try
-                testValue = GetXMLAttribute(xn_report, "valuedivisor", "round").ToString
+                testValue = GetXMLAttribute(reportNode, "valuedivisor", "round").ToString
                 If IsNumeric(testValue) Then
                     roundDigits = CInt(testValue)
                 Else
@@ -365,7 +365,7 @@ Module modMain
                 roundDigits = 2
             End Try
 
-            units = GetXMLAttribute(xn_report, "valuedivisor", "units").ToString
+            units = GetXMLAttribute(reportNode, "valuedivisor", "units").ToString
         Catch ex As Exception
             ' Ignore any errors here
             valueDivisor = 0
@@ -375,20 +375,18 @@ Module modMain
 
     End Sub
 
-    Private Sub MailReport(xn_report As XmlNode, reportText As String)
+    Private Sub MailReport(reportNode As XmlNode, reportText As String)
 
-        Dim strFrom = GetXMLAttribute(xn_report, "mail", "from")
-        Dim strTo = GetXMLAttribute(xn_report, "mail", "to")
         Dim msg = New Net.Mail.MailMessage(strFrom, strTo) With {
             .BodyEncoding = Encoding.ASCII,
             .IsBodyHtml = True,
-            .Subject = GetXMLAttribute(xn_report, "mail", "subject")
+            .Subject = GetXMLAttribute(reportNode, "mail", "subject")
         }
 
-        Dim titleStr = "<h3>" & GetXMLAttribute(xn_report, "mail", "title") & "</h3>" & vbCrLf
+        Dim titleStr = "<h3>" & GetXMLAttribute(reportNode, "mail", "title") & "</h3>" & vbCrLf
         Dim beginStr = "<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01//EN"" ""http://www.w3.org/TR/html4/strict.dtd"">" & vbCrLf
         beginStr = beginStr & "<html><head>"
-        beginStr = beginStr & xn_report.SelectSingleNode("styles").InnerXml()
+        beginStr = beginStr & reportNode.SelectSingleNode("styles").InnerXml()
         beginStr = beginStr & "</head><body>" & vbCrLf
 
         msg.Body = beginStr & titleStr & reportText & "</body></html>"
@@ -399,7 +397,7 @@ Module modMain
                 Console.WriteLine("Preview of data to be e-mailed to " & strTo)
                 Console.WriteLine(reportText)
             Else
-                Dim objClient = New Net.Mail.SmtpClient(GetXMLAttribute(xn_report, "mail", "server"))
+                Dim objClient = New Net.Mail.SmtpClient(GetXMLAttribute(reportNode, "mail", "server"))
                 objClient.Send(msg)
             End If
         Catch ex As Exception
@@ -408,7 +406,7 @@ Module modMain
 
     End Sub
 
-    Private Sub ProcessReportSection(xn_report As XmlNode)
+    Private Sub ProcessReportSection(reportNode As XmlNode)
 
         Dim strReportName As String = String.Empty
         Dim strSkipMessage = "??"
@@ -419,12 +417,12 @@ Module modMain
 
         ' See if we should run this report today
         Try
-            Dim reportFrequency = GetXMLAttribute(xn_report, "frequency", "daily")
+            Dim reportFrequency = GetXMLAttribute(reportNode, "frequency", "daily")
             If reportFrequency.ToLower = "false" Then
                 ' Do not generate the report daily
                 ' Compare the first three letters of today's day of the week with the list in dayOfWeekList
                 ' Thus, dayOfWeekList can contain either abbreviated day names or full day names, and the separation character doesn't matter
-                Dim dayOfWeekList = GetXMLAttribute(xn_report, "frequency", "dayofweeklist")
+                Dim dayOfWeekList = GetXMLAttribute(reportNode, "frequency", "dayofweeklist")
                 If dayOfWeekList.ToLower.IndexOf(DateTime.Now().DayOfWeek.ToString.ToLower.Substring(0, 3), StringComparison.Ordinal) >= 0 Then
                     generateReport = True
                 Else
@@ -441,7 +439,7 @@ Module modMain
         End Try
 
         Try
-            strReportName = xn_report.Attributes.GetNamedItem("name").Value
+            strReportName = reportNode.Attributes.GetNamedItem("name").Value
         Catch ex As Exception
             ShowError("Exception reading report name from XML file: " & ex.Message, ex)
         End Try
@@ -452,18 +450,18 @@ Module modMain
 
             Dim reportText As String
             Dim reportHasData = False
-            Dim strReportType = GetXMLAttribute(xn_report, "data", "type")
+            Dim strReportType = GetXMLAttribute(reportNode, "data", "type")
 
             Select Case strReportType.ToLower()
                 Case "WMI".ToLower()
                     Console.WriteLine("Running report '" & strReportName & "' using WMI")
-                    reportText = GetWMIReport(xn_report, reportHasData)
+                    reportText = GetWMIReport(reportNode, reportHasData)
                 Case "query".ToLower()
                     Console.WriteLine("Running report '" & strReportName & "' using a query")
-                    reportText = GetSQLReport(xn_report, CommandType.Text, reportHasData)
+                    reportText = GetSQLReport(reportNode, CommandType.Text, reportHasData)
                 Case "StoredProcedure".ToLower()
                     Console.WriteLine("Running report '" & strReportName & "' using a stored procedure")
-                    reportText = GetSQLReport(xn_report, CommandType.StoredProcedure, reportHasData)
+                    reportText = GetSQLReport(reportNode, CommandType.StoredProcedure, reportHasData)
                 Case Else
                     ' abort, retry, ignore?
                     ShowError("Unknown report type: " & strReportType)
@@ -471,11 +469,11 @@ Module modMain
             End Select
 
             If Not reportHasData Then
-                Console.WriteLine("Skipping report '" & strReportName & "' since no data was returned")
+                Console.WriteLine("  ... not e-mailing since no data was returned")
                 Return
             End If
 
-            MailReport(xn_report, reportText)
+            MailReport(reportNode, reportText)
 
             If mPreviewMode Then
                 Threading.Thread.Sleep(500)
@@ -494,10 +492,10 @@ Module modMain
 
         Try
             m_XmlDoc.Load(filePath)
-            Dim xn_reports = m_XmlDoc.SelectSingleNode("/reports")
-            If xn_reports.ChildNodes.Count > 0 Then
-                For Each xn_report As XmlNode In xn_reports.ChildNodes
-                    ProcessReportSection(xn_report)
+            Dim reportContainer = m_XmlDoc.SelectSingleNode("/reports")
+            If reportContainer?.ChildNodes?.Count > 0 Then
+                For Each reportNode As XmlNode In reportContainer.ChildNodes
+                    ProcessReportSection(reportNode)
                 Next
             Else
                 ShowError("Configuration file contains no report sections to process.")
