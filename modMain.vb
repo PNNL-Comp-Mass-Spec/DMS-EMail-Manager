@@ -8,11 +8,11 @@ Imports System.Xml
 Imports PRISM
 
 ' Program written in 2004 by Dave Clark and Nate Trimble
-' Ported to .NET 2008 in 2010 by Matthew Monroe
+' Ported to .NET in 2010 by Matthew Monroe
 
 Module modMain
 
-    Private Const PROGRAM_DATE As String = "November 11, 2016"
+    Private Const PROGRAM_DATE As String = "September 14, 2017"
     Private Const NO_DATA As String = "No Data Returned"
 
     Private mLogger As ILogger
@@ -567,8 +567,9 @@ Module modMain
             Console.WriteLine()
             Console.WriteLine("Syntax: " & Path.GetFileName(GetAppPath()) & " SettingsFileName.xml [/X] [/P] [/Preview]")
             Console.WriteLine()
-            Console.WriteLine("This program uses the specified settings file to generate and e-mail reports.  Reports can be e-mailed daily or only on certain days. " &
-                              "Shown below is an example settings file; to see an extended example, use the /X switch at the command line. " &
+            Console.WriteLine("This program uses the specified settings file to generate and e-mail reports. " & ControlChars.NewLine &
+                              "Reports can be e-mailed daily or only on certain days. " & ControlChars.NewLine &
+                              "Shown below is an example settings file; to see an extended example, use the /X switch. " & ControlChars.NewLine &
                               "To preview the reports that would be e-mailed, use the /P (or /Preview) switch.")
 
             Console.WriteLine()
@@ -579,17 +580,17 @@ Module modMain
             Console.WriteLine("          SELECT * FROM V_Processor_Status_Warnings ORDER BY Processor_name")
             Console.WriteLine("        </data>")
             Console.WriteLine("        <mail server=""emailgw.pnl.gov"" from=""dms@pnl.gov"" ")
-            Console.WriteLine("        to=""matthew.monroe@pnl.gov"" ")
+            Console.WriteLine("        to=""proteomics@pnnl.gov"" ")
             Console.WriteLine("        subject=""Processor Status Warnings"" ")
             Console.WriteLine("        title=""Processor Status Warnings"" />")
             Console.WriteLine("        <styles>")
             Console.WriteLine("            <style type=""text/css"" media=""all"">")
-            Console.WriteLine("         body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }")
-            Console.WriteLine("         h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }")
-            Console.WriteLine("         table { margin: 4px; border-style: ridge; border-width: 2px; }")
-            Console.WriteLine("         .table-header { color: white; background-color: #8080FF; }")
-            Console.WriteLine("         .table-row { background-color: #D8D8FF; vertical-align:top;}")
-            Console.WriteLine("         .table-alternate-row { background-color: #C0C0FF; vertical-align:top;}")
+            Console.WriteLine("            body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }")
+            Console.WriteLine("            h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }")
+            Console.WriteLine("            table { margin: 4px; border-style: ridge; border-width: 2px; }")
+            Console.WriteLine("            .table-header { color: white; background-color: #8080FF; }")
+            Console.WriteLine("            .table-row { background-color: #D8D8FF; vertical-align:top;}")
+            Console.WriteLine("            .table-alternate-row { background-color: #C0C0FF; vertical-align:top;}")
             Console.WriteLine("            </style>")
             Console.WriteLine("        </styles>")
             Console.WriteLine("        <frequency daily=""false"" dayofweeklist=""Monday,Wednesday,Friday"" />")
@@ -597,17 +598,37 @@ Module modMain
 
             If mShowExtendedXMLExample Then
                 Console.WriteLine()
+                Console.WriteLine("    <report name=""MTS Overdue Database Backups"">")
+                Console.WriteLine("        <data source=""pogo"" catalog=""MTS_Master"" type=""StoredProcedure"">GetOverdueDatabaseBackups</data>")
+                Console.WriteLine("        <mail server=""emailgw.pnl.gov"" from=""dms@pnl.gov""")
+                Console.WriteLine("        to=""proteomics@pnnl.gov"" subject=""MTS Overdue Database Backups""")
+                Console.WriteLine("        title=""Report generated automatically on Pogo:"" />")
+                Console.WriteLine("        <styles>")
+                Console.WriteLine("            <style type=""text/css"" media=""all"">body { font: 12px Verdana, Arial,")
+                Console.WriteLine("            Helvetica, sans-serif; margin: 20px; } h3 { font: 20px Verdana, Arial,")
+                Console.WriteLine("            Helvetica, sans-serif; } table { margin: 4px; border-style: ridge;")
+                Console.WriteLine("            border-width: 2px; } .table-header { color: white; background-color:")
+                Console.WriteLine("            #8080FF; } .table-row { background-color: #D8D8FF; } .table-alternate-row")
+                Console.WriteLine("            { background-color: #C0C0FF; }</style>")
+                Console.WriteLine("        </styles>")
+                Console.WriteLine("        <frequency daily=""false"" dayofweeklist=""Tuesday,Saturday"" />")
+                Console.WriteLine("    </report>")
+
+                Console.WriteLine()
                 Console.WriteLine("    <report name=""Gigasax Disk Space Report"">")
-                Console.WriteLine("        <data source=""gigasax"" type=""WMI""><![CDATA[SELECT Name, FreeSpace, Size FROM Win32_LogicalDisk WHERE DriveType=3]]></data>")
-                Console.WriteLine("        <mail server=""emailgw.pnl.gov"" from=""dms@pnl.gov"" to=""matthew.monroe@pnnl.gov"" subject=""Gigasax Disk Space"" title=""Free space on Gigasax (GiB):"" />")
+                Console.WriteLine("        <data source=""gigasax"" type=""WMI"">")
+                Console.WriteLine("          <![CDATA[SELECT Name, FreeSpace, Size FROM Win32_LogicalDisk WHERE DriveType=3]]></data>")
+                Console.WriteLine("        <mail server=""emailgw.pnl.gov"" from=""dms@pnl.gov""")
+                Console.WriteLine("         to=""proteomics@pnnl.gov; matthew.monroe@pnnl.gov"" subject=""Gigasax Disk Space""")
+                Console.WriteLine("         title=""Free space on Gigasax (GiB):"" />")
                 Console.WriteLine("        <styles>")
                 Console.WriteLine("            <style type=""text/css"" media=""all"">")
-                Console.WriteLine("         body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }")
-                Console.WriteLine("         h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }")
-                Console.WriteLine("         table { margin: 4px; border-style: ridge; border-width: 2px; }")
-                Console.WriteLine("         .table-header { color: white; background-color: #8080FF; }")
-                Console.WriteLine("         .table-row { background-color: #D8D8FF; }")
-                Console.WriteLine("         .table-alternate-row { background-color: #C0C0FF; }")
+                Console.WriteLine("            body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }")
+                Console.WriteLine("            h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }")
+                Console.WriteLine("            table { margin: 4px; border-style: ridge; border-width: 2px; }")
+                Console.WriteLine("            .table-header { color: white; background-color: #8080FF; }")
+                Console.WriteLine("            .table-row { background-color: #D8D8FF; }")
+                Console.WriteLine("            .table-alternate-row { background-color: #C0C0FF; }")
                 Console.WriteLine("            </style>")
                 Console.WriteLine("        </styles>")
                 Console.WriteLine("        <frequency daily=""false"" dayofweeklist=""Wednesday"" />")
@@ -615,6 +636,7 @@ Module modMain
                 Console.WriteLine("    </report>")
             End If
             Console.WriteLine("</reports>")
+            Console.WriteLine()
 
             Console.WriteLine("Program written by Matthew Monroe for the Department of Energy (PNNL, Richland, WA) in 2010")
             Console.WriteLine("Version: " & GetAppVersion())
@@ -623,7 +645,7 @@ Module modMain
             Console.WriteLine("E-mail: matthew.monroe@pnnl.gov or matt@alchemistmatt.com")
             Console.WriteLine("Website: http://omics.pnl.gov/ or http://panomics.pnnl.gov/")
 
-            ' Delay for 1500 msec in case the user double clicked this file from within Windows Explorer (or started the program via a shortcut)
+            ' Delay for 750 msec in case the user double clicked this file from within Windows Explorer (or started the program via a shortcut)
             Threading.Thread.Sleep(750)
 
         Catch ex As Exception
