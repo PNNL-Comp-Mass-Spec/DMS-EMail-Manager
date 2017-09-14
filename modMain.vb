@@ -5,6 +5,7 @@ Imports System.IO
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Xml
+Imports PRISM
 
 ' Program written in 2004 by Dave Clark and Nate Trimble
 ' Ported to .NET 2008 in 2010 by Matthew Monroe
@@ -14,7 +15,7 @@ Module modMain
     Private Const PROGRAM_DATE As String = "November 11, 2016"
     Private Const NO_DATA As String = "No Data Returned"
 
-    Private myLogger As PRISM.Logging.ILogger
+    Private mLogger As ILogger
 
     Private mXMLSettingsFilePath As String = String.Empty
     Private mPreviewMode As Boolean = False
@@ -22,7 +23,7 @@ Module modMain
 
     Public Function Main() As Integer
 
-        Dim objParseCommandLine As New clsParseCommandLine
+        Dim objParseCommandLine As New clsParseCommandLine()
         Dim blnProceed As Boolean
 
         mXMLSettingsFilePath = String.Empty
@@ -44,16 +45,15 @@ Module modMain
                 GenerateReports(mXMLSettingsFilePath)
             End If
 
+            Return 0
+
         Catch ex As Exception
-            ShowError("Error occurred in modMain->Main: " & ex.Message)
-            ShowError(PRISM.clsStackTraceFormatter.GetExceptionStackTraceMultiLine(ex))
+            ShowError("Error occurred in modMain->Main: " & ex.Message, ex)
+
+            ' Sleep for 750 msec
+            Threading.Thread.Sleep(750)
             Return -1
         End Try
-
-        ' Sleep for 750 msec
-        Threading.Thread.Sleep(750)
-
-        Return 0
 
     End Function
 
@@ -130,8 +130,7 @@ Module modMain
                         End If
                     Catch ex As Exception
                         ' Unable to translate data into string; ignore errors here
-                        ShowError("Exception in GetReport: " & ex.Message)
-                        ShowError(PRISM.clsStackTraceFormatter.GetExceptionStackTraceMultiLine(ex))
+                        ShowError("Exception in GetReport: " & ex.Message, ex)
                     End Try
 
                     rowStr &= "</td>"
@@ -182,9 +181,9 @@ Module modMain
         logFilePath = Path.Combine(dirName, programName & ".log")
 
         Try
-            myLogger = New PRISM.Logging.clsFileLogger(logFilePath)
+            mLogger = New clsFileLogger(logFilePath)
         Catch ex As Exception
-            ShowError("Error initializing log file", False)
+            ShowError("Error initializing log file", ex, False)
         End Try
 
         If File.Exists(strSettingsFilePath) Then
@@ -263,7 +262,7 @@ Module modMain
                     End If
                 Catch ex As Exception
                     ' Unable to translate data into string; ignore errors here
-                    ShowError("Exception in GetWMIReport: " & ex.Message)
+                    ShowError("Exception in GetWMIReport: " & ex.Message, ex)
                 End Try
 
                 rowStr &= "</td>"
@@ -283,19 +282,23 @@ Module modMain
 
     End Function
 
-    Private Sub ShowError(strMessage As String)
-        ShowError(strMessage, True)
+    Private Sub ShowError(strMessage As String, Optional blnLogToFile As Boolean = True)
+        ShowError(strMessage, Nothing, blnLogToFile)
     End Sub
 
-    Private Sub ShowError(strMessage As String, blnLogToFile As Boolean)
-        Console.WriteLine(strMessage)
+    Private Sub ShowError(strMessage As String, ex As Exception)
+        ShowError(strMessage, ex, True)
+    End Sub
+
+    Private Sub ShowError(strMessage As String, ex As Exception, blnLogToFile As Boolean)
+        ConsoleMsgUtils.ShowError(strMessage, ex)
         If blnLogToFile Then
             Try
-                If Not myLogger Is Nothing Then
-                    myLogger.PostEntry(strMessage, PRISM.Logging.ILogger.logMsgType.logError, True)
+                If Not mLogger Is Nothing Then
+                    mLogger.PostEntry(strMessage, logMsgType.logError, True)
                 End If
-            Catch ex As Exception
-                Console.WriteLine("Error writing to log file")
+            Catch ex2 As Exception
+                ConsoleMsgUtils.ShowError("Error writing to log file", ex2)
             End Try
         End If
     End Sub
@@ -327,8 +330,7 @@ Module modMain
             ' Set this to true so that the exception message is returned in the e-mail
             reportHasData = True
             report = "Exception getting report from database: " & ex.Message
-            ShowError(report)
-            ShowError(PRISM.clsStackTraceFormatter.GetExceptionStackTraceMultiLine(ex))
+            ShowError(reportText, ex)
         End Try
 
         Return report
@@ -401,8 +403,7 @@ Module modMain
                 objClient.Send(msg)
             End If
         Catch ex As Exception
-            ShowError("Exception sending mail message: " & ex.Message)
-            ShowError(PRISM.clsStackTraceFormatter.GetExceptionStackTraceMultiLine(ex))
+            ShowError("Exception sending mail message: " & ex.Message, ex)
         End Try
 
     End Sub
@@ -435,14 +436,14 @@ Module modMain
                 generateReport = True
             End If
         Catch ex As Exception
-            ShowError("Exception reading frequency or dayofweeklist section from XML file: " & ex.Message)
+            ShowError("Exception reading frequency or dayofweeklist section from XML file: " & ex.Message, ex)
             generateReport = True
         End Try
 
         Try
             strReportName = xn_report.Attributes.GetNamedItem("name").Value
         Catch ex As Exception
-            ShowError("Exception reading report name from XML file: " & ex.Message)
+            ShowError("Exception reading report name from XML file: " & ex.Message, ex)
         End Try
 
         If Not generateReport Then
@@ -502,8 +503,7 @@ Module modMain
                 ShowError("Configuration file contains no report sections to process.")
             End If
         Catch ex As Exception
-            ShowError("Exception reading XML file: " & ex.Message)
-            ShowError(PRISM.clsStackTraceFormatter.GetExceptionStackTraceMultiLine(ex))
+            ShowError("Exception reading XML file: " & ex.Message, ex)
         End Try
 
     End Sub
