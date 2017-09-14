@@ -377,7 +377,17 @@ Module modMain
 
     Private Sub MailReport(reportNode As XmlNode, reportText As String)
 
-        Dim msg = New Net.Mail.MailMessage(strFrom, strTo) With {
+        Dim strFrom = GetXMLAttribute(reportNode, "mail", "from")
+        Dim strTo = GetXMLAttribute(reportNode, "mail", "to")
+
+        ' Recipients addresses need to be separated by commas; auto-convert semi-colons to commas
+        Dim delimiters = New Char() {","c, ";"c}
+
+        Dim recipients = strTo.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
+
+        Dim formattedRecipients = String.Join(",", recipients)
+
+        Dim msg = New Net.Mail.MailMessage(strFrom, formattedRecipients) With {
             .BodyEncoding = Encoding.ASCII,
             .IsBodyHtml = True,
             .Subject = GetXMLAttribute(reportNode, "mail", "subject")
@@ -394,7 +404,7 @@ Module modMain
         Try
             If mPreviewMode Then
                 Console.WriteLine()
-                Console.WriteLine("Preview of data to be e-mailed to " & strTo)
+                Console.WriteLine("Preview of data to be e-mailed to " & formattedRecipients)
                 Console.WriteLine(reportText)
             Else
                 Dim objClient = New Net.Mail.SmtpClient(GetXMLAttribute(reportNode, "mail", "server"))
