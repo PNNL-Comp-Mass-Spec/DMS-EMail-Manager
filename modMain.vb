@@ -12,7 +12,7 @@ Imports PRISM
 
 Module modMain
 
-    Private Const PROGRAM_DATE As String = "September 14, 2017"
+    Private Const PROGRAM_DATE As String = "October 13, 2017"
     Private Const NO_DATA As String = "No Data Returned"
 
     Private mLogger As ILogger
@@ -172,16 +172,10 @@ Module modMain
 
     Private Sub GenerateReports(strSettingsFilePath As String)
 
-        Dim logFilePath As String
-        Dim programName As String
-        Dim dirName As String
-
-        programName = Path.GetFileNameWithoutExtension(GetAppPath)
-        dirName = Path.GetDirectoryName(GetAppPath)
-        logFilePath = Path.Combine(dirName, programName & ".log")
+        Dim programName = Path.GetFileNameWithoutExtension(GetAppPath)
 
         Try
-            mLogger = New clsFileLogger(logFilePath)
+            mLogger = New clsFileLogger(programName)
         Catch ex As Exception
             ShowError("Error initializing log file", ex, False)
         End Try
