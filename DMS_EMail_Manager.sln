@@ -1,6 +1,9 @@
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "DMS_EMail_Manager", "DMS_EMail_Manager.vbproj", "{2B6C0826-58A9-4FB4-B0A5-9CD1429ABB26}"
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DMS_Email_Manager", "DMS_Email_Manager.csproj", "{FED59C45-7E5A-4E9F-9AC2-F2BAF8F089B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,12 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2B6C0826-58A9-4FB4-B0A5-9CD1429ABB26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2B6C0826-58A9-4FB4-B0A5-9CD1429ABB26}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2B6C0826-58A9-4FB4-B0A5-9CD1429ABB26}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2B6C0826-58A9-4FB4-B0A5-9CD1429ABB26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FED59C45-7E5A-4E9F-9AC2-F2BAF8F089B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FED59C45-7E5A-4E9F-9AC2-F2BAF8F089B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FED59C45-7E5A-4E9F-9AC2-F2BAF8F089B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FED59C45-7E5A-4E9F-9AC2-F2BAF8F089B3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {04A7604F-7B8A-49CE-8F9A-A4CDB8518277}
 	EndGlobalSection
 EndGlobal
