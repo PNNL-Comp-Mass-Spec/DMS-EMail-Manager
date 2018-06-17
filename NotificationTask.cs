@@ -182,44 +182,74 @@ namespace DMS_Email_Manager
 
         private void ComputeNextRunTime()
         {
+            DateTime nextRunUtc;
+            TimeSpan incrementLength;
+
             if (DelayType == FrequencyDelay.AtTimeOfDay)
             {
                 DelayPeriod = Period.Zero;
 
                 if (LastRun == DateTime.MinValue)
                 {
-                    LastRun = ConstructTimeForToday(TimeOfDay).AddDays(-1).ToUniversalTime();
-                }
-
-                var nextRun = ConstructTimeForToday(TimeOfDay);
-                while (nextRun < DateTime.Now)
+                    LastRun = ConstructTimeForToday(TimeOfDay).ToUniversalTime();
+                } else
                 {
-                    nextRun = nextRun.AddDays(1);
+                    var lastRunLocalTime = LastRun.ToLocalTime();
+                    if (lastRunLocalTime.Hour != TimeOfDay.Hour || lastRunLocalTime.Minute != TimeOfDay.Minute)
+                    {
+                        // Adjust LastRun to be the correct time of day
+                        var updatedLastRun = ConstructTimeForDate(LastRun, TimeOfDay).ToUniversalTime();
+                        OnWarningEvent(string.Format("Updating LastRun from {0:g} to {1:g} for report {2}",
+                                                     LastRun.ToLocalTime(), updatedLastRun.ToLocalTime(), TaskID));
+                        LastRun = updatedLastRun;
+                    }
                 }
 
-                // Note that we'll consider the DaysOfWeek filter just prior to actually retrieving the data
-                NextRun = nextRun.ToUniversalTime();
-
-                return;
+                incrementLength = new TimeSpan(1, 0, 0, 0);
+                nextRunUtc = LastRun.Add(incrementLength);
             }
-
+            else
             {
+                DelayPeriod = GetPeriodForInternal(DelayInterval, DelayIntervalUnits);
+                if (Equals(DelayPeriod, Period.Zero))
+                {
+                    OnWarningEvent(string.Format("Invalid DelayInterval {0} or DelayIntervalUnits {1} for report {2}; changing to run once a day",
+                                                 DelayInterval, DelayIntervalUnits.ToString(), TaskID));
+                    DelayInterval = 1;
+                    DelayIntervalUnits = FrequencyInterval.Day;
+                    DelayPeriod = Period.FromDays(1);
+                }
+
+                if (LastRun == DateTime.MinValue)
+                {
+                    LastRun = DateTime.UtcNow;
+                }
+
+                nextRunUtc = LastRun.Add(DelayPeriodAsTimeSpan);
+                incrementLength = DelayPeriodAsTimeSpan;
             }
 
-            if (LastRun == DateTime.MinValue)
+            while (nextRunUtc < DateTime.UtcNow)
             {
-                LastRun = ConstructTimeForToday(TimeOfDay).Add(-DelayPeriodAsTimeSpan).ToUniversalTime();
+                nextRunUtc = nextRunUtc.Add(incrementLength);
             }
 
+            // Note that we'll consider the DaysOfWeek filter just prior to actually retrieving the data
+            NextRun = nextRunUtc.ToUniversalTime();
+
+        }
+
+        private DateTime ConstructTimeForDate(DateTime referenceDate, LocalTime timeOfDay)
+        {
+            var referenceDateLocal = referenceDate.ToLocalTime();
+            var dateTime = new DateTime(referenceDateLocal.Year, referenceDateLocal.Month, referenceDateLocal.Day, timeOfDay.Hour, timeOfDay.Minute, 0);
+            return dateTime;
         }
 
         private DateTime ConstructTimeForToday(LocalTime timeOfDay)
         {
-            var currentLocalTime = DateTime.Now;
-            var dateTime = new DateTime(currentLocalTime.Year, currentLocalTime.Month, currentLocalTime.Day, timeOfDay.Hour, timeOfDay.Minute, 0);
-            return dateTime;
+            return ConstructTimeForDate(DateTime.Now, timeOfDay);
         }
-
 
         private void DefineNotification(DataSourceBase dataSource, DateTime lastRun, EmailMessageSettings emailSettings)
         {
@@ -228,6 +258,10 @@ namespace DMS_Email_Manager
             EmailSettings = emailSettings;
         }
 
+        private Period GetPeriodForInternal(int interval, FrequencyInterval intervalUnits)
+        {
+            // DelayType is FrequencyDelay.IntervalBased
+            switch (intervalUnits)
             {
                 case FrequencyInterval.Minute:
                     return Period.FromMinutes(interval);
