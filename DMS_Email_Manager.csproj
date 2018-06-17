@@ -50,6 +50,7 @@
     <Compile Include="DataSourceWMI.cs" />
     <Compile Include="DMSEmailManager.cs" />
     <Compile Include="DMSEmailManagerOptions.cs" />
+    <Compile Include="EmailMessageSettings.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="NotificationTask.cs" />

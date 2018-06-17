@@ -54,7 +54,10 @@ namespace DMS_Email_Manager
 
         public event ResultsAvailableEventEventHandler TaskResultsAvailable;
 
-        public delegate void ResultsAvailableEventEventHandler(TaskResults results, SortedSet<string> emailList);
+        public delegate void ResultsAvailableEventEventHandler(
+            TaskResults results,
+            EmailMessageSettings emailSettings,
+            DataSourceSqlStoredProcedure postMailIdListHook);
 
         #endregion
 
@@ -99,10 +102,9 @@ namespace DMS_Email_Manager
         public FrequencyDelay DelayType { get; private set; }
 
         /// <summary>
-        /// List of e-mail addresses to send the query results to
+        /// Email settings
         /// </summary>
-        /// <remarks>If empty, will display the results via a MessageEvent</remarks>
-        public SortedSet<string> EmailList { get; } = new SortedSet<string>();
+        public EmailMessageSettings EmailSettings { get; private set; }
 
         /// <summary>
         /// Last runtime (UTC Date)
@@ -134,13 +136,13 @@ namespace DMS_Email_Manager
         public NotificationTask(
             string taskID,
             DataSourceBase dataSource,
+            EmailMessageSettings emailSettings,
             DateTime lastRun,
-            IEnumerable<string> emailList,
             int delayInterval = 1,
-            FrequencyInterval delayIntervalUnits = FrequencyInterval.Hourly)
+            FrequencyInterval delayIntervalUnits = FrequencyInterval.Day)
         {
             TaskID = taskID;
-            DefineNotification(dataSource, lastRun, emailList);
+            DefineNotification(dataSource, lastRun, emailSettings);
 
             UpdateRecurringInterval(delayInterval, delayIntervalUnits);
         }
@@ -151,12 +153,12 @@ namespace DMS_Email_Manager
         public NotificationTask(
             string taskID,
             DataSourceBase dataSource,
-            IEnumerable<string> emailList,
+            EmailMessageSettings emailSettings,
             DateTime lastRun,
             LocalTime timeOfDay)
         {
             TaskID = taskID;
-            DefineNotification(dataSource, lastRun, emailList);
+            DefineNotification(dataSource, lastRun, emailSettings);
 
             UpdateTimeOfDayInterval(timeOfDay);
         }
@@ -167,13 +169,13 @@ namespace DMS_Email_Manager
         public NotificationTask(
             string taskID,
             DataSourceBase dataSource,
-            IEnumerable<string> emailList,
+            EmailMessageSettings emailSettings,
             DateTime lastRun,
             LocalTime timeOfDay,
             SortedSet<DayOfWeek> daysOfWeek)
         {
             TaskID = taskID;
-            DefineNotification(dataSource, lastRun, emailList);
+            DefineNotification(dataSource, lastRun, emailSettings);
 
             UpdateTimeOfDayInterval(timeOfDay, daysOfWeek);
         }
@@ -219,18 +221,14 @@ namespace DMS_Email_Manager
         }
 
 
-        private void DefineNotification(DataSourceBase dataSource, DateTime lastRun, IEnumerable<string> emailList)
+        private void DefineNotification(DataSourceBase dataSource, DateTime lastRun, EmailMessageSettings emailSettings)
         {
             DataSource = dataSource;
             LastRun = lastRun;
+            EmailSettings = emailSettings;
+        }
 
-            EmailList.Clear();
-            foreach (var item in emailList)
             {
-                if (EmailList.Contains(item))
-                    continue;
-
-                EmailList.Add(item);
                 case FrequencyInterval.Minute:
                     return Period.FromMinutes(interval);
                 case FrequencyInterval.Hour:
@@ -253,12 +251,12 @@ namespace DMS_Email_Manager
         /// Send the results to the caller via an event
         /// </summary>
         /// <param name="results">Report data</param>
-        /// <param name="emailList">List of e-mail recipients</param>
         /// <remarks>
         /// If no listeners are subscribed to event TaskResultsAvailable,
         /// will report the results via event StatusEvent
         /// </remarks>
-        private void OnResultsAvailable(TaskResults results, SortedSet<string> emailList)
+        private void OnResultsAvailable(
+            TaskResults results)
         {
             if (TaskResultsAvailable == null)
             {
@@ -274,7 +272,7 @@ namespace DMS_Email_Manager
                 return;
             }
 
-            TaskResultsAvailable?.Invoke(results, emailList);
+            TaskResultsAvailable?.Invoke(results, EmailSettings, PostMailIdListHook);
         }
 
         /// <summary>
@@ -285,7 +283,6 @@ namespace DMS_Email_Manager
         /// <remarks></remarks>
         public bool RunTask()
         {
-
             UpdateNextRuntime();
 
             var success = RunTask(false);
@@ -304,7 +301,7 @@ namespace DMS_Email_Manager
             {
                 var results = DataSource.GetData();
 
-                OnResultsAvailable(results, EmailList);
+                OnResultsAvailable(results);
 
                 return true;
             }
