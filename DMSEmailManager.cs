@@ -45,7 +45,16 @@ namespace DMS_Email_Manager
         {
             Options = options;
 
-            if (string.IsNullOrWhiteSpace(Options.TaskDefinitionsFilePath))
+            // Configure logging
+            LogMessagesToFile = Options.LogMessages;
+
+            if (!string.IsNullOrWhiteSpace(Options.LogDirPath))
+            {
+                LogFolderPath = Options.LogDirPath;
+            }
+
+            mLogFileUsesDateStamp = true;
+            ShowMessage("Starting the DMS Email Manager");
             {
                 throw new ArgumentException("TaskDefinitionsFile not defined", nameof(Options.TaskDefinitionsFilePath));
             }
