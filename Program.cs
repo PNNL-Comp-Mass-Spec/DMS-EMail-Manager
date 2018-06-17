@@ -62,9 +62,6 @@ namespace DMS_Email_Manager
                     return -1;
                 }
 
-                options.OutputSetOptions();
-
-
                 var converter = new DMSEmailManager(mOptions);
 
                 converter.ErrorEvent += DMSEmailManager_ErrorEvent;

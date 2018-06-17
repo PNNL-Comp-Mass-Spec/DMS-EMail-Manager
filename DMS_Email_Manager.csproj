@@ -56,6 +56,7 @@
     <Compile Include="NotificationTask.cs" />
     <Compile Include="DataSourceBase.cs" />
     <Compile Include="TaskResults.cs" />
+    <Compile Include="TaskRuntimeInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
