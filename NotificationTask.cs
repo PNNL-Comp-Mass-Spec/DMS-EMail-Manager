@@ -40,12 +40,12 @@ namespace DMS_Email_Manager
         public enum FrequencyInterval
         {
             Undefined = 0,
-            Minutely = 1,
-            Hourly = 2,
-            Daily = 3,
-            Weekly = 4,
-            Monthly = 5,
-            Yearly = 6
+            Minute = 1,
+            Hour = 2,
+            Day = 3,
+            Week = 4,
+            Month = 5,
+            Year = 6
         }
 
         #endregion
@@ -201,31 +201,7 @@ namespace DMS_Email_Manager
                 return;
             }
 
-            switch (DelayIntervalUnits)
             {
-                case FrequencyInterval.Minutely:
-                    DelayPeriod = Period.FromMinutes(DelayInterval);
-                    break;
-                case FrequencyInterval.Hourly:
-                    DelayPeriod = Period.FromHours(DelayInterval);
-                    break;
-                case FrequencyInterval.Daily:
-                    DelayPeriod = Period.FromDays(DelayInterval);
-                    break;
-                case FrequencyInterval.Weekly:
-                    DelayPeriod = Period.FromWeeks(DelayInterval);
-                    break;
-                case FrequencyInterval.Monthly:
-                    DelayPeriod = Period.FromMonths(DelayInterval);
-                    break;
-                case FrequencyInterval.Yearly:
-                    DelayPeriod = Period.FromYears(DelayInterval);
-                    break;
-                default:
-                    // Includes FrequencyInterval.Undefined:
-                    DelayPeriod = Period.Zero;
-                    break;
-
             }
 
             if (LastRun == DateTime.MinValue)
@@ -255,8 +231,22 @@ namespace DMS_Email_Manager
                     continue;
 
                 EmailList.Add(item);
+                case FrequencyInterval.Minute:
+                    return Period.FromMinutes(interval);
+                case FrequencyInterval.Hour:
+                    return Period.FromHours(interval);
+                case FrequencyInterval.Day:
+                    return Period.FromDays(interval);
+                case FrequencyInterval.Week:
+                    return Period.FromWeeks(interval);
+                case FrequencyInterval.Month:
+                    return Period.FromMonths(interval);
+                case FrequencyInterval.Year:
+                    return Period.FromYears(interval);
+                default:
+                    // Includes FrequencyInterval.Undefined:
+                    return Period.Zero;
             }
-
         }
 
         /// <summary>
