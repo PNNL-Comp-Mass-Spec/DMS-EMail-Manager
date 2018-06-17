@@ -128,6 +128,13 @@ namespace DMS_Email_Manager
         /// <remarks>Will either run daily or on the days specified DaysOfWeek</remarks>
         public LocalTime TimeOfDay { get; set; }
 
+        /// <summary>
+        /// Optional stored procedure to call after a task runs
+        /// If the report contains data rows, will send the list of ID values to the given stored procedure
+        /// </summary>
+        /// <remarks>The first column of data is assumed to have the row ID</remarks>
+        public DataSourceSqlStoredProcedure PostMailIdListHook { get; set; }
+
         #endregion
 
         /// <summary>

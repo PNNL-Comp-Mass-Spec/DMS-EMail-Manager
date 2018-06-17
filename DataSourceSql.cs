@@ -6,8 +6,8 @@ namespace DMS_Email_Manager
 {
     internal abstract class DataSourceSql : DataSourceBase
     {
-        private const int CONNECTION_TIMEOUT_SECONDS = 120;
-        private const int QUERY_TIMEOUT_SECONDS = 600;
+        public const int CONNECTION_TIMEOUT_SECONDS = 120;
+        public const int QUERY_TIMEOUT_SECONDS = 600;
 
         /// <summary>
         /// SQL Server name

@@ -178,6 +178,8 @@ namespace DMS_Email_Manager
                                 ex);
                 return;
             }
+
+            SendResultIDsToPostMailHook(results, postMailIdListHook);
         }
 
         private XElement GetChildElement(string reportName, XContainer report, string childNodeName, bool warnIfMissing = true)
@@ -513,6 +515,32 @@ namespace DMS_Email_Manager
                         continue;
                     }
 
+                    var postMailHookInfo = GetChildElement(reportName, report, "postMailIdListHook", false);
+                    if (postMailHookInfo != null)
+                    {
+                        var postMailServer = GetElementAttribValue(postMailHookInfo, "server", string.Empty);
+                        var postMailDatabase = GetElementAttribValue(postMailHookInfo, "database", string.Empty);
+                        var postMailProcedure = GetElementAttribValue(postMailHookInfo, "procedure", string.Empty);
+
+                        if (string.IsNullOrWhiteSpace(postMailServer))
+                        {
+                            ShowWarning(string.Format("Error in report definition {0}; server not defined in the postMailHook element", reportName));
+                        }
+                        else if (string.IsNullOrWhiteSpace(postMailDatabase))
+                        {
+                            ShowWarning(string.Format("Error in report definition {0}; database not defined in the postMailHook element", reportName));
+                        }
+                        else if (string.IsNullOrWhiteSpace(postMailProcedure))
+                        {
+                            ShowWarning(string.Format("Error in report definition {0}; procedure not defined in the postMailHook element", reportName));
+                        }
+                        else
+                        {
+                            var postMailHook = new DataSourceSqlStoredProcedure(reportName, postMailServer, postMailDatabase, postMailProcedure);
+                            task.PostMailIdListHook = postMailHook;
+                        }
+                    }
+
                     if (mTasks.ContainsKey(reportName))
                         mTasks[reportName] = task;
                     else
@@ -558,6 +586,85 @@ namespace DMS_Email_Manager
 
             throw new NotImplementedException();
         }
+
+        private void SendResultIDsToPostMailHook(TaskResults results, DataSourceSqlStoredProcedure postMailIdListHook)
+        {
+
+            try
+            {
+                if (postMailIdListHook == null)
+                    return;
+
+                if (string.IsNullOrWhiteSpace(postMailIdListHook.ServerName) ||
+                    string.IsNullOrWhiteSpace(postMailIdListHook.DatabaseName) ||
+                    string.IsNullOrWhiteSpace(postMailIdListHook.StoredProcedureName))
+                {
+                    ShowWarning(string.Format(
+                                    "Skipping sending the results ID list to the post mail stored procedure for report {0} " +
+                                    "since Server, Database, or Stored Procedure name is empty", results.ReportName));
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(postMailIdListHook.StoredProcParameter))
+                {
+                    ShowWarning(string.Format(
+                                    "Skipping sending the results ID list to the post mail stored procedure for report {0} " +
+                                    "since the storced procedure parameter name is not defined; " +
+                                    "define the first parameter name using parameter in the postMailIdListHook section", results.ReportName));
+                    return;
+                }
+
+
+                var resultIdList = new List<string>();
+
+                foreach (var dataRow in results.DataRows)
+                {
+                    if (dataRow.Count == 0 || string.IsNullOrWhiteSpace(dataRow[0]))
+                        continue;
+
+                    resultIdList.Add(dataRow[0]);
+                }
+
+                var connStr = string.Format("Data Source={0};Initial Catalog={1};Integrated Security=SSPI;Connection Timeout={2};",
+                                            postMailIdListHook.ServerName, postMailIdListHook.DatabaseName, DataSourceSql.CONNECTION_TIMEOUT_SECONDS);
+
+                var cmd = new SqlCommand(postMailIdListHook.StoredProcedureName)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+
+                var paramName = "@" + postMailIdListHook.StoredProcParameter;
+                var sqlParam = new SqlParameter(paramName, postMailIdListHook.StoredProcParamType, postMailIdListHook.StoredProcParamLength)
+                {
+                    Value = string.Join(",", resultIdList)
+                };
+
+                cmd.Parameters.Add(sqlParam);
+
+                var spRunner = new clsExecuteDatabaseSP(connStr)
+                {
+                    TimeoutSeconds = DataSourceSql.QUERY_TIMEOUT_SECONDS
+                };
+
+                var errorCode = spRunner.ExecuteSP(cmd, 1);
+
+                if (errorCode != 0)
+                {
+                    ShowWarning(string.Format(
+                                    "Procedure {0} in database {1} on server {2} returned error code {3}",
+                                    postMailIdListHook.StoredProcedureName,
+                                    postMailIdListHook.DatabaseName,
+                                    postMailIdListHook.ServerName,
+                                    errorCode));
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleException(string.Format(
+                                    "Error sending the results ID list to the post mail stored procedure for report {0}", results.ReportName),
+                                ex);
+
+            }
         }
 
         public bool Start()

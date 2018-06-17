@@ -14,6 +14,24 @@ namespace DMS_Email_Manager
         public string StoredProcedureName { get; set; }
 
         /// <summary>
+        /// First parameter name for the stored procedure
+        /// </summary>
+        /// <remarks>Used by SendResultIDsToPostMailHook</remarks>
+        public string StoredProcParameter { get; set; }
+
+        /// <summary>
+        /// Field size of the StoredProcParameter (defaults to 2000)
+        /// </summary>
+        /// <remarks>Used by SendResultIDsToPostMailHook</remarks>
+        public int StoredProcParamLength { get; set; }
+
+        /// <summary>
+        /// Field type of the StoredProcParameter (defaults to SqlDbType.VarChar)
+        /// </summary>
+        /// <remarks>Used by SendResultIDsToPostMailHook</remarks>
+        public SqlDbType StoredProcParamType { get; set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="reportName">Report name (used for logging)</param>
@@ -27,6 +45,10 @@ namespace DMS_Email_Manager
             DatabaseName = databaseName;
             StoredProcedureName = storedProcedureName;
             SourceType = DataSourceType.StoredProcedure;
+
+            StoredProcParameter = string.Empty;
+            StoredProcParamLength = 2000;
+            StoredProcParamType = SqlDbType.VarChar;
         }
 
         /// <summary>
@@ -37,7 +59,7 @@ namespace DMS_Email_Manager
         {
             try
             {
-                var results = base.GetSqlData(CommandType.StoredProcedure, StoredProcedureName);
+                var results = GetSqlData(CommandType.StoredProcedure, StoredProcedureName);
                 return results;
             }
             catch (Exception ex)
