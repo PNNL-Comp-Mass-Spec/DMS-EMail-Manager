@@ -20,18 +20,18 @@ namespace DMS_Email_Manager
         public string DatabaseName { get; internal set; }
 
 
-        protected TaskResults GetSqlData(CommandType text, string queryOrProcedureName)
+        protected TaskResults GetSqlData(CommandType commandType, string queryOrProcedureName)
         {
             var connStr = string.Format("Data Source={0};Initial Catalog={1};Integrated Security=SSPI;Connection Timeout={2};",
                                         ServerName, DatabaseName, CONNECTION_TIMEOUT_SECONDS);
 
-            var results = new TaskResults(ReportTitle);
+            var results = new TaskResults(ReportName);
 
             using (var dbConn = new SqlConnection(connStr))
             {
                 using (var sqlCmd= new SqlCommand(queryOrProcedureName, dbConn))
                 {
-                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.CommandType = commandType;
                     sqlCmd.CommandTimeout = QUERY_TIMEOUT_SECONDS;
 
                     dbConn.Open();

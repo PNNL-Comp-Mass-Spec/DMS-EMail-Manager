@@ -16,13 +16,13 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="title"></param>
+        /// <param name="reportName">Report name (used for logging)</param>
         /// <param name="serverName"></param>
         /// <param name="databaseName"></param>
         /// <param name="storedProcedureName"></param>
-        public DataSourceSqlStoredProcedure(string title, string serverName, string databaseName, string storedProcedureName)
+        public DataSourceSqlStoredProcedure(string reportName, string serverName, string databaseName, string storedProcedureName)
         {
-            ReportTitle = title;
+            ReportName = reportName;
             ServerName = serverName;
             DatabaseName = databaseName;
             StoredProcedureName = storedProcedureName;
@@ -43,10 +43,10 @@ namespace DMS_Email_Manager
             catch (Exception ex)
             {
                 var errMsg = string.Format("Error retrieving results from stored procedure {0} in database {1} for report {2}",
-                                           StoredProcedureName, DatabaseName, ReportTitle);
+                                           StoredProcedureName, DatabaseName, ReportName);
                 OnErrorEvent(errMsg, ex);
 
-                var results = new TaskResults(ReportTitle);
+                var results = new TaskResults(ReportName);
                 results.DefineColumns(new List<string> {"Error"});
                 results.AddDataRow(new List<string> { errMsg });
                 return results;

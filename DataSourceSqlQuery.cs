@@ -17,13 +17,13 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="title"></param>
+        /// <param name="reportName">Report name (used for logging)</param>
         /// <param name="serverName"></param>
         /// <param name="databaseName"></param>
         /// <param name="query"></param>
-        public DataSourceSqlQuery(string title, string serverName, string databaseName, string query)
+        public DataSourceSqlQuery(string reportName, string serverName, string databaseName, string query)
         {
-            ReportTitle = title;
+            ReportName = reportName;
             ServerName = serverName;
             DatabaseName = databaseName;
             Query = query;
@@ -44,10 +44,10 @@ namespace DMS_Email_Manager
             catch (Exception ex)
             {
                 var errMsg = string.Format("Error retrieving results from database {0} using a query for report {1}",
-                                           DatabaseName, ReportTitle);
+                                           DatabaseName, ReportName);
                 OnErrorEvent(errMsg, ex);
 
-                var results = new TaskResults(ReportTitle);
+                var results = new TaskResults(ReportName);
                 results.DefineColumns(new List<string> { "Error" });
                 results.AddDataRow(new List<string> { errMsg });
                 return results;

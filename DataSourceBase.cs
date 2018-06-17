@@ -20,9 +20,9 @@ namespace DMS_Email_Manager
         public DataSourceType SourceType { get; internal set; }
 
         /// <summary>
-        /// Report title
+        /// Report name (used for logging)
         /// </summary>
-        public string ReportTitle { get; internal set; }
+        public string ReportName { get; internal set; }
 
         /// <summary>
         /// Retrieve data from this data source

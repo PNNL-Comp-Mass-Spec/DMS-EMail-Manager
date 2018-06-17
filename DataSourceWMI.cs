@@ -22,12 +22,12 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="title"></param>
+        /// <param name="reportName">Report name (used for logging)</param>
         /// <param name="wmiHostName"></param>
         /// <param name="query"></param>
-        public DataSourceWMI(string title, string wmiHostName, string query)
+        public DataSourceWMI(string reportName, string wmiHostName, string query)
         {
-            ReportTitle = title;
+            ReportName = reportName;
             HostName = wmiHostName;
             Query = query;
             SourceType = DataSourceType.WMI;
@@ -48,7 +48,7 @@ namespace DMS_Email_Manager
 
             try
             {
-                var results = new TaskResults(ReportTitle);
+                var results = new TaskResults(ReportName);
 
                 var wmiPath = @"\\" + HostName + @"\root\cimv2";
 
@@ -106,7 +106,7 @@ namespace DMS_Email_Manager
                         catch (Exception ex)
                         {
                             //  Unable to translate data into string; ignore errors here
-                            OnErrorEvent(string.Format("Error retrieving results from WMI on host {0} for report {1}", HostName, ReportTitle), ex);
+                            OnErrorEvent(string.Format("Error retrieving results from WMI on host {0} for report {1}", HostName, ReportName), ex);
                         }
                     }
 
@@ -119,10 +119,10 @@ namespace DMS_Email_Manager
             catch (Exception ex)
             {
                 var errMsg = string.Format("Error retrieving results from WMI on host {0} for report {1}",
-                                           HostName, ReportTitle);
+                                           HostName, ReportName);
                 OnErrorEvent(errMsg, ex);
 
-                var results = new TaskResults(ReportTitle);
+                var results = new TaskResults(ReportName);
                 results.DefineColumns(new List<string> { "Error" });
                 results.AddDataRow(new List<string> { errMsg });
                 return results;

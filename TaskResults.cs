@@ -15,17 +15,17 @@ namespace DMS_Email_Manager
         public List<List<string>> DataRows { get; }
 
         /// <summary>
-        /// Report title
+        /// Report name
         /// </summary>
-        public string ReportTitle { get; }
+        public string ReportName { get; }
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="reportTitle"></param>
-        public TaskResults(string reportTitle)
+        /// <param name="reportName">Report name (used for logging)</param>
+        public TaskResults(string reportName)
         {
-            ReportTitle = reportTitle;
+            ReportName = reportName;
             ColumnNames = new List<string>();
             DataRows = new List<List<string>>();
 
