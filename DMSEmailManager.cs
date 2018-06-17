@@ -9,7 +9,7 @@ using static DMS_Email_Manager.NotificationTask;
 
 namespace DMS_Email_Manager
 {
-    public class DMSEmailManager : clsEventNotifier
+    public class DMSEmailManager : PRISM.FileProcessor.ProcessFilesBase
     {
         #region "Constans"
 
@@ -152,7 +152,7 @@ namespace DMS_Email_Manager
             }
             catch (Exception ex)
             {
-                OnErrorEvent("Error in main loop", ex);
+                HandleException("Error in main loop", ex);
                 return false;
             }
 
