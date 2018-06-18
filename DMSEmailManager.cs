@@ -304,8 +304,18 @@ namespace DMS_Email_Manager
         {
             var notifySettingOverride = firstLoad;
 
+
             try
             {
+                var existingTasks = new SortedSet<string>();
+                foreach (var reportName in mTasks.Keys)
+                {
+                    existingTasks.Add(reportName);
+                }
+
+                // Re-populate mTasks every time we read the report definitions file
+                mTasks.Clear();
+
                 var doc = XDocument.Load(Options.ReportDefinitionsFilePath);
 
                 var emailInfo = doc.Elements("reports").Elements("EmailInfo").FirstOrDefault();
@@ -585,18 +595,8 @@ namespace DMS_Email_Manager
 
                     if (mTasks.ContainsKey(reportName))
                     {
-                        if (firstLoad)
-                        {
-                            ShowWarning(string.Format("Duplicate report named {0} in the report definition file; only using the first instance",
-                                                      reportName));
-                        }
-                        else
-                        {
-                            // Replace the task
-                            mTasks[reportName] = task;
-                        }
-
-
+                        ShowWarning(string.Format("Duplicate report named {0} in the report definition file; only using the first instance",
+                                                  reportName));
                     }
                     else
                     {
@@ -606,13 +606,20 @@ namespace DMS_Email_Manager
 
                         ShowMessage(string.Format("Added report {0} with frequency {1}, e-mailing {2}", reportName, frequencyDescription,
                                                   task.EmailSettings.Recipients));
-                    }
 
-                    RegisterEvents(task);
-                    task.TaskResultsAvailable += Task_TaskResultsAvailable;
+                        RegisterEvents(task);
+                        task.TaskResultsAvailable += Task_TaskResultsAvailable;
+                    }
 
                 }
 
+                foreach (var reportName in existingTasks)
+                {
+                    if (!mTasks.ContainsKey(reportName))
+                    {
+                        ShowMessage(string.Format("Removed report {0}", reportName));
+                    }
+                }
 
                 return true;
             }
