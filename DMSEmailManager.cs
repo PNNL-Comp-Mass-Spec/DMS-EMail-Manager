@@ -641,6 +641,10 @@ namespace DMS_Email_Manager
                         var postMailDatabase = GetElementAttribValue(postMailHookInfo, "database", string.Empty);
                         var postMailProcedure = GetElementAttribValue(postMailHookInfo, "procedure", string.Empty);
 
+                        // This is the name of the first parameter of the stored procedure
+                        var paramName = GetElementAttribValue(postMailHookInfo, "parameter", string.Empty);
+                        var varcharLength = GetElementAttribValue(postMailHookInfo, "varcharlength", 0);
+
                         if (string.IsNullOrWhiteSpace(postMailServer))
                         {
                             ShowWarning(string.Format("Error in report definition {0}; server not defined in the postMailHook element", reportName));
@@ -653,9 +657,22 @@ namespace DMS_Email_Manager
                         {
                             ShowWarning(string.Format("Error in report definition {0}; procedure not defined in the postMailHook element", reportName));
                         }
+                        else if (string.IsNullOrWhiteSpace(paramName))
+                        {
+                            ShowWarning(string.Format("Error in report definition {0}; parameter name not defined in the postMailHook element", reportName));
+                        }
                         else
                         {
-                            var postMailHook = new DataSourceSqlStoredProcedure(reportName, postMailServer, postMailDatabase, postMailProcedure);
+                            var postMailHook = new DataSourceSqlStoredProcedure(reportName, postMailServer, postMailDatabase, postMailProcedure) {
+                                StoredProcParameter = paramName
+                            };
+
+                            if (varcharLength > 0)
+                            {
+                                postMailHook.StoredProcParamLength = varcharLength;
+                                postMailHook.StoredProcParamType = SqlDbType.VarChar;
+                            }
+
                             task.PostMailIdListHook = postMailHook;
                         }
                     }
