@@ -237,16 +237,18 @@ namespace DMS_Email_Manager
 
         private string GetCssStyle()
         {
-            var cssStyle = "<style type=\"text / css\" media=\"all\" > " +
-                           "body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }" +
-                           "h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }" +
-                           "table { margin: 4px; border-style: ridge; border-width: 2px; }" +
-                           ".table-header { color: white; background-color: #8080FF; }" +
-                           ".table-row { background-color: #D8D8FF; vertical-align:top;}" +
-                           ".table-alternate-row { background-color: #C0C0FF; vertical-align:top;}" +
-                           "</style>";
+            var cssStyle = new StringBuilder();
 
-            return cssStyle;
+            cssStyle.AppendLine("<style type=\"text / css\" media=\"all\" > ");
+            cssStyle.AppendLine(string.Format("body {{ font: {0}px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }}", Options.FontSizeBody));
+            cssStyle.AppendLine(string.Format("h3 {{ font: {0}px Verdana, Arial, Helvetica, sans-serif; }}", Options.FontSizeHeader));
+            cssStyle.AppendLine("table { margin: 4px; border-style: ridge; border-width: 2px; }");
+            cssStyle.AppendLine(".table-header { color: white; background-color: #8080FF; }");
+            cssStyle.AppendLine(".table-row { background-color: #D8D8FF; vertical-align:top;}");
+            cssStyle.AppendLine(".table-alternate-row { background-color: #C0C0FF; vertical-align:top;}");
+            cssStyle.AppendLine("</style>");
+
+            return cssStyle.ToString();
         }
 
         private string GetElementAttribValue(XElement node, string attribName, string defaultValue)
