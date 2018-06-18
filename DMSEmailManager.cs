@@ -99,6 +99,24 @@ namespace DMS_Email_Manager
             mReportDefsWatcher.Changed += ReportDefsWatcher_Changed;
         }
 
+        private void AddUpdateRuntimeInfo(KeyValuePair<string, NotificationTask> task)
+        {
+            if (mRuntimeInfo.TryGetValue(task.Key, out var taskRuntimeInfo))
+            {
+                taskRuntimeInfo.LastRun = task.Value.LastRun;
+                taskRuntimeInfo.NextRun = task.Value.NextRun;
+                taskRuntimeInfo.ExecutionCount = taskRuntimeInfo.ExecutionCount + 1;
+            }
+            else
+            {
+                var newRuntimeInfo = new TaskRuntimeInfo(task.Value.LastRun, 1)
+                {
+                    NextRun = task.Value.NextRun
+                };
+                mRuntimeInfo.Add(task.Key, newRuntimeInfo);
+            }
+
+        }
 
         private void EmailResults(
             TaskResults results,
@@ -797,6 +815,36 @@ namespace DMS_Email_Manager
             }
         }
 
+        /// <summary>
+        /// Run all tasks now, provided dayofweeklist includes today's date (or is empty)
+        /// </summary>
+        private void RunAllTasks()
+        {
+            foreach (var task in mTasks)
+            {
+                try
+                {
+                    if (task.Value.DaysOfWeek.Count > 0 && !task.Value.DaysOfWeek.Contains(DateTime.Now.DayOfWeek))
+                    {
+                        // Skip this report because it is not set to run today
+                        continue;
+                    }
+
+                    var taskRun = task.Value.RunTaskNow();
+
+                    if (!taskRun)
+                        continue;
+
+                    AddUpdateRuntimeInfo(task);
+                }
+                catch (Exception ex)
+                {
+                    HandleException("Error running task " + task.Key, ex);
+                }
+
+            }
+        }
+
         private void RunElapsedTasks()
         {
             foreach (var task in mTasks)
@@ -808,19 +856,7 @@ namespace DMS_Email_Manager
                     if (!taskRun)
                         continue;
 
-                    if (mRuntimeInfo.TryGetValue(task.Key, out var taskRuntimeInfo))
-                    {
-                        taskRuntimeInfo.LastRun = task.Value.LastRun;
-                        taskRuntimeInfo.NextRun = task.Value.NextRun;
-                        taskRuntimeInfo.ExecutionCount = taskRuntimeInfo.ExecutionCount + 1;
-                    }
-                    else
-                    {
-                        var newRuntimeInfo = new TaskRuntimeInfo(task.Value.LastRun, 1) {
-                            NextRun = task.Value.NextRun
-                        };
-                        mRuntimeInfo.Add(task.Key, newRuntimeInfo);
-                    }
+                    AddUpdateRuntimeInfo(task);
                 }
                 catch (Exception ex)
                 {
@@ -998,6 +1034,12 @@ namespace DMS_Email_Manager
                 Options.OutputSetOptions();
 
                 ReadTaskStatusFile();
+
+                if (Options.RunOnce)
+                {
+                    RunAllTasks();
+                    return true;
+                }
 
                 while (stopTime > DateTime.UtcNow)
                 {

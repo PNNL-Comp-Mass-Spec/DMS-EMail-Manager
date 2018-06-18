@@ -56,11 +56,16 @@ namespace DMS_Email_Manager
         [Option("LogDir", HelpText = "Directory to save log files")]
         public string LogDirPath { get; set; }
 
-        [Option("MaxRunTime", "Runtime", "RuntimeHours", "Hours", HelpText = "Run for this many hours, then exit (0 means run indefinitely)", HelpShowsDefault = true, Min = 0, Max = 10000)]
+        [Option("MaxRunTime", "Runtime", "RuntimeHours", "Hours",
+            HelpText = "Run for this many hours, then exit (0 means run indefinitely)",
+            HelpShowsDefault = true, Min = 0, Max = 10000)]
         public int MaxRuntimeHours { get; set; }
 
-        [Option("Preview", HelpText = "Preview the e-mail messages instead of actually sending them")]
+        [Option("Preview", "P", HelpText = "Preview the e-mail messages instead of actually sending them")]
         public bool PreviewMode { get; set; }
+
+        [Option("RunOnce", "Once", HelpText = "Load the report definitions, run each of them once, then exit the program; ignores timeOfDay")]
+        public bool RunOnce { get; set; }
 
         public static string GetAppVersion()
         {
@@ -83,7 +88,12 @@ namespace DMS_Email_Manager
             Console.WriteLine(" Header text size: {0} pt", FontSizeHeader);
             Console.WriteLine(" Body text size:   {0} pt", FontSizeBody);
 
-            if (MaxRuntimeHours > 0)
+            if (RunOnce)
+            {
+                Console.WriteLine();
+                Console.WriteLine(" Running each report once, then exiting");
+            }
+            else if (MaxRuntimeHours > 0)
             {
                 Console.WriteLine();
                 Console.WriteLine(" Max runtime: {0} hours", MaxRuntimeHours);

@@ -40,6 +40,7 @@ namespace DMS_Email_Manager
                     UsageExamples = {
                         exeName + " ReportSpecs.xml",
                         exeName + " ReportSpecs.xml /MaxRuntime:24",
+                        exeName + " ReportSpecs.xml /RunOnce",
                         exeName + " ReportSpecs.xml /EmailServer:emailgw.pnl.gov",
                         exeName + " ReportSpecs.xml /EmailServer:emailgw.pnl.gov /EmailFrom:proteomics@pnnl.gov"
                     }

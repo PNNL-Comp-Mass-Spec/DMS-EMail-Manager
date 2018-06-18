@@ -363,16 +363,16 @@ namespace DMS_Email_Manager
         }
 
         /// <summary>
-        /// Retrieve data from the data source
+        /// Retrieve data from the data source (ignores DaysOfWeek)
         /// Send the results to the email addresses in EmailList
         /// </summary>
         /// <returns>True if successful, otherwise false</returns>
-        /// <remarks></remarks>
-        public bool RunTask()
+        /// <remarks>This method updates NextRun</remarks>
+        public bool RunTaskNow()
         {
             UpdateNextRuntime();
 
-            var success = RunTask(false);
+            var success = RunTask();
             return success;
         }
 
@@ -381,11 +381,12 @@ namespace DMS_Email_Manager
         /// Send the results to the email addresses in EmailList
         /// </summary>
         /// <returns>True if successful, otherwise false</returns>
-        /// <remarks></remarks>
-        public bool RunTask(bool updateNextRun)
+        /// <remarks>This method does not update NextRun</remarks>
+        private bool RunTask()
         {
             try
             {
+
                 var results = DataSource.GetData();
 
                 OnResultsAvailable(results);
@@ -406,7 +407,7 @@ namespace DMS_Email_Manager
         /// <returns>True if data is retrieved, false if it is not retrieved</returns>
         /// <remarks>
         /// Will return false either because NextRun has not been reached
-        /// or because data retrieval is disabled on this day of the week)
+        /// or because data retrieval is disabled on this day of the week
         /// </remarks>
         public bool RunTaskNowIfRequired()
         {
@@ -417,7 +418,9 @@ namespace DMS_Email_Manager
 
             if (DaysOfWeek.Count == 0 || DaysOfWeek.Contains(DateTime.Now.DayOfWeek))
             {
-                RunTask(false);
+                RunTask();
+
+                // Return true, even if RunTaskNow returned false
                 return true;
             }
 
