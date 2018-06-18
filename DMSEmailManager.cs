@@ -235,6 +235,20 @@ namespace DMS_Email_Manager
             return valueIfMissing;
         }
 
+        private string GetCssStyle()
+        {
+            var cssStyle = "<style type=\"text / css\" media=\"all\" > " +
+                           "body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }" +
+                           "h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }" +
+                           "table { margin: 4px; border-style: ridge; border-width: 2px; }" +
+                           ".table-header { color: white; background-color: #8080FF; }" +
+                           ".table-row { background-color: #D8D8FF; vertical-align:top;}" +
+                           ".table-alternate-row { background-color: #C0C0FF; vertical-align:top;}" +
+                           "</style>";
+
+            return cssStyle;
+        }
+
         private string GetElementAttribValue(XElement node, string attribName, string defaultValue)
         {
             if (!node.HasAttributes)
@@ -269,20 +283,6 @@ namespace DMS_Email_Manager
         public override string GetErrorMessage()
         {
             return "GetErrorMessage is not supported";
-        }
-
-        private string GetCssStyle()
-        {
-            var cssStyle = "<style type=\"text / css\" media=\"all\" > " +
-                           "body { font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }" +
-                           "h3 { font: 20px Verdana, Arial, Helvetica, sans-serif; }" +
-                           "table { margin: 4px; border-style: ridge; border-width: 2px; }" +
-                           ".table-header { color: white; background-color: #8080FF; }" +
-                           ".table-row { background-color: #D8D8FF; vertical-align:top;}" +
-                           ".table-alternate-row { background-color: #C0C0FF; vertical-align:top;}" +
-                           "</style>";
-
-            return cssStyle;
         }
 
         /// <summary>
