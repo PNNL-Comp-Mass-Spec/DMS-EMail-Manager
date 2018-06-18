@@ -30,7 +30,10 @@ namespace DMS_Email_Manager
                 var parser = new CommandLineParser<DMSEmailManagerOptions>(asmName.Name, version)
                 {
                     ProgramInfo = "This program retrieves data from a SQL Server database or from WMI at regular intervals, " +
-                                  "or at a certain time of day, and e-mails that data to a given set of recipients.",
+                                  "or at a certain time of day, and e-mails that data to a given set of recipients." +
+                                  "The first command line argument must be the path to an XML file with the Email options " +
+                                  "and the report definitioins. To see an example Report Definitions file, use /E. " +
+                                  "To see an extended example Report Definitions file, use /X. ",
 
                     ContactInfo = "Program written by Matthew Monroe for the Department of Energy (PNNL, Richland, WA) in 2018" +
                                   Environment.NewLine + Environment.NewLine +
@@ -53,6 +56,18 @@ namespace DMS_Email_Manager
                 {
                     Thread.Sleep(1500);
                     return -1;
+                }
+
+                if (options.ShowExample)
+                {
+                    ShowExampleReportDefinitionsFile();
+                    return 0;
+                }
+
+                if (options.ShowExtendedExample)
+                {
+                    ShowExampleReportDefinitionsFile(true);
+                    return 0;
                 }
 
                 if (!options.ValidateArgs())
@@ -85,6 +100,78 @@ namespace DMS_Email_Manager
 
         }
 
+        private static void ShowExampleReportDefinitionsFile(bool showExtendedExample = false)
+        {
+            Console.WriteLine();
+            Console.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            Console.WriteLine("<reports>");
+            Console.WriteLine("    <EmailOptions>");
+            Console.WriteLine("        <Server>emailgw.pnl.gov</Server>");
+            Console.WriteLine("        <From>proteomics@pnnl.gov</From>");
+            Console.WriteLine("        <FontSizeHeader>20</FontSizeHeader>");
+            Console.WriteLine("        <FontSizeBody>12</FontSizeBody>");
+            Console.WriteLine("    </EmailOptions>");
+            Console.WriteLine();
+            Console.WriteLine("    <report name=\"Processor Status Warnings\">");
+            Console.WriteLine("        <data source=\"gigasax\" catalog=\"DMS_Pipeline\" type=\"query\">");
+            Console.WriteLine("          SELECT TOP 500 * FROM V_Processor_Status_Warnings ORDER BY Processor_name");
+            Console.WriteLine("        </data>");
+            Console.WriteLine("        <mail to=\"proteomics@pnnl.gov\" ");
+            Console.WriteLine("              subject=\"DMS: Processor Status Warnings\" ");
+            Console.WriteLine("              title=\"Processor Status Warnings (DMS)\" />");
+            Console.WriteLine("        <frequency dayofweeklist=\"Monday,Wednesday,Friday\" ");
+            Console.WriteLine("                   type=\"TimeOfDay\" ");
+            Console.WriteLine("                   timeOfDay=\"3:00 pm\" />");
+            Console.WriteLine("    </report>");
+            Console.WriteLine();
+            Console.WriteLine("    <report name=\"Email Alerts\"> ");
+            Console.WriteLine("         <data server=\"gigasax\" database=\"DMS5\" type=\"query\"> ");
+            Console.WriteLine("             SELECT TOP 500 * FROM V_Email_Alerts Where alert_state = 1 ");
+            Console.WriteLine("         </data> ");
+            Console.WriteLine("         <mail to=\"proteomics@pnnl.gov; EMSL-Prism.Users.DMS_Monitoring_Admins@pnnl.gov\"  ");
+            Console.WriteLine("               subject=\"DMS: Alerts\"  ");
+            Console.WriteLine("               title=\"DMS Alerts\" /> ");
+            Console.WriteLine("         <frequency type=\"Interval\"  ");
+            Console.WriteLine("                    interval=\"12\" ");
+            Console.WriteLine("                    units=\"hours\" /> ");
+            Console.WriteLine("         <postMailIdListHook server=\"gigasax\" database=\"DMS5\" procedure=\"AckEmailAlerts\"  ");
+            Console.WriteLine("                             parameter=\"alertIDs\" varcharlength=\"4000\" /> ");
+            Console.WriteLine("     </report> ");
+
+
+            if (showExtendedExample)
+            {
+                Console.WriteLine();
+                Console.WriteLine("    <report name=\"MTS Overdue Database Backups\">");
+                Console.WriteLine("        <data source=\"pogo\" catalog=\"MTS_Master\" type=\"StoredProcedure\">GetOverdueDatabaseBackups</data>");
+                Console.WriteLine("        <mail to=\"proteomics@pnnl.gov\" ");
+                Console.WriteLine("              subject=\"MTS Overdue Database Backups\" ");
+                Console.WriteLine("              title=\"Report generated automatically on Pogo:\" />");
+                Console.WriteLine("        <frequency dayofweeklist=\"Tuesday,Saturday\" ");
+                Console.WriteLine("                   type=\"TimeOfDay\" ");
+                Console.WriteLine("                   timeOfDay=\"9:00 am\" />");
+                Console.WriteLine("    </report>");
+                Console.WriteLine();
+                Console.WriteLine("    <report name=\"Gigasax Disk Space Report\">");
+                Console.WriteLine("        <data source=\"gigasax\" type=\"WMI\">");
+                Console.WriteLine("          <![CDATA[SELECT Name, FreeSpace, Size FROM Win32_LogicalDisk WHERE DriveType=3]]></data>");
+                Console.WriteLine("        <mail to=\"proteomics@pnnl.gov\" ");
+                Console.WriteLine("              subject=\"Gigasax Disk Space\" ");
+                Console.WriteLine("              title=\"Free space on Gigasax (GB);\" />");
+                Console.WriteLine("        <frequency dayofweeklist=\"Wednesday\" ");
+                Console.WriteLine("                   type=\"TimeOfDay\" ");
+                Console.WriteLine("                   timeOfDay=\"9:15 am\" />");
+                Console.WriteLine("        <valuedivisor value=\"1073741824\" round=\"2\" units=\"GB\" />");
+                Console.WriteLine("    </report>");
+            }
+
+            Console.WriteLine("</reports>");
+            Console.WriteLine();
+
+        }
+
+        #region "Events"
+
         private static void DMSEmailManager_ErrorEvent(string message, Exception ex)
         {
             ShowErrorMessage(message, ex);
@@ -105,6 +192,6 @@ namespace DMS_Email_Manager
             ConsoleMsgUtils.ShowError(message, ex);
         }
 
-
+        #endregion
     }
 }

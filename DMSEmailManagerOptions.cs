@@ -35,7 +35,7 @@ namespace DMS_Email_Manager
         }
 
 
-        [Option("I", ArgPosition = 1, HelpText = "Xml file with report definitions")]
+        [Option("I", ArgPosition = 1, HelpText = "XML file with report definitions")]
         public string ReportDefinitionsFilePath { get; set; }
 
         [Option("EmailServer", "Server", HelpText = "Email Server")]
@@ -44,10 +44,12 @@ namespace DMS_Email_Manager
         [Option("EmailFrom", "From", HelpText = "Sender e-mail address", HelpShowsDefault = true)]
         public string EmailFrom { get; set; }
 
-        [Option("FontSizeHeader", "HeaderSize", HelpText = "Header text font size", HelpShowsDefault = true, Min = 6, Max = 48)]
+        [Option("FontSizeHeader", "HeaderSize", HelpText = "Header text font size",
+            HelpShowsDefault = true, Min = 6, Max = 48)]
         public int FontSizeHeader { get; set; }
 
-        [Option("FontSizeBody", "BodySize", HelpText = "Body text font size", HelpShowsDefault = true, Min = 6, Max = 24)]
+        [Option("FontSizeBody", "BodySize", HelpText = "Body text font size",
+            HelpShowsDefault = true, Min = 6, Max = 24)]
         public int FontSizeBody { get; set; }
 
         [Option("Log", HelpText = "Logging enabled")]
@@ -66,6 +68,12 @@ namespace DMS_Email_Manager
 
         [Option("RunOnce", "Once", HelpText = "Load the report definitions, run each of them once, then exit the program; ignores timeOfDay")]
         public bool RunOnce { get; set; }
+
+        [Option("E", HelpText = "View an example XML report definitions file")]
+        public bool ShowExample { get; set; }
+
+        [Option("X", HelpText = "View an extended example XML report definitions file")]
+        public bool ShowExtendedExample { get; set; }
 
         public static string GetAppVersion()
         {
@@ -123,18 +131,6 @@ namespace DMS_Email_Manager
             if (string.IsNullOrWhiteSpace(ReportDefinitionsFilePath))
             {
                 Console.WriteLine("Report definitions XML file must be defined");
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(EmailServer))
-            {
-                Console.WriteLine("Email server must be defined");
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(EmailFrom))
-            {
-                Console.WriteLine("Email from address must be defined");
                 return false;
             }
 
