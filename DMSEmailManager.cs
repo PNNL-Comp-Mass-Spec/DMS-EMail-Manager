@@ -515,8 +515,42 @@ namespace DMS_Email_Manager
                     {
                         foreach (var day in daysOfWeekText.Split(sepChars))
                         {
-                            if (!Enum.TryParse<DayOfWeek>(day, true, out var dayOfWeek) ||
-                                daysOfWeek.Contains(dayOfWeek))
+                            var trimmedDay = day.Trim();
+
+                            if (string.IsNullOrWhiteSpace(trimmedDay))
+                                continue;
+
+                            // Allow the weekday names to be abbreviations
+                            // Only examine the first three characters of the day's name
+                            DayOfWeek dayOfWeek;
+                            switch (trimmedDay.ToLower().Substring(0, 3))
+                            {
+                                case "sun":
+                                    dayOfWeek = DayOfWeek.Sunday;
+                                    break;
+                                case "mon":
+                                    dayOfWeek = DayOfWeek.Monday;
+                                    break;
+                                case "tue":
+                                    dayOfWeek = DayOfWeek.Tuesday;
+                                    break;
+                                case "wed":
+                                    dayOfWeek = DayOfWeek.Wednesday;
+                                    break;
+                                case "thu":
+                                    dayOfWeek = DayOfWeek.Thursday;
+                                    break;
+                                case "fri":
+                                    dayOfWeek = DayOfWeek.Friday;
+                                    break;
+                                case "sat":
+                                    dayOfWeek = DayOfWeek.Saturday;
+                                    break;
+                                default:
+                                    continue;
+                            }
+
+                            if (daysOfWeek.Contains(dayOfWeek))
                                 continue;
 
                             daysOfWeek.Add(dayOfWeek);
