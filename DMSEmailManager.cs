@@ -447,6 +447,7 @@ namespace DMS_Email_Manager
                         case "table":
                         case "view":
                         case "procedure":
+                        case "storedprocedure":
                         case "sp":
                         case "sproc":
                             if (string.IsNullOrWhiteSpace(sourceServer))
@@ -461,10 +462,15 @@ namespace DMS_Email_Manager
                                 continue;
                             }
 
-                            if (sourceTypeLcase == "procedure" || sourceTypeLcase == "sp" || sourceTypeLcase == "sproc")
+                            if (sourceTypeLcase == "procedure" || sourceTypeLcase == "storedprocedure" || sourceTypeLcase == "sp" ||
+                                sourceTypeLcase == "sproc")
+                            {
                                 dataSource = new DataSourceSqlStoredProcedure(reportName, sourceServer, sourceDB, query);
+                            }
                             else
+                            {
                                 dataSource = new DataSourceSqlQuery(reportName, sourceServer, sourceDB, query);
+                            }
 
                             break;
 
@@ -860,7 +866,7 @@ namespace DMS_Email_Manager
                 }
                 catch (Exception ex)
                 {
-                    HandleException("Error updating elapsed task info for task " + task.Key, ex);
+                    HandleException("Error running task " + task.Key, ex);
                 }
 
             }
