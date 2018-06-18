@@ -107,6 +107,11 @@ namespace DMS_Email_Manager
         public EmailMessageSettings EmailSettings { get; private set; }
 
         /// <summary>
+        /// Number of times this task has been executed (for all time)
+        /// </summary>
+        public int ExecutionCount { get; set; }
+
+        /// <summary>
         /// Last runtime (UTC Date)
         /// </summary>
         public DateTime LastRun { get; set; }
@@ -263,6 +268,47 @@ namespace DMS_Email_Manager
             DataSource = dataSource;
             LastRun = lastRun;
             EmailSettings = emailSettings;
+        }
+
+        /// <summary>
+        /// Get a humanreadable description of the frequency delay mode
+        /// </summary>
+        /// <returns></returns>
+        public string GetFrequencyDecription()
+        {
+            if (DelayType == FrequencyDelay.AtTimeOfDay)
+            {
+                if (DaysOfWeek.Count >= 7)
+                    return string.Format("Daily at {0}", TimeOfDay.ToString());
+
+                var daysOfWeek = new List<string>();
+                foreach (var dayOfWeek in DaysOfWeek)
+                {
+                    daysOfWeek.Add(dayOfWeek.ToString());
+                }
+
+                return string.Format("At {0} on {1}", TimeOfDay.ToString(), string.Join(", ", daysOfWeek));
+            }
+
+            // DelayType is FrequencyDelay.IntervalBased
+            switch (DelayIntervalUnits)
+            {
+                case FrequencyInterval.Minute:
+                    return string.Format("{0} {1}", DelayInterval, "minutes");
+                case FrequencyInterval.Hour:
+                    return string.Format("{0} {1}", DelayInterval, "hours");
+                case FrequencyInterval.Day:
+                    return string.Format("{0} {1}", DelayInterval, "days");
+                case FrequencyInterval.Week:
+                    return string.Format("{0} {1}", DelayInterval, "weeks");
+                case FrequencyInterval.Month:
+                    return string.Format("{0} {1}", DelayInterval, "months");
+                case FrequencyInterval.Year:
+                    return string.Format("{0} {1}", DelayInterval, "years");
+                default:
+                    // Includes FrequencyInterval.Undefined:
+                    return "Undefined interval";
+            }
         }
 
         private Period GetPeriodForInternal(int interval, FrequencyInterval intervalUnits)

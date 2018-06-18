@@ -15,9 +15,21 @@ namespace DMS_Email_Manager
     {
         #region "Constants"
 
+        private const string DATE_TIME_FORMAT = "yyyy-MM-dd hh:mm:ss tt";
+
         private const string NO_DATA = "No Data Returned";
 
         private const int TASK_CHECK_INTERVAL_SECONDS = 15;
+
+        private string TASK_STATUS_COLUMN_REPORT_NAME = "ReportName";
+        private string TASK_STATUS_COLUMN_LASTRUN = "LastRun";
+        private string TASK_STATUS_COLUMN_NEXTRUN = "NextRun";
+        private string TASK_STATUS_COLUMN_SOURCE_TYPE = "SourceType";
+        private string TASK_STATUS_COLUMN_SOURCE_QUERY = "SourceQuery";
+        private string TASK_STATUS_COLUMN_EXECUTION_COUNT = "ExecutionCount";
+
+        private const string TASK_STATUS_FILE_NAME = "TaskStatusFile.txt";
+
         private const int TASK_STATUS_FILE_UPDATE_INTERVAL_MINUTES = 1;
 
         #endregion
@@ -195,6 +207,34 @@ namespace DMS_Email_Manager
 
         }
 
+        private int GetColumnValue(IReadOnlyDictionary<string, int> headers, IReadOnlyList<string> dataCols, string columnName, int valueIfMissing)
+        {
+            var dataValue = GetColumnValue(headers, dataCols, columnName, valueIfMissing.ToString());
+            if (string.IsNullOrWhiteSpace(dataValue) || !int.TryParse(dataValue, out var value))
+                return valueIfMissing;
+
+            return value;
+        }
+
+        private DateTime GetColumnValue(IReadOnlyDictionary<string, int> headers, IReadOnlyList<string> dataCols, string columnName, DateTime valueIfMissing)
+        {
+            var dataValue = GetColumnValue(headers, dataCols, columnName, valueIfMissing.ToString(DATE_TIME_FORMAT));
+            if (string.IsNullOrWhiteSpace(dataValue) || !DateTime.TryParse(dataValue, out var value))
+                return valueIfMissing;
+
+            return value;
+        }
+
+        private string GetColumnValue(IReadOnlyDictionary<string, int> headers, IReadOnlyList<string> dataCols, string columnName, string valueIfMissing)
+        {
+            if (headers.TryGetValue(columnName, out var colIndex) && colIndex < dataCols.Count)
+            {
+                return dataCols[colIndex];
+            }
+
+            return valueIfMissing;
+        }
+
         private string GetElementAttribValue(XElement node, string attribName, string defaultValue)
         {
             if (!node.HasAttributes)
@@ -245,14 +285,6 @@ namespace DMS_Email_Manager
             return cssStyle;
         }
 
-        private void LoadTaskStatusFile()
-        {
-
-            // ToDo: Read a file tracking TaskID  task RuntimeInfo
-            throw new NotImplementedException();
-
-        }
-
         /// <summary>
         /// Start processing (calls Start)
         /// </summary>
@@ -268,8 +300,10 @@ namespace DMS_Email_Manager
             return success;
         }
 
-        private bool ReadReportDefsFile(bool notifySettingOverride = false)
+        private bool ReadReportDefsFile(bool firstLoad = false)
         {
+            var notifySettingOverride = firstLoad;
+
             try
             {
                 var doc = XDocument.Load(Options.ReportDefinitionsFilePath);
@@ -317,7 +351,7 @@ namespace DMS_Email_Manager
                         continue;
                     }
 
-                    // ReportName will be used for TaskID
+                    // ReportName is the TaskID
                     var reportName = reportNameAttrib.Value;
                     if (string.IsNullOrWhiteSpace(reportName))
                     {
@@ -326,13 +360,16 @@ namespace DMS_Email_Manager
                     }
 
                     DateTime lastRun;
+                    int executionCount;
                     if (mRuntimeInfo.TryGetValue(reportName, out var taskRuntimeInfo))
                     {
                         lastRun = taskRuntimeInfo.LastRun;
+                        executionCount = taskRuntimeInfo.ExecutionCount;
                     }
                     else
                     {
                         lastRun = DateTime.UtcNow;
+                        executionCount = 0;
                         mRuntimeInfo.Add(reportName, new TaskRuntimeInfo(lastRun));
                     }
 
@@ -468,8 +505,10 @@ namespace DMS_Email_Manager
                             continue;
                         }
 
-                        task = new NotificationTask(reportName, dataSource, emailSettings, lastRun, timeOfDay, daysOfWeek);
-
+                        task = new NotificationTask(reportName, dataSource, emailSettings, lastRun, timeOfDay, daysOfWeek)
+                        {
+                            ExecutionCount = executionCount
+                        };
                     }
                     else if (delayTypeText.ToLower().Contains("interval"))
                     {
@@ -507,7 +546,10 @@ namespace DMS_Email_Manager
                             continue;
                         }
 
-                        task = new NotificationTask(reportName, dataSource, emailSettings, lastRun, interval, intervalUnits);
+                        task = new NotificationTask(reportName, dataSource, emailSettings, lastRun, interval, intervalUnits)
+                        {
+                            ExecutionCount = executionCount
+                        };
                     }
                     else
                     {
@@ -542,9 +584,29 @@ namespace DMS_Email_Manager
                     }
 
                     if (mTasks.ContainsKey(reportName))
-                        mTasks[reportName] = task;
+                    {
+                        if (firstLoad)
+                        {
+                            ShowWarning(string.Format("Duplicate report named {0} in the report definition file; only using the first instance",
+                                                      reportName));
+                        }
+                        else
+                        {
+                            // Replace the task
+                            mTasks[reportName] = task;
+                        }
+
+
+                    }
                     else
+                    {
                         mTasks.Add(reportName, task);
+
+                        var frequencyDescription = task.GetFrequencyDecription();
+
+                        ShowMessage(string.Format("Added report {0} with frequency {1}, e-mailing {2}", reportName, frequencyDescription,
+                                                  task.EmailSettings.Recipients));
+                    }
 
                     RegisterEvents(task);
                     task.TaskResultsAvailable += Task_TaskResultsAvailable;
@@ -563,28 +625,181 @@ namespace DMS_Email_Manager
 
         }
 
+        /// <summary>
+        /// Read a file listing ReportName, LastRun, NextRun, SourceType, and SourceQuery
+        /// </summary>
+        private void ReadTaskStatusFile()
+        {
+
+            mRuntimeInfo.Clear();
+
+            try
+            {
+                var taskStatusFile = new FileInfo(Path.Combine(GetAppFolderPath(), TASK_STATUS_FILE_NAME));
+
+                if (!taskStatusFile.Exists)
+                {
+                    ShowWarning("Task status file not found: " + taskStatusFile.FullName);
+                }
+
+                using (var reader = new StreamReader(new FileStream(taskStatusFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                {
+                    var headers = new Dictionary<string, int>();
+
+                    while (!reader.EndOfStream)
+                    {
+                        var dataLine = reader.ReadLine();
+                        if (string.IsNullOrWhiteSpace(dataLine))
+                            continue;
+
+                        var dataCols = dataLine.Split('\t');
+
+                        if (headers.Count == 0)
+                        {
+                            for (var i = 0; i < 1; i++)
+                            {
+                                if (headers.ContainsKey(dataCols[i]))
+                                {
+                                    ShowWarning(string.Format(
+                                                    "TaskStatusFile {0} has duplicate header column {1}; skipping it",
+                                                    taskStatusFile.FullName, dataCols[i]));
+                                }
+                                headers.Add(dataCols[i], i);
+                            }
+
+                            if (!headers.ContainsKey(TASK_STATUS_COLUMN_REPORT_NAME))
+                            {
+                                ShowWarning(string.Format(
+                                                "TaskStatusFile {0} is missing required header column {1}",
+                                                taskStatusFile.FullName, TASK_STATUS_COLUMN_REPORT_NAME));
+                                return;
+                            }
+
+                            if (!headers.ContainsKey(TASK_STATUS_COLUMN_LASTRUN))
+                            {
+                                ShowWarning(string.Format(
+                                                "TaskStatusFile {0} is missing required header column {1}",
+                                                taskStatusFile.FullName, TASK_STATUS_COLUMN_LASTRUN));
+                                return;
+                            }
+
+                            continue;
+                        }
+
+                        var reportName = GetColumnValue(headers, dataCols, TASK_STATUS_COLUMN_REPORT_NAME, "");
+                        var lastRun = GetColumnValue(headers, dataCols, TASK_STATUS_COLUMN_LASTRUN, DateTime.MinValue);
+                        var nextRun = GetColumnValue(headers, dataCols, TASK_STATUS_COLUMN_NEXTRUN, DateTime.MinValue);
+                        var sourceTypeText = GetColumnValue(headers, dataCols, TASK_STATUS_COLUMN_SOURCE_TYPE, "");
+                        var sourceQuery = GetColumnValue(headers, dataCols, TASK_STATUS_COLUMN_SOURCE_QUERY, "");
+                        var executionCount = GetColumnValue(headers, dataCols, TASK_STATUS_COLUMN_EXECUTION_COUNT, 0);
+
+                        var runtimeInfo = new TaskRuntimeInfo(lastRun, executionCount);
+
+                        mRuntimeInfo.Add(reportName, runtimeInfo);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleException("Error saving task status file", ex);
+
+            }
+        }
+
         private void RunElapsedTasks()
         {
             foreach (var task in mTasks)
             {
                 try
                 {
-                    task.Value.RunTaskNowIfRequired();
+                    var taskRun = task.Value.RunTaskNowIfRequired();
+
+                    if (!taskRun)
+                        continue;
+
+                    if (mRuntimeInfo.TryGetValue(task.Key, out var taskRuntimeInfo))
+                    {
+                        taskRuntimeInfo.LastRun = task.Value.LastRun;
+                        taskRuntimeInfo.NextRun = task.Value.NextRun;
+                        taskRuntimeInfo.ExecutionCount = taskRuntimeInfo.ExecutionCount + 1;
+                    }
+                    else
+                    {
+                        var newRuntimeInfo = new TaskRuntimeInfo(task.Value.LastRun, 1) {
+                            NextRun = task.Value.NextRun
+                        };
+                        mRuntimeInfo.Add(task.Key, newRuntimeInfo);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    HandleException("Error running task " + task.Key, ex);
+                    HandleException("Error updating elapsed task info for task " + task.Key, ex);
                 }
-
 
             }
         }
 
+        /// <summary>
+        /// Save a file listing ReportName, LastRun, NextRun, SourceType, and SourceQuery
+        /// </summary>
         private void SaveTaskStatusFile()
         {
-            // ToDo: Save a file listing TaskID, LastRun, and possibly SourceType and SourceQuery
 
-            throw new NotImplementedException();
+            try
+            {
+                var taskStatusFile = new FileInfo(Path.Combine(GetAppFolderPath(), TASK_STATUS_FILE_NAME));
+
+                using (var writer = new StreamWriter(new FileStream(taskStatusFile.FullName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
+                {
+
+
+                    var headerCols = new List<string> {
+                        TASK_STATUS_COLUMN_REPORT_NAME,
+                        TASK_STATUS_COLUMN_LASTRUN,
+                        TASK_STATUS_COLUMN_NEXTRUN,
+                        TASK_STATUS_COLUMN_SOURCE_TYPE,
+                        TASK_STATUS_COLUMN_SOURCE_QUERY,
+                        TASK_STATUS_COLUMN_EXECUTION_COUNT
+                };
+
+                    writer.WriteLine(string.Join("\t", headerCols));
+
+                    var dataCols = new List<string>();
+                    foreach (var task in mTasks)
+                    {
+                        dataCols.Clear();
+                        dataCols.Add(task.Key);
+                        dataCols.Add(task.Value.LastRun.ToString(DATE_TIME_FORMAT));
+                        dataCols.Add(task.Value.NextRun.ToString(DATE_TIME_FORMAT));
+                        dataCols.Add(task.Value.DataSource.SourceType.ToString());
+
+                        if (task.Value.DataSource is DataSourceSqlQuery sqlQuery)
+                        {
+                            dataCols.Add(sqlQuery.Query);
+                        }
+                        else if (task.Value.DataSource is DataSourceSqlStoredProcedure sqlSproc)
+                        {
+                            dataCols.Add(sqlSproc.StoredProcedureName);
+                        }
+                        else if (task.Value.DataSource is DataSourceWMI sqlWmi)
+                        {
+                            dataCols.Add(sqlWmi.Query);
+                        }
+                        else
+                        {
+                            dataCols.Add(string.Empty);
+                        }
+                        dataCols.Add(task.Value.ExecutionCount.ToString());
+
+                        writer.WriteLine(string.Join("\t", dataCols));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleException("Error saving task status file", ex);
+
+            }
         }
 
         private void SendResultIDsToPostMailHook(TaskResults results, DataSourceSqlStoredProcedure postMailIdListHook)
@@ -691,7 +906,7 @@ namespace DMS_Email_Manager
 
                 Options.OutputSetOptions();
 
-                LoadTaskStatusFile();
+                ReadTaskStatusFile();
 
                 while (stopTime > DateTime.UtcNow)
                 {
