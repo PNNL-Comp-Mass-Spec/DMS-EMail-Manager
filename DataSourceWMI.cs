@@ -5,6 +5,26 @@ namespace DMS_Email_Manager
 {
     internal class DataSourceWMI : DataSourceBase
     {
+        /// <summary>
+        /// Optional value to divide WMI report values by
+        /// </summary>
+        /// <remarks>
+        /// For example, set ValueDivisor to 1073741824 and set DivisorUnits to "gb"
+        /// to report disk free space and disk usage in gigabytes
+        /// </remarks>
+        public double ValueDivisor { get; set; }
+
+        /// <summary>
+        /// Number of digits after the decimal point to round values
+        /// </summary>
+        /// <remarks>Only used if ValueDivisor is non-zero</remarks>
+        public byte DivisorRoundDigits { get; set; }
+
+        /// <summary>
+        /// Units for the metric
+        /// </summary>
+        /// <remarks>Only used if ValueDivisor is non-zero</remarks>
+        public string DivisorUnits { get; set; }
 
         /// <summary>
         /// WMI host to contact
@@ -36,12 +56,6 @@ namespace DMS_Email_Manager
         /// <returns></returns>
         public override TaskResults GetData()
         {
-
-            // ToDo: Possibly implement dividing values by a divisor and showing custom units
-            // For now, set this to 0 to disable this feature
-            float valueDivisor = 0;
-            byte roundDigits = 1;
-            var units = string.Empty;
 
             try
             {
@@ -83,26 +97,24 @@ namespace DMS_Email_Manager
                                 continue;
 
                             var valueText = prop.Value.ToString();
-                            if (Math.Abs(valueDivisor) > float.Epsilon && double.TryParse(valueText, out var value))
+                            if (Math.Abs(ValueDivisor) > float.Epsilon && double.TryParse(valueText, out var value))
                             {
-                                //  The value is a number; round the value and append units
-                                var formattedValue = PRISM.StringUtilities.DblToString(value / valueDivisor, roundDigits);
-                                if (string.IsNullOrWhiteSpace(units))
+                                // The value is a number; round the value and append units
+                                var formattedValue = PRISM.StringUtilities.DblToString(value / ValueDivisor, DivisorRoundDigits);
+                                if (string.IsNullOrWhiteSpace(DivisorUnits))
                                     dataValues.Add(formattedValue);
                                 else
-                                    dataValues.Add(formattedValue + " " + units);
-
+                                    dataValues.Add(formattedValue + " " + DivisorUnits);
                             }
                             else
                             {
                                 dataValues.Add(valueText);
                             }
 
-
                         }
                         catch (Exception ex)
                         {
-                            //  Unable to translate data into string; ignore errors here
+                            // Unable to translate data into string; ignore errors here
                             OnErrorEvent(string.Format("Error retrieving results from WMI on host {0} for report {1}", HostName, ReportName), ex);
                         }
                     }

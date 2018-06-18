@@ -271,6 +271,15 @@ namespace DMS_Email_Manager
             return defaultValue;
         }
 
+        private long GetElementAttribValue(XElement node, string attribName, long defaultValue)
+        {
+            var valueText = GetElementAttribValue(node, attribName, defaultValue.ToString());
+            if (int.TryParse(valueText, out var value))
+                return value;
+
+            return defaultValue;
+        }
+
         private bool GetElementAttribValue(XElement node, string attribName, bool defaultValue)
         {
             var valueText = GetElementAttribValue(node, attribName, string.Empty);
@@ -387,6 +396,10 @@ namespace DMS_Email_Manager
                     var mailInfo = GetChildElement(reportName, report, "mail");
                     var frequencyInfo = GetChildElement(reportName, report, "frequency");
 
+                    // WMI reports support XML of the form <valuedivisor value="1073741824" round="2" units="GB" />
+                    // the <valuedivisor> section will not be present for other reports
+                    var divisorInfo = GetChildElement(reportName, report, "valuedivisor", false);
+
                     if (dataSourceInfo == null || mailInfo == null || frequencyInfo == null)
                         continue;
 
@@ -442,7 +455,25 @@ namespace DMS_Email_Manager
                                 continue;
                             }
 
-                            dataSource = new DataSourceWMI(reportName, sourceServer, query);
+                            var wmiDataSource = new DataSourceWMI(reportName, sourceServer, query);
+
+                            if (divisorInfo != null)
+                            {
+                                var valueDivisor = GetElementAttribValue(divisorInfo, "value", 0L);
+                                var roundDigits = GetElementAttribValue(divisorInfo, "round", 0);
+                                var valueUnits = GetElementAttribValue(divisorInfo, "units", string.Empty);
+
+                                wmiDataSource.ValueDivisor = valueDivisor;
+                                if (roundDigits >= byte.MinValue && roundDigits <= byte.MaxValue)
+                                {
+                                    wmiDataSource.DivisorRoundDigits = (byte)roundDigits;
+                                }
+
+                                wmiDataSource.DivisorUnits = valueUnits;
+                            }
+
+                            dataSource = wmiDataSource;
+
                             break;
 
                         default:
