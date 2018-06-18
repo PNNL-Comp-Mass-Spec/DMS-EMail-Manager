@@ -145,6 +145,7 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Constructor for running a task periodically, using a fixed interval
         /// </summary>
+        /// <remarks>Use property DaysOfWeek to only run this task on certain days</remarks>
         public NotificationTask(
             string taskID,
             DataSourceBase dataSource,
@@ -271,44 +272,61 @@ namespace DMS_Email_Manager
         }
 
         /// <summary>
-        /// Get a humanreadable description of the frequency delay mode
+        /// Get a human readable description of the frequency delay mode
         /// </summary>
         /// <returns></returns>
-        public string GetFrequencyDecription()
+        public string GetFrequencyDescription()
         {
+            var dayNames = new List<string>();
+            foreach (var dayOfWeek in DaysOfWeek)
+            {
+                dayNames.Add(dayOfWeek.ToString());
+            }
+
             if (DelayType == FrequencyDelay.AtTimeOfDay)
             {
-                if (DaysOfWeek.Count >= 7)
+                if (DaysOfWeek.Count == 0 || DaysOfWeek.Count >= 7)
                     return string.Format("Daily at {0}", TimeOfDay.ToString());
 
-                var daysOfWeek = new List<string>();
-                foreach (var dayOfWeek in DaysOfWeek)
-                {
-                    daysOfWeek.Add(dayOfWeek.ToString());
-                }
-
-                return string.Format("At {0} on {1}", TimeOfDay.ToString(), string.Join(", ", daysOfWeek));
+                return string.Format("At {0} on {1}", TimeOfDay.ToString(), string.Join(", ", dayNames));
             }
 
             // DelayType is FrequencyDelay.IntervalBased
+            string frequency;
+
+            var plural = DelayInterval == 1 ? "" : "s";
+
+
             switch (DelayIntervalUnits)
             {
                 case FrequencyInterval.Minute:
-                    return string.Format("{0} {1}", DelayInterval, "minutes");
+                    frequency = string.Format("Every {0} {1}{2}", DelayInterval, "minute", plural);
+                    break;
                 case FrequencyInterval.Hour:
-                    return string.Format("{0} {1}", DelayInterval, "hours");
+                    frequency = string.Format("Every {0} {1}{2}", DelayInterval, "hour", plural);
+                    break;
                 case FrequencyInterval.Day:
-                    return string.Format("{0} {1}", DelayInterval, "days");
+                    frequency = string.Format("Every {0} {1}{2}", DelayInterval, "day", plural);
+                    break;
                 case FrequencyInterval.Week:
-                    return string.Format("{0} {1}", DelayInterval, "weeks");
+                    frequency = string.Format("Every {0} {1}{2}", DelayInterval, "week", plural);
+                    break;
                 case FrequencyInterval.Month:
-                    return string.Format("{0} {1}", DelayInterval, "months");
+                    frequency = string.Format("Every {0} {1}{2}", DelayInterval, "month", plural);
+                    break;
                 case FrequencyInterval.Year:
-                    return string.Format("{0} {1}", DelayInterval, "years");
+                    frequency = string.Format("Every {0} {1}{2}", DelayInterval, "year", plural);
+                    break;
                 default:
                     // Includes FrequencyInterval.Undefined:
                     return "Undefined interval";
             }
+
+            if (DaysOfWeek.Count == 0 || DaysOfWeek.Count >= 7)
+                return frequency;
+
+            return string.Format("{0} on {1}", frequency, string.Join(", ", dayNames));
+
         }
 
         private Period GetPeriodForInternal(int interval, FrequencyInterval intervalUnits)

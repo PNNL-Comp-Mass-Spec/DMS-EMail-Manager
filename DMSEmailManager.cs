@@ -710,7 +710,7 @@ namespace DMS_Email_Manager
                     {
                         mTasks.Add(reportName, task);
 
-                        var frequencyDescription = task.GetFrequencyDecription();
+                        var frequencyDescription = task.GetFrequencyDescription();
 
                         ShowMessage(string.Format("Added report {0} with frequency {1}, e-mailing {2}", reportName, frequencyDescription,
                                                   task.EmailSettings.Recipients));
