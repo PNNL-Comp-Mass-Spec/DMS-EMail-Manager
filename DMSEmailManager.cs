@@ -1186,7 +1186,7 @@ namespace DMS_Email_Manager
             if (!notifySettingOverride)
                 return;
 
-            if (string.IsNullOrWhiteSpace(currentValue) || newValue == currentValue)
+            if (string.IsNullOrWhiteSpace(currentValue) || currentValue == "0" || newValue == currentValue)
                 return;
 
             var warningMsg = string.Format("Overriding {0} using value in the report definitions file: {1}", valueDescription, newValue);
