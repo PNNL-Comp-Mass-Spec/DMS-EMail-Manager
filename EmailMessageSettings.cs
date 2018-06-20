@@ -33,12 +33,22 @@ namespace DMS_Email_Manager
             Recipients = new SortedSet<string>();
             foreach (var mailAddress in emailList.Distinct())
             {
-                emailList.Add(mailAddress);
+                Recipients.Add(mailAddress);
             }
 
             Subject = mailSubject;
 
             ReportTitle = reportTitle;
+        }
+
+        /// <summary>
+        /// Concatenate the e-mail addresses in Recipients using the specified separator
+        /// </summary>
+        /// <param name="separator"></param>
+        /// <returns></returns>
+        public string GetRecipients(string separator = ", ")
+        {
+            return string.Join(separator, Recipients);
         }
     }
 }
