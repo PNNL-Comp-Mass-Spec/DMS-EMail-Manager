@@ -1099,14 +1099,14 @@ namespace DMS_Email_Manager
             {
                 var stopTime = Options.MaxRuntimeHours > 0 ? startTime.AddHours(Options.MaxRuntimeHours) : DateTime.MaxValue;
 
+                ReadReportStatusFile();
+
                 mReportDefsFileChanged = false;
                 var success = ReadReportDefsFile(true);
                 if (!success)
                     return false;
 
                 Options.OutputSetOptions();
-
-                ReadReportStatusFile();
 
                 if (Options.RunOnce)
                 {
