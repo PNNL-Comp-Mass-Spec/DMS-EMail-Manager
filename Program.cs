@@ -15,12 +15,8 @@ namespace DMS_Email_Manager
     /// </summary>
     class Program
     {
-        private static DMSEmailManagerOptions mOptions;
-
         static int Main(string[] args)
         {
-            mOptions = new DMSEmailManagerOptions();
-
             try
             {
                 var asmName = typeof(Program).GetTypeInfo().Assembly.GetName();
@@ -77,7 +73,7 @@ namespace DMS_Email_Manager
                     return -1;
                 }
 
-                var converter = new DMSEmailManager(mOptions);
+                var converter = new DMSEmailManager(options);
 
                 converter.ErrorEvent += DMSEmailManager_ErrorEvent;
                 converter.StatusEvent += DMSEmailManager_StatusEvent;
@@ -88,11 +84,15 @@ namespace DMS_Email_Manager
                 if (!success)
                 {
                     ShowErrorMessage("DMSEmailManager.Start returned false");
+                    clsParseCommandLine.PauseAtConsole(2000, 500);
                 }
+
+                clsParseCommandLine.PauseAtConsole(750);
             }
             catch (Exception ex)
             {
                 ShowErrorMessage("Error occurred in Program->Main", ex);
+                clsParseCommandLine.PauseAtConsole(2000, 500);
                 return -1;
             }
 
