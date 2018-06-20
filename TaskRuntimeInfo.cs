@@ -22,8 +22,8 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="lastRun"></param>
-        /// <param name="executionCount"></param>
+        /// <param name="lastRun">Last runtime (UTC-based)</param>
+        /// <param name="executionCount">Number of times the task has run</param>
         public TaskRuntimeInfo(DateTime lastRun, int executionCount = 0)
         {
             LastRun = lastRun;
