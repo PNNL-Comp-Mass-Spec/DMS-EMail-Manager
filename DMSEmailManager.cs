@@ -182,12 +182,43 @@ namespace DMS_Email_Manager
                     }
                 }
 
-                var formattedRecipients = string.Join(",", mailSettings.Recipients);
+                string reportInfo;
+                if (results.DataRows.Count == 0)
+                {
+                    // Report 'Processor Status Warnings' had no data
+                    reportInfo = string.Format("Report '{0}' had no data", results.ReportName);
+                }
+                else
+                {
+                    var rowCountUnits = results.DataRows.Count == 1 ? "row" : "rows";
+
+                    // Report 'Processor Status Warnings' had 2 rows of data
+                    reportInfo = string.Format("Report '{0}' had {1} {2} of data",
+                                               results.ReportName, results.DataRows.Count, rowCountUnits);
+                }
+
+                if (mailSettings.Recipients.Count == 0)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine(reportInfo);
+                    Console.WriteLine(reportHtml.ToString());
+                    return;
+                }
+
+                var formattedRecipients = mailSettings.GetRecipients(",");
+
+                var emailAction = Options.PreviewMode ? "would be sent to" : "sent to";
+
+                // Report 'Processor Status Warnings' had 2 rows of data; e-mail sent to proteomics@pnnl.gov
+                // Report 'Processor Status Warnings' had 2 rows of data; e-mail would be sent to proteomics@pnnl.gov
+                // Report 'Processor Status Warnings' had no data; e-mail sent to proteomics@pnnl.gov
+                // Report 'Processor Status Warnings' had no data; e-mail would be sent to proteomics@pnnl.gov
+                var reportAndEmailInfo = string.Format("{0}; e-mail {1} {2}", reportInfo, emailAction, formattedRecipients);
 
                 if (Options.PreviewMode)
                 {
                     Console.WriteLine();
-                    Console.WriteLine("Preview of message to be e-mailed to " + formattedRecipients);
+                    Console.WriteLine(reportAndEmailInfo);
                     Console.WriteLine(reportHtml.ToString());
                     return;
                 }
@@ -214,11 +245,13 @@ namespace DMS_Email_Manager
                 var mailClient = new System.Net.Mail.SmtpClient(Options.EmailServer);
                 mailClient.Send(msg);
 
+                LogMessage(reportInfo);
+
             }
             catch (Exception ex)
             {
-                HandleException(string.Format(
-                                    "Error e-mailing the results to {0} for report {1}", string.Join(",", mailSettings.Recipients), results.ReportName),
+                HandleException(string.Format("Error e-mailing the results to {0} for report '{1}'",
+                                              mailSettings.GetRecipients(","), results.ReportName),
                                 ex);
                 return;
             }
@@ -233,7 +266,7 @@ namespace DMS_Email_Manager
                 return childNode;
 
             if (warnIfMissing)
-                ShowWarning(string.Format("Ignoring report definition {0}; missing the {1} element", reportName, childNodeName));
+                ShowWarning(string.Format("Ignoring report definition '{0}'; missing the {1} element", reportName, childNodeName));
 
             return null;
 
@@ -392,14 +425,14 @@ namespace DMS_Email_Manager
                 {
                     if (!report.HasAttributes)
                     {
-                        ShowWarning("Ignoring report definition without a name attribute");
+                        ShowWarning("Ignoring report definition without any attributes");
                         continue;
                     }
 
                     var reportNameAttrib = report.Attribute("name");
                     if (reportNameAttrib == null)
                     {
-                        ShowWarning("Ignoring report definition without a name attribute");
+                        ShowWarning("Ignoring report definition without a 'name' attribute");
                         continue;
                     }
 
@@ -407,7 +440,14 @@ namespace DMS_Email_Manager
                     var reportName = reportNameAttrib.Value;
                     if (string.IsNullOrWhiteSpace(reportName))
                     {
-                        ShowWarning("Ignoring report definition with an empty string name attribute");
+                        ShowWarning("Ignoring report definition with an empty string 'name' attribute");
+                        continue;
+                    }
+
+                    if (mTasks.ContainsKey(reportName))
+                    {
+                        ShowWarning(string.Format("Duplicate report named '{0}' in the report definition file; only using the first instance",
+                                                  reportName));
                         continue;
                     }
 
@@ -420,7 +460,7 @@ namespace DMS_Email_Manager
                     }
                     else
                     {
-                        lastRun = DateTime.UtcNow;
+                        lastRun = DateTime.MinValue;
                         executionCount = 0;
                         mRuntimeInfo.Add(reportName, new TaskRuntimeInfo(lastRun));
                     }
@@ -448,7 +488,7 @@ namespace DMS_Email_Manager
                     var query = dataSourceInfo.Value;
                     if (string.IsNullOrWhiteSpace(query))
                     {
-                        ShowWarning(string.Format("Ignoring report definition {0}; query (or procedure name) not defined in the data element", reportName));
+                        ShowWarning(string.Format("Ignoring report definition '{0}'; query (or procedure name) not defined in the data element", reportName));
                         continue;
                     }
 
@@ -465,13 +505,13 @@ namespace DMS_Email_Manager
                         case "sproc":
                             if (string.IsNullOrWhiteSpace(sourceServer))
                             {
-                                ShowWarning(string.Format("Ignoring report definition {0}; server not defined in the data element", reportName));
+                                ShowWarning(string.Format("Ignoring report definition '{0}'; server not defined in the data element", reportName));
                                 continue;
                             }
 
                             if (string.IsNullOrWhiteSpace(sourceDB))
                             {
-                                ShowWarning(string.Format("Ignoring report definition {0}; database not defined in the data element", reportName));
+                                ShowWarning(string.Format("Ignoring report definition '{0}'; database not defined in the data element", reportName));
                                 continue;
                             }
 
@@ -490,7 +530,7 @@ namespace DMS_Email_Manager
                         case "wmi":
                             if (string.IsNullOrWhiteSpace(sourceHost))
                             {
-                                ShowWarning(string.Format("Ignoring report definition {0}; server or host not defined in the data element", reportName));
+                                ShowWarning(string.Format("Ignoring report definition '{0}'; server or host not defined in the data element", reportName));
                                 continue;
                             }
 
@@ -516,7 +556,7 @@ namespace DMS_Email_Manager
                             break;
 
                         default:
-                            ShowWarning(string.Format("Ignoring report definition {0}; invalid type {1} in the data element; should be {2}",
+                            ShowWarning(string.Format("Ignoring report definition '{0}'; invalid type {1} in the data element; should be {2}",
                                                       reportName, sourceType, "query, procedure, or wmi"));
                             continue;
                     }
@@ -527,7 +567,7 @@ namespace DMS_Email_Manager
                     var emailList = mailRecipients.Split(sepChars);
                     if (emailList.Length == 0)
                     {
-                        ShowWarning(string.Format("Ignoring report definition {0}; invalid to list {1} in the mail element; should be a comma separated list of e-mail addresses",
+                        ShowWarning(string.Format("Ignoring report definition '{0}'; invalid to list {1} in the mail element; should be a comma separated list of e-mail addresses",
                                                   reportName, sourceType));
                         continue;
                     }
@@ -614,7 +654,7 @@ namespace DMS_Email_Manager
                         }
                         else if (!TryParseTimeOfDay(timeOfDayText, out timeOfDay))
                         {
-                            ShowWarning(string.Format("Ignoring report definition {0}; invalid timeOfDay {1}; should be a time like '7:00 am' or '13:00'",
+                            ShowWarning(string.Format("Ignoring report definition '{0}'; invalid timeOfDay {1}; should be a time like '7:00 am' or '13:00'",
                                                       reportName, timeOfDayText));
                             continue;
                         }
@@ -633,7 +673,7 @@ namespace DMS_Email_Manager
 
                         if (!int.TryParse(delayInterval, out var interval))
                         {
-                            ShowWarning(string.Format("Ignoring report definition {0}; invalid interval {1}; should be an integer",
+                            ShowWarning(string.Format("Ignoring report definition '{0}'; invalid interval {1}; should be an integer",
                                                       reportName, delayInterval));
                             continue;
                         }
@@ -655,7 +695,7 @@ namespace DMS_Email_Manager
                             intervalUnits = NotificationTask.FrequencyInterval.Year;
                         else
                         {
-                            ShowWarning(string.Format("Ignoring report definition {0}; invalid interval units {1}; should be {2}",
+                            ShowWarning(string.Format("Ignoring report definition '{0}'; invalid interval units {1}; should be {2}",
                                                       reportName, delayInterval, "minutes, hours, days, weeks, months, or years"));
                             continue;
                         }
@@ -667,7 +707,7 @@ namespace DMS_Email_Manager
                     }
                     else
                     {
-                        ShowWarning(string.Format("Invalid frequency type {0} for report {1}; should be TimeOfDay or Interval", delayTypeText, reportName));
+                        ShowWarning(string.Format("Invalid frequency type {0} for report '{1}'; should be TimeOfDay or Interval", delayTypeText, reportName));
                         continue;
                     }
 
@@ -684,23 +724,24 @@ namespace DMS_Email_Manager
 
                         if (string.IsNullOrWhiteSpace(postMailServer))
                         {
-                            ShowWarning(string.Format("Error in report definition {0}; server not defined in the postMailHook element", reportName));
+                            ShowWarning(string.Format("Error in report definition '{0}'; server not defined in the postMailHook element", reportName));
                         }
                         else if (string.IsNullOrWhiteSpace(postMailDatabase))
                         {
-                            ShowWarning(string.Format("Error in report definition {0}; database not defined in the postMailHook element", reportName));
+                            ShowWarning(string.Format("Error in report definition '{0}'; database not defined in the postMailHook element", reportName));
                         }
                         else if (string.IsNullOrWhiteSpace(postMailProcedure))
                         {
-                            ShowWarning(string.Format("Error in report definition {0}; procedure not defined in the postMailHook element", reportName));
+                            ShowWarning(string.Format("Error in report definition '{0}'; procedure not defined in the postMailHook element", reportName));
                         }
                         else if (string.IsNullOrWhiteSpace(paramName))
                         {
-                            ShowWarning(string.Format("Error in report definition {0}; parameter name not defined in the postMailHook element", reportName));
+                            ShowWarning(string.Format("Error in report definition '{0}'; parameter name not defined in the postMailHook element", reportName));
                         }
                         else
                         {
-                            var postMailHook = new DataSourceSqlStoredProcedure(reportName, postMailServer, postMailDatabase, postMailProcedure) {
+                            var postMailHook = new DataSourceSqlStoredProcedure(reportName, postMailServer, postMailDatabase, postMailProcedure)
+                            {
                                 StoredProcParameter = paramName
                             };
 
@@ -714,23 +755,15 @@ namespace DMS_Email_Manager
                         }
                     }
 
-                    if (mTasks.ContainsKey(reportName))
-                    {
-                        ShowWarning(string.Format("Duplicate report named {0} in the report definition file; only using the first instance",
-                                                  reportName));
-                    }
-                    else
-                    {
-                        mTasks.Add(reportName, task);
+                    mTasks.Add(reportName, task);
 
-                        var frequencyDescription = task.GetFrequencyDescription();
+                    var frequencyDescription = task.GetFrequencyDescription();
 
-                        ShowMessage(string.Format("Added report {0} with frequency {1}, e-mailing {2}", reportName, frequencyDescription,
-                                                  task.EmailSettings.Recipients));
+                    ShowMessage(string.Format("Added report '{0}' running {1}, e-mailing {2}", reportName, frequencyDescription,
+                                              task.EmailSettings.GetRecipients(",")));
 
-                        RegisterEvents(task);
-                        task.TaskResultsAvailable += Task_TaskResultsAvailable;
-                    }
+                    RegisterEvents(task);
+                    task.TaskResultsAvailable += Task_TaskResultsAvailable;
 
                 }
 
@@ -738,7 +771,7 @@ namespace DMS_Email_Manager
                 {
                     if (!mTasks.ContainsKey(reportName))
                     {
-                        ShowMessage(string.Format("Removed report {0}", reportName));
+                        ShowMessage(string.Format("Removed report '{0}'", reportName));
                     }
                 }
 
@@ -855,8 +888,13 @@ namespace DMS_Email_Manager
             }
         }
 
+        /// <summary>
+        /// Run any tasks that need to be run
+        /// </summary>
+        /// <returns>The number of tasks that were run</returns>
         private void RunElapsedTasks()
         {
+
             foreach (var task in mTasks)
             {
                 try
@@ -870,7 +908,7 @@ namespace DMS_Email_Manager
                 }
                 catch (Exception ex)
                 {
-                    HandleException("Error running task " + task.Key, ex);
+                    HandleException(string.Format("Error running task '{0}'", task.Key), ex);
                 }
 
             }
@@ -962,7 +1000,7 @@ namespace DMS_Email_Manager
                     string.IsNullOrWhiteSpace(postMailIdListHook.StoredProcedureName))
                 {
                     ShowWarning(string.Format(
-                                    "Skipping sending the results ID list to the post mail stored procedure for report {0} " +
+                                    "Skipping sending the results ID list to the post mail stored procedure for report '{0}' " +
                                     "since Server, Database, or Stored Procedure name is empty", results.ReportName));
                     return;
                 }
@@ -970,7 +1008,7 @@ namespace DMS_Email_Manager
                 if (string.IsNullOrWhiteSpace(postMailIdListHook.StoredProcParameter))
                 {
                     ShowWarning(string.Format(
-                                    "Skipping sending the results ID list to the post mail stored procedure for report {0} " +
+                                    "Skipping sending the results ID list to the post mail stored procedure for report '{0}' " +
                                     "since the storced procedure parameter name is not defined; " +
                                     "define the first parameter name using parameter in the postMailIdListHook section", results.ReportName));
                     return;
@@ -1023,7 +1061,7 @@ namespace DMS_Email_Manager
             catch (Exception ex)
             {
                 HandleException(string.Format(
-                                    "Error sending the results ID list to the post mail stored procedure for report {0}", results.ReportName),
+                                    "Error sending the results ID list to the post mail stored procedure for report '{0}'", results.ReportName),
                                 ex);
 
             }
@@ -1038,13 +1076,7 @@ namespace DMS_Email_Manager
 
             try
             {
-                DateTime stopTime;
-                if (Options.MaxRuntimeHours > 0)
-                    stopTime = startTime.AddHours(Options.MaxRuntimeHours);
-                else
-                {
-                    stopTime = DateTime.MaxValue;
-                }
+                var stopTime = Options.MaxRuntimeHours > 0 ? startTime.AddHours(Options.MaxRuntimeHours) : DateTime.MaxValue;
 
                 mReportDefsFileChanged = false;
                 var success = ReadReportDefsFile(true);

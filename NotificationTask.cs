@@ -205,7 +205,8 @@ namespace DMS_Email_Manager
                 if (LastRun == DateTime.MinValue)
                 {
                     LastRun = ConstructTimeForToday(TimeOfDay).ToUniversalTime();
-                } else
+                }
+                else
                 {
                     var lastRunLocalTime = LastRun.ToLocalTime();
                     if (lastRunLocalTime.Hour != TimeOfDay.Hour || lastRunLocalTime.Minute != TimeOfDay.Minute)
@@ -286,9 +287,9 @@ namespace DMS_Email_Manager
             if (DelayType == FrequencyDelay.AtTimeOfDay)
             {
                 if (DaysOfWeek.Count == 0 || DaysOfWeek.Count >= 7)
-                    return string.Format("Daily at {0}", TimeOfDay.ToString());
+                    return string.Format("daily at {0}", TimeOfDay.ToString());
 
-                return string.Format("At {0} on {1}", TimeOfDay.ToString(), string.Join(", ", dayNames));
+                return string.Format("at {0} on {1}", TimeOfDay.ToString(), string.Join(", ", dayNames));
             }
 
             // DelayType is FrequencyDelay.IntervalBased
@@ -300,26 +301,26 @@ namespace DMS_Email_Manager
             switch (DelayIntervalUnits)
             {
                 case FrequencyInterval.Minute:
-                    frequency = string.Format("Every {0} {1}{2}", DelayInterval, "minute", plural);
+                    frequency = string.Format("every {0} {1}{2}", DelayInterval, "minute", plural);
                     break;
                 case FrequencyInterval.Hour:
-                    frequency = string.Format("Every {0} {1}{2}", DelayInterval, "hour", plural);
+                    frequency = string.Format("every {0} {1}{2}", DelayInterval, "hour", plural);
                     break;
                 case FrequencyInterval.Day:
-                    frequency = string.Format("Every {0} {1}{2}", DelayInterval, "day", plural);
+                    frequency = string.Format("every {0} {1}{2}", DelayInterval, "day", plural);
                     break;
                 case FrequencyInterval.Week:
-                    frequency = string.Format("Every {0} {1}{2}", DelayInterval, "week", plural);
+                    frequency = string.Format("every {0} {1}{2}", DelayInterval, "week", plural);
                     break;
                 case FrequencyInterval.Month:
-                    frequency = string.Format("Every {0} {1}{2}", DelayInterval, "month", plural);
+                    frequency = string.Format("every {0} {1}{2}", DelayInterval, "month", plural);
                     break;
                 case FrequencyInterval.Year:
-                    frequency = string.Format("Every {0} {1}{2}", DelayInterval, "year", plural);
+                    frequency = string.Format("every {0} {1}{2}", DelayInterval, "year", plural);
                     break;
                 default:
                     // Includes FrequencyInterval.Undefined:
-                    return "Undefined interval";
+                    return "Error: undefined interval";
             }
 
             if (DaysOfWeek.Count == 0 || DaysOfWeek.Count >= 7)
