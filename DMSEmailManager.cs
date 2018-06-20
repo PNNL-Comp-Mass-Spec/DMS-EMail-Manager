@@ -284,8 +284,15 @@ namespace DMS_Email_Manager
         private DateTime GetChildElementValue(XContainer node, string childNodeName, DateTime valueIfMissing)
         {
             var dataValue = GetChildElementValue(node, childNodeName, valueIfMissing.ToString(DATE_TIME_FORMAT));
+
             if (string.IsNullOrWhiteSpace(dataValue) || !DateTime.TryParse(dataValue, out var value))
                 return valueIfMissing;
+
+            if (dataValue.EndsWith("Z"))
+            {
+                // value is currently local time; change back to UTC
+                return value.ToUniversalTime();
+            }
 
             return value;
         }
