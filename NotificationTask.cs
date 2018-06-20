@@ -125,7 +125,7 @@ namespace DMS_Email_Manager
         /// Unique of this notification task
         /// </summary>
         /// <remarks>Used in log messages</remarks>
-        public string TaskID { get;  }
+        public string TaskID { get; }
 
         /// <summary>
         /// Time of day to retrieve data when the FrequencyDelay is AtTimeOfDay
@@ -407,6 +407,7 @@ namespace DMS_Email_Manager
             {
 
                 var results = DataSource.GetData();
+                ExecutionCount++;
 
                 OnResultsAvailable(results);
 
