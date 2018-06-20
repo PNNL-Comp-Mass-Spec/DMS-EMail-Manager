@@ -9,6 +9,11 @@ namespace DMS_Email_Manager
     {
 
         /// <summary>
+        /// The data source for this class is a stored procedure name
+        /// </summary>
+        public override string SourceDefinition => StoredProcedureName;
+
+        /// <summary>
         /// Stored procedure name
         /// </summary>
         public string StoredProcedureName { get; set; }

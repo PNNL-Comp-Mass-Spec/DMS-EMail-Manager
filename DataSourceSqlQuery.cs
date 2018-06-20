@@ -14,6 +14,11 @@ namespace DMS_Email_Manager
         public string Query { get; set; }
 
         /// <summary>
+        /// The data source for this class is a Query
+        /// </summary>
+        public override string SourceDefinition => Query;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="reportName">Report name (used for logging)</param>

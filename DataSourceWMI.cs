@@ -5,6 +5,22 @@ namespace DMS_Email_Manager
 {
     internal class DataSourceWMI : DataSourceBase
     {
+
+        /// <summary>
+        /// WMI host to contact
+        /// </summary>
+        public string HostName { get; internal set; }
+
+        /// <summary>
+        /// Query to run against WMI
+        /// </summary>
+        public string Query { get; internal set; }
+
+        /// <summary>
+        /// The data source for this class is a WMI Query
+        /// </summary>
+        public override string SourceDefinition => Query;
+
         /// <summary>
         /// Optional value to divide WMI report values by
         /// </summary>
@@ -25,16 +41,6 @@ namespace DMS_Email_Manager
         /// </summary>
         /// <remarks>Only used if ValueDivisor is non-zero</remarks>
         public string DivisorUnits { get; set; }
-
-        /// <summary>
-        /// WMI host to contact
-        /// </summary>
-        public string HostName { get; internal set; }
-
-        /// <summary>
-        /// Query to run against WMI
-        /// </summary>
-        public string Query { get; internal set; }
 
         /// <summary>
         /// Constructor

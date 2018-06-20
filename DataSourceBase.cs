@@ -14,6 +14,8 @@ namespace DMS_Email_Manager
             WMI = 2
         }
 
+        public abstract string SourceDefinition { get; }
+
         /// <summary>
         /// Data source type
         /// </summary>
