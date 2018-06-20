@@ -377,8 +377,9 @@ namespace DMS_Email_Manager
 
         private bool ReadReportDefsFile(bool firstLoad = false)
         {
-            var notifySettingOverride = firstLoad;
+            const string DEFAULT_TIME_OF_DAY = "7:00 am";
 
+            var notifySettingOverride = firstLoad;
 
             try
             {
@@ -394,7 +395,15 @@ namespace DMS_Email_Manager
                 var doc = XDocument.Load(Options.ReportDefinitionsFilePath);
 
                 var emailInfo = doc.Elements("reports").Elements("EmailInfo").FirstOrDefault();
-                if (emailInfo != null)
+                if (emailInfo == null)
+                {
+                    ShowMessage("The Report definitions file is missing the <EmailInfo> section; using defaults", true, 0, eMessageTypeConstants.Debug);
+                    Options.EmailServer = DMSEmailManagerOptions.DEFAULT_EMAIL_SERVER;
+                    Options.EmailFrom = DMSEmailManagerOptions.DEFAULT_EMAIL_FROM;
+                    Options.FontSizeHeader = DMSEmailManagerOptions.DEFAULT_FONT_SIZE_HEADER;
+                    Options.FontSizeBody = DMSEmailManagerOptions.DEFAULT_FONT_SIZE_BODY;
+                }
+                else
                 {
                     // Read the email options
                     var emailServer = GetElementAttribValue(emailInfo, "Server", DMSEmailManagerOptions.DEFAULT_EMAIL_SERVER);
@@ -639,18 +648,30 @@ namespace DMS_Email_Manager
                     var emailSettings = new EmailMessageSettings(emailList, mailSubject, reportTitle);
 
                     NotificationTask task;
+                    string assumedTimeOfDay;
 
-                    if (delayTypeText.ToLower().Contains("time"))
+                    if (string.IsNullOrWhiteSpace(delayTypeText))
+                    {
+                        ShowWarning(string.Format("Type attribute not found for the frequency element for report '{0}'; " +
+                                                  "will assume type=\"TimeOfDay\" and timeOfDay=\"{1}\"", reportName, DEFAULT_TIME_OF_DAY));
+                        assumedTimeOfDay = DEFAULT_TIME_OF_DAY;
+                    }
+                    else
+                    {
+                        assumedTimeOfDay = string.Empty;
+                    }
+
+                    if (delayTypeText.ToLower().Contains("time") || !string.IsNullOrWhiteSpace(assumedTimeOfDay))
                     {
                         // Run a report at a given time, every day, or certain days of the week
 
-                        var timeOfDayText = GetElementAttribValue(frequencyInfo, "timeOfDay", string.Empty);
+                        var timeOfDayText = GetElementAttribValue(frequencyInfo, "timeOfDay", assumedTimeOfDay);
 
                         LocalTime timeOfDay;
                         if (string.IsNullOrWhiteSpace(timeOfDayText))
                         {
-                            ShowWarning(string.Format("timeOfDay attribute not found for the frequency element for report {0}; will assume 7:00 am", reportName));
-                            timeOfDay = new LocalTime(7, 0);
+                            ShowWarning(string.Format("timeOfDay attribute not found for the frequency element for report '{0}'; will assume {1}", reportName, DEFAULT_TIME_OF_DAY));
+                            TryParseTimeOfDay(DEFAULT_TIME_OF_DAY, out timeOfDay);
                         }
                         else if (!TryParseTimeOfDay(timeOfDayText, out timeOfDay))
                         {
