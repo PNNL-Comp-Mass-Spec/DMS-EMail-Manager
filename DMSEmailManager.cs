@@ -110,6 +110,7 @@ namespace DMS_Email_Manager
 
             mReportDefsWatcher = new FileSystemWatcher(reportDefinitionsFile.DirectoryName, reportDefinitionsFile.Name);
             mReportDefsWatcher.Changed += ReportDefsWatcher_Changed;
+            mReportDefsWatcher.EnableRaisingEvents = true;
         }
 
         private void AddUpdateRuntimeInfo(KeyValuePair<string, NotificationTask> task)
