@@ -196,7 +196,6 @@ namespace DMS_Email_Manager
         private void ComputeNextRunTime()
         {
             DateTime nextRunUtc;
-            TimeSpan incrementLength;
 
             if (DelayType == FrequencyDelay.AtTimeOfDay)
             {
@@ -219,8 +218,13 @@ namespace DMS_Email_Manager
                     }
                 }
 
-                incrementLength = new TimeSpan(1, 0, 0, 0);
-                nextRunUtc = LastRun.Add(incrementLength);
+                var oneDay = new TimeSpan(1, 0, 0, 0);
+                nextRunUtc = LastRun.Add(oneDay);
+
+                while (nextRunUtc < DateTime.UtcNow)
+                {
+                    nextRunUtc = nextRunUtc.Add(oneDay);
+                }
             }
             else
             {
@@ -240,12 +244,6 @@ namespace DMS_Email_Manager
                 }
 
                 nextRunUtc = LastRun.Add(DelayPeriodAsTimeSpan);
-                incrementLength = DelayPeriodAsTimeSpan;
-            }
-
-            while (nextRunUtc < DateTime.UtcNow)
-            {
-                nextRunUtc = nextRunUtc.Add(incrementLength);
             }
 
             // Note that we'll consider the DaysOfWeek filter just prior to actually retrieving the data
