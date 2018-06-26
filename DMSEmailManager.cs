@@ -1049,14 +1049,50 @@ namespace DMS_Email_Manager
                     }
                 }
 
+                /*
+                 * Older style XML generation method using XmlTextWriter
 
-                    using (var writer = XmlWriter.Create(fileWriter, settings))
+                    var reportStatusFileTemp2 = new FileInfo(Path.Combine(GetAppFolderPath(), REPORT_STATUS_FILE_NAME + ".tmp"));
+
+                    var writer = new XmlTextWriter(reportStatusFileTemp2.FullName, System.Text.Encoding.UTF8);
+                    writer.WriteStartDocument(true);
+                    writer.Formatting = Formatting.Indented;
+                    writer.Indentation = 2;
+                    writer.WriteStartElement("Reports");
+                    foreach (var task in mTasks)
                     {
-                        masterDoc.Save(writer);
+                        writer.WriteStartElement("Report");
+                        writer.WriteAttributeString("name", task.Key);
+
+                        writer.WriteStartElement("LastRunUTC");
+                        writer.WriteString(task.Value.LastRun.ToString("O"));
+                        writer.WriteEndElement();
+
+                        writer.WriteStartElement("NextRunUTC");
+                        writer.WriteString(task.Value.NextRun.ToString("O"));
+                        writer.WriteEndElement();
+
+                        writer.WriteStartElement("ExecutionCount");
+                        writer.WriteString(task.Value.ExecutionCount.ToString());
+                        writer.WriteEndElement();
+
+                        writer.WriteStartElement("SourceType");
+                        writer.WriteString(task.Value.DataSource.SourceType.ToString());
+                        writer.WriteEndElement();
+
+                        writer.WriteStartElement("SourceQuery");
+                        writer.WriteString(task.Value.DataSource.SourceDefinition);
+                        writer.WriteEndElement();
+
+                        writer.WriteEndElement(); // </Report>
                     }
 
-                }
+                    writer.WriteEndElement();   // </Reports>
+                    writer.WriteEndDocument();
+                    writer.Close();
 
+                 *
+                 */
 
                 // Backup the current reportStatusFile
                 currentTask = "Preparing to backup the reportStatusFile";
@@ -1162,6 +1198,10 @@ namespace DMS_Email_Manager
             }
         }
 
+        /// <summary>
+        /// Read task definitions then monitor the tasks and run them at the specified time
+        /// </summary>
+        /// <returns></returns>
         public bool Start()
         {
             var startTime = DateTime.UtcNow;
@@ -1219,6 +1259,7 @@ namespace DMS_Email_Manager
                 {
                     SaveReportStatusFile();
                 }
+
                 return true;
             }
             catch (Exception ex)
