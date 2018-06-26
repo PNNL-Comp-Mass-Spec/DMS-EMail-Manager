@@ -432,10 +432,22 @@ namespace DMS_Email_Manager
 
             try
             {
-                var existingTasks = new SortedSet<string>();
-                foreach (var reportName in mTasks.Keys)
+                if (firstLoad)
                 {
-                    existingTasks.Add(reportName);
+                    Console.WriteLine();
+                    Console.WriteLine("Reading report definitions");
+                }
+                else
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Updating report definitions");
+                }
+
+                var existingTasks = new SortedSet<string>();
+                foreach (var task in mTasks)
+                {
+                    existingTasks.Add(task.Key);
+                    AddUpdateRuntimeInfo(task);
                 }
 
                 // Re-populate mTasks every time we read the report definitions file
