@@ -6,7 +6,7 @@ namespace DMS_Email_Manager
 {
     public class DMSEmailManagerOptions
     {
-        private const string PROGRAM_DATE = "June 18, 2018";
+        private const string PROGRAM_DATE = "June 25, 2018";
 
         public const string DEFAULT_EMAIL_SERVER = "emailgw.pnl.gov";
         public const string DEFAULT_EMAIL_FROM = "proteomics@pnnl.gov";
@@ -82,10 +82,14 @@ namespace DMS_Email_Manager
             return version;
         }
 
-        public void OutputSetOptions()
+        public void OutputSetOptions(bool showVersion = true)
         {
-            Console.WriteLine("DMSEmailManager, version " + GetAppVersion());
-            Console.WriteLine();
+            if (showVersion)
+            {
+                Console.WriteLine("DMSEmailManager, version " + GetAppVersion());
+                Console.WriteLine();
+            }
+
             Console.WriteLine("Using options:");
 
             Console.WriteLine(" Report Definitions File: {0}", ReportDefinitionsFilePath);

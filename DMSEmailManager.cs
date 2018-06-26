@@ -1179,7 +1179,8 @@ namespace DMS_Email_Manager
                 if (!success)
                     return false;
 
-                Options.OutputSetOptions();
+                Console.WriteLine();
+                Options.OutputSetOptions(false);
 
                 if (Options.RunOnce)
                 {
