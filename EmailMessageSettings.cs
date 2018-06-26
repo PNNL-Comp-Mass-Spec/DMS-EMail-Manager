@@ -23,12 +23,18 @@ namespace DMS_Email_Manager
         public string ReportTitle { get; set; }
 
         /// <summary>
+        /// Send an e-mail even if the report has no rows of data
+        /// </summary>
+        public bool MailIfEmpty { get; set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="emailList"></param>
         /// <param name="mailSubject"></param>
         /// <param name="reportTitle"></param>
-        public EmailMessageSettings(ICollection<string> emailList, string mailSubject, string reportTitle)
+        /// <param name="mailIfEmpty"></param>
+        public EmailMessageSettings(ICollection<string> emailList, string mailSubject, string reportTitle, bool mailIfEmpty)
         {
             Recipients = new SortedSet<string>();
             foreach (var mailAddress in emailList.Distinct())
@@ -39,6 +45,8 @@ namespace DMS_Email_Manager
             Subject = mailSubject;
 
             ReportTitle = reportTitle;
+
+            MailIfEmpty = mailIfEmpty;
         }
 
         /// <summary>

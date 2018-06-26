@@ -207,19 +207,43 @@ namespace DMS_Email_Manager
 
                 var formattedRecipients = mailSettings.GetRecipients(",");
 
-                var emailAction = Options.PreviewMode ? "would be sent to" : "sent to";
+                string reportAndEmailInfo;
+                bool sendMail;
 
-                // Report 'Processor Status Warnings' had 2 rows of data; e-mail sent to proteomics@pnnl.gov
-                // Report 'Processor Status Warnings' had 2 rows of data; e-mail would be sent to proteomics@pnnl.gov
-                // Report 'Processor Status Warnings' had no data; e-mail sent to proteomics@pnnl.gov
-                // Report 'Processor Status Warnings' had no data; e-mail would be sent to proteomics@pnnl.gov
-                var reportAndEmailInfo = string.Format("{0}; e-mail {1} {2}", reportInfo, emailAction, formattedRecipients);
+                if (results.DataRows.Count == 0 && !mailSettings.MailIfEmpty)
+                {
+                    // Do not mail this report since it's empty
+                    reportAndEmailInfo = string.Format("{0}; e-mail will not be sent ({1:h:mm:ss tt})", reportInfo, DateTime.Now);
+                    sendMail = false;
+                }
+                else
+                {
+                    var emailAction = Options.PreviewMode ? "would be sent to" : "sent to";
+
+                    // Report 'Processor Status Warnings' had 2 rows of data; e-mail sent to proteomics@pnnl.gov
+                    // Report 'Processor Status Warnings' had 2 rows of data; e-mail would be sent to proteomics@pnnl.gov
+                    // Report 'Processor Status Warnings' had no data; e-mail sent to proteomics@pnnl.gov
+                    // Report 'Processor Status Warnings' had no data; e-mail would be sent to proteomics@pnnl.gov
+                    reportAndEmailInfo = string.Format("{0}; e-mail {1} {2}", reportInfo, emailAction, formattedRecipients);
+                    sendMail = true;
+                }
 
                 if (Options.PreviewMode)
                 {
                     Console.WriteLine();
                     Console.WriteLine(reportAndEmailInfo);
-                    Console.WriteLine(reportHtml.ToString());
+                    if (results.DataRows.Count > 0)
+                    {
+                        Console.WriteLine(titleHtml);
+                        Console.WriteLine(dataHtml.ToString());
+                    }
+                    return;
+                }
+
+                if (!sendMail)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine(reportAndEmailInfo);
                     return;
                 }
 
@@ -591,6 +615,8 @@ namespace DMS_Email_Manager
                     var mailSubject = GetElementAttribValue(mailInfo, "subject", string.Empty);
                     var reportTitle = GetElementAttribValue(mailInfo, "title", string.Empty);
 
+                    var mailIfEmpty = GetElementAttribValue(mailInfo, "mailIfEmpty", true);
+
                     // This is a legacy setting
                     var legacyFrequencyDaily = GetElementAttribValue(frequencyInfo, "daily", false);
 
@@ -652,7 +678,7 @@ namespace DMS_Email_Manager
 
                     var delayTypeText = GetElementAttribValue(frequencyInfo, "type", string.Empty);
 
-                    var emailSettings = new EmailMessageSettings(emailList, mailSubject, reportTitle);
+                    var emailSettings = new EmailMessageSettings(emailList, mailSubject, reportTitle, mailIfEmpty);
 
                     NotificationTask task;
                     string assumedTimeOfDay;
