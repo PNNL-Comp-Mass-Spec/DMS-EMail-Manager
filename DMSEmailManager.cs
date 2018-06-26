@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -320,8 +321,19 @@ namespace DMS_Email_Manager
 
             if (dataValue.EndsWith("Z"))
             {
-                // value is currently local time; change back to UTC
-                return value.ToUniversalTime();
+                // Value is currently local time; change back to UTC
+
+                try
+                {
+
+                    var roundTripBased = DateTime.ParseExact(dataValue, "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+                    return roundTripBased.ToUniversalTime();
+                }
+                catch (Exception)
+                {
+                    return value.ToUniversalTime();
+                }
+
             }
 
             return value;
@@ -988,16 +1000,20 @@ namespace DMS_Email_Manager
 
                 currentTask = "Opening the temp status info file for writing";
 
-                // Generate the XML using LINQ to XML
-                // https://stackoverflow.com/a/2076568
+                // Generate the XML using LINQ to XML https://stackoverflow.com/a/2076568/1179467
+
+                // Use .ToString("O") to guarantee that the correct universal time is loaded in ReadReportStatusFile
+                // when we use DateTime.ParseExact(dataValue, "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+                // For more info, seee https://stackoverflow.com/a/12064151/1179467
 
                 var masterDoc = new XDocument(
+                    new XDeclaration("1.0", "utf-8", "yes"),
                     new XElement("Reports",
                         mTasks.Select(task =>
                             new XElement("Report",
                                 new XAttribute("name", task.Key),
-                                new XElement("LastRunUTC", task.Value.LastRun),
-                                new XElement("NextRunUTC", task.Value.NextRun),
+                                new XElement("LastRunUTC", task.Value.LastRun.ToString("O")),
+                                new XElement("NextRunUTC", task.Value.NextRun.ToString("O")),
                                 new XElement("ExecutionCount", task.Value.ExecutionCount),
                                 new XElement("SourceType", task.Value.DataSource.SourceType),
                                 new XElement("SourceQuery", task.Value.DataSource.SourceDefinition)
@@ -1009,11 +1025,17 @@ namespace DMS_Email_Manager
                 {
                     Indent = true,
                     IndentChars = "  ",
-                    OmitXmlDeclaration = true
+                    OmitXmlDeclaration = false
                 };
 
                 using (var fileWriter = new StreamWriter(new FileStream(reportStatusFileTemp.FullName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
                 {
+                    using (var xmlWriter = XmlWriter.Create(fileWriter, settings))
+                    {
+                        masterDoc.Save(xmlWriter);
+                    }
+                }
+
 
                     using (var writer = XmlWriter.Create(fileWriter, settings))
                     {
