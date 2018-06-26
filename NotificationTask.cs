@@ -408,6 +408,7 @@ namespace DMS_Email_Manager
 
                 var results = DataSource.GetData();
                 ExecutionCount++;
+                LastRun = DateTime.UtcNow;
 
                 OnResultsAvailable(results);
 
@@ -458,8 +459,9 @@ namespace DMS_Email_Manager
             else
             {
                 // Running a task at a regular interval
-                if (DelayPeriod.Seconds == 0)
+                if (DelayPeriod.ToDuration().TotalSeconds < 1)
                 {
+                    // DelayPeriod is 0
                     // Default to run daily
                     NextRun = DateTime.UtcNow.Add(new TimeSpan(1, 0, 0, 0));
                 }
