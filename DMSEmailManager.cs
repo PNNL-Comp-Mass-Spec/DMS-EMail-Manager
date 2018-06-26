@@ -140,46 +140,49 @@ namespace DMS_Email_Manager
             try
             {
 
-                var reportHtml = new StringBuilder();
+                var titleHtml = "<h3>" + mailSettings.ReportTitle + "</h3>";
+                var dataHtml = new StringBuilder();
 
                 if (results.ColumnNames.Count == 0 || results.DataRows.Count == 0)
                 {
-                    reportHtml.AppendLine(NO_DATA);
+                    dataHtml.AppendLine(NO_DATA);
                 }
                 else
                 {
                     // Construct the header row
-                    reportHtml.AppendLine("<table>");
-                    reportHtml.AppendLine("<tr class = table-header>");
+                    dataHtml.AppendLine("<table>");
+                    dataHtml.Append("<tr class = table-header>");
                     foreach (var headerCol in results.ColumnNames)
                     {
-                        reportHtml.Append("<td>");
-                        reportHtml.Append(headerCol);
-                        reportHtml.Append("</td>");
+                        dataHtml.Append("<td>");
+                        dataHtml.Append(headerCol);
+                        dataHtml.Append("</td>");
                     }
-                    reportHtml.AppendLine("</tr>");
+                    dataHtml.AppendLine("</tr>");
 
                     for (var i = 0; i < results.DataRows.Count; i++)
                     {
                         if (i % 2 == 0)
                         {
-                            reportHtml.Append("<tr class = table-row>");
+                            dataHtml.Append("<tr class = table-row>");
                         }
                         else
                         {
-                            reportHtml.Append("<tr class = table-alternate-row>");
+                            dataHtml.Append("<tr class = table-alternate-row>");
                         }
 
                         var currentRow = results.DataRows[i];
                         foreach (var dataVal in currentRow)
                         {
-                            reportHtml.Append("<td>");
-                            reportHtml.Append(dataVal);
-                            reportHtml.Append("</td>");
+                            dataHtml.Append("<td>");
+                            dataHtml.Append(dataVal);
+                            dataHtml.Append("</td>");
                         }
 
-                        reportHtml.AppendLine("</tr>");
+                        dataHtml.AppendLine("</tr>");
                     }
+
+                    dataHtml.AppendLine("</table>");
                 }
 
                 string reportInfo;
@@ -201,7 +204,7 @@ namespace DMS_Email_Manager
                 {
                     Console.WriteLine();
                     Console.WriteLine(reportInfo);
-                    Console.WriteLine(reportHtml.ToString());
+                    Console.WriteLine(dataHtml.ToString());
                     return;
                 }
 
@@ -250,13 +253,16 @@ namespace DMS_Email_Manager
                 var emailBody = new StringBuilder();
 
                 emailBody.AppendLine("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">");
-                emailBody.AppendLine("<html><head>");
-                emailBody.AppendLine(GetCssStyle());
-                emailBody.AppendLine("</head><body>");
+                emailBody.AppendLine("<html>");
+                emailBody.AppendLine("<head>");
+                emailBody.Append(GetCssStyle());
+                emailBody.AppendLine("</head>");
+                emailBody.AppendLine("<body>");
 
-                emailBody.AppendLine("<h3>" + mailSettings.ReportTitle + "</h3>");
-                emailBody.AppendLine(reportHtml.ToString());
-                emailBody.AppendLine("</body></html>");
+                emailBody.AppendLine(titleHtml);
+                emailBody.AppendLine(dataHtml.ToString());
+                emailBody.AppendLine("</body>");
+                emailBody.AppendLine("</html>");
 
                 var msg = new System.Net.Mail.MailMessage(Options.EmailFrom, formattedRecipients)
                 {
@@ -334,7 +340,7 @@ namespace DMS_Email_Manager
         {
             var cssStyle = new StringBuilder();
 
-            cssStyle.AppendLine("<style type=\"text / css\" media=\"all\" > ");
+            cssStyle.AppendLine("<style type=\"text/css\" media=\"all\">");
             cssStyle.AppendLine(string.Format("body {{ font: {0}px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }}", Options.FontSizeBody));
             cssStyle.AppendLine(string.Format("h3 {{ font: {0}px Verdana, Arial, Helvetica, sans-serif; }}", Options.FontSizeHeader));
             cssStyle.AppendLine("table { margin: 4px; border-style: ridge; border-width: 2px; }");
