@@ -82,7 +82,7 @@ namespace DMS_Email_Manager
             }
 
             mLogFileUsesDateStamp = true;
-            ShowMessage("Starting the DMS Email Manager");
+            LogMessage("Starting the DMS Email Manager");
 
             if (string.IsNullOrWhiteSpace(Options.ReportDefinitionsFilePath))
             {
@@ -459,7 +459,7 @@ namespace DMS_Email_Manager
                 var emailInfo = doc.Elements("reports").Elements("EmailInfo").FirstOrDefault();
                 if (emailInfo == null)
                 {
-                    ShowMessage("The Report definitions file is missing the <EmailInfo> section; using defaults", true, 0, eMessageTypeConstants.Debug);
+                    LogMessage("The Report definitions file is missing the <EmailInfo> section; using defaults", eMessageTypeConstants.Debug);
                     Options.EmailServer = DMSEmailManagerOptions.DEFAULT_EMAIL_SERVER;
                     Options.EmailFrom = DMSEmailManagerOptions.DEFAULT_EMAIL_FROM;
                     Options.FontSizeHeader = DMSEmailManagerOptions.DEFAULT_FONT_SIZE_HEADER;
@@ -844,8 +844,19 @@ namespace DMS_Email_Manager
 
                     var frequencyDescription = task.GetFrequencyDescription();
 
-                    ShowMessage(string.Format("Added report '{0}' running {1}, e-mailing {2}", reportName, frequencyDescription,
-                                              task.EmailSettings.GetRecipients(",")));
+                    string spacePadding;
+                    if (reportName.Length < maxReportNameLength)
+                        spacePadding = new string(' ', maxReportNameLength - reportName.Length);
+                    else
+                        spacePadding = string.Empty;
+
+                    Console.WriteLine();
+                    LogMessage(string.Format("Added report '{0}'{1} running {2}, e-mailing {3}",
+                                              reportName, spacePadding, frequencyDescription, task.EmailSettings.GetRecipients(",")));
+
+                    var nextRunLocalTime = task.NextRun.ToLocalTime();
+
+                    LogMessage(string.Format("will next run on {0:d} at {1:h:mm:ss tt}", nextRunLocalTime, nextRunLocalTime), eMessageTypeConstants.Debug);
 
                     RegisterEvents(task);
                     task.TaskResultsAvailable += Task_TaskResultsAvailable;
@@ -856,7 +867,8 @@ namespace DMS_Email_Manager
                 {
                     if (!mTasks.ContainsKey(reportName))
                     {
-                        ShowMessage(string.Format("Removed report '{0}'", reportName));
+                        Console.WriteLine();
+                        LogMessage(string.Format("Removed report '{0}'", reportName));
                     }
                 }
 
