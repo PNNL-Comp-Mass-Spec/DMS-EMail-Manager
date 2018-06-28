@@ -26,8 +26,6 @@ namespace DMS_Email_Manager
 
         private const string REPORT_STATUS_FILE_NAME = "ReportStatusFile.xml";
 
-        private const int REPORT_STATUS_FILE_UPDATE_INTERVAL_MINUTES = 15;
-
         #endregion
 
         #region "Fields"
@@ -40,7 +38,7 @@ namespace DMS_Email_Manager
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private readonly FileSystemWatcher mReportDefsWatcher;
 
-        private bool mRuntimeInfoSaveRequired;
+        private int mUnsavedRuntimeInfoCount;
 
         /// <summary>
         /// Keys are task names, values are Notification Tasks
@@ -113,7 +111,7 @@ namespace DMS_Email_Manager
             mReportDefsWatcher.EnableRaisingEvents = true;
         }
 
-        private void AddUpdateRuntimeInfo(KeyValuePair<string, NotificationTask> task)
+        private void AddUpdateRuntimeInfo(KeyValuePair<string, NotificationTask> task, bool updateUnsavedRuntimeInfoCount)
         {
             if (mRuntimeInfo.TryGetValue(task.Key, out var taskRuntimeInfo))
             {
@@ -130,8 +128,8 @@ namespace DMS_Email_Manager
                 mRuntimeInfo.Add(task.Key, newRuntimeInfo);
             }
 
-            mRuntimeInfoSaveRequired = true;
-
+            if (updateUnsavedRuntimeInfoCount)
+                mUnsavedRuntimeInfoCount++;
         }
 
         private void EmailResults(
@@ -995,7 +993,7 @@ namespace DMS_Email_Manager
                     if (!taskRun)
                         continue;
 
-                    AddUpdateRuntimeInfo(task);
+                    AddUpdateRuntimeInfo(task, true);
                 }
                 catch (Exception ex)
                 {
@@ -1016,12 +1014,14 @@ namespace DMS_Email_Manager
             {
                 try
                 {
+                    var nextRunSaved = task.Value.NextRun;
+
                     var taskRun = task.Value.RunTaskNowIfRequired();
 
-                    if (!taskRun)
+                    if (!taskRun && nextRunSaved == task.Value.NextRun)
                         continue;
 
-                    AddUpdateRuntimeInfo(task);
+                    AddUpdateRuntimeInfo(task, true);
                 }
                 catch (Exception ex)
                 {
@@ -1141,12 +1141,11 @@ namespace DMS_Email_Manager
                 currentTask = string.Format("Renaming {0} to {1}", reportStatusFileTemp.Name, reportStatusFile.Name);
                 reportStatusFileTemp.MoveTo(reportStatusFile.FullName);
 
-                mRuntimeInfoSaveRequired = false;
+                mUnsavedRuntimeInfoCount = 0;
             }
             catch (Exception ex)
             {
                 HandleException("Error saving the report status file, current task " + currentTask, ex);
-
             }
         }
 
@@ -1239,7 +1238,6 @@ namespace DMS_Email_Manager
             var startTime = DateTime.UtcNow;
 
             var lastTaskCheckTime = DateTime.UtcNow;
-            var lastStatusWriteTime = DateTime.UtcNow;
 
             try
             {
@@ -1258,6 +1256,7 @@ namespace DMS_Email_Manager
                 if (Options.RunOnce)
                 {
                     RunAllTasks();
+                    SaveReportStatusFile();
                     return true;
                 }
 
@@ -1277,17 +1276,19 @@ namespace DMS_Email_Manager
                         RunElapsedTasks();
                     }
 
-                    if (DateTime.UtcNow.Subtract(lastStatusWriteTime).TotalMinutes >= REPORT_STATUS_FILE_UPDATE_INTERVAL_MINUTES)
+                    if (mUnsavedRuntimeInfoCount > 0)
                     {
-                        lastStatusWriteTime = DateTime.UtcNow;
-                        if (mRuntimeInfoSaveRequired)
+                        SaveReportStatusFile();
+
+                        if (mUnsavedRuntimeInfoCount > 0)
                         {
-                            SaveReportStatusFile();
+                            ShowWarning("SaveReportStatusFile was unable to save the ReportStatus file; manually setting Unsaved Runtime Info Count to 0");
+                            mUnsavedRuntimeInfoCount = 0;
                         }
                     }
                 }
 
-                if (mRuntimeInfoSaveRequired)
+                if (mUnsavedRuntimeInfoCount > 0)
                 {
                     SaveReportStatusFile();
                 }
@@ -1297,11 +1298,6 @@ namespace DMS_Email_Manager
             catch (Exception ex)
             {
                 HandleException("Error in main loop", ex);
-
-                if (mRuntimeInfoSaveRequired)
-                {
-                    SaveReportStatusFile();
-                }
                 return false;
             }
 
