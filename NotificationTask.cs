@@ -222,10 +222,11 @@ namespace DMS_Email_Manager
                 var oneDay = new TimeSpan(1, 0, 0, 0);
                 nextRunUtc = LastRun.Add(oneDay);
 
-                while (nextRunUtc < DateTime.UtcNow)
+                while (DateTime.UtcNow.Subtract(nextRunUtc).TotalHours > 24)
                 {
                     nextRunUtc = nextRunUtc.Add(oneDay);
                 }
+
             }
             else
             {
@@ -241,9 +242,10 @@ namespace DMS_Email_Manager
 
                 if (LastRun == DateTime.MinValue)
                 {
-                    LastRun = DateTime.UtcNow;
+                    LastRun = DateTime.UtcNow.Subtract(DelayPeriodAsTimeSpan);
                 }
 
+                // Note that if this time is in the past, the task will run the next time RunTaskNowIfRequired is called
                 nextRunUtc = LastRun.Add(DelayPeriodAsTimeSpan);
             }
 
@@ -454,9 +456,11 @@ namespace DMS_Email_Manager
             if (NextRun > DateTime.UtcNow)
                 return false;
 
-            UpdateNextRuntime();
+            var scheduledRunTime = NextRun;
 
-            if (DaysOfWeek.Count == 0 || DaysOfWeek.Contains(DateTime.Now.DayOfWeek))
+            var nextRuntimeMessage = UpdateNextRuntime();
+
+            if (DaysOfWeek.Count == 0 || DaysOfWeek.Contains(scheduledRunTime.DayOfWeek))
             {
                 RunTask();
 
@@ -465,6 +469,9 @@ namespace DMS_Email_Manager
             }
 
             // Do not run tasks on this day of the week
+            // However, do update LastRun
+            LastRun = DateTime.UtcNow;
+
             return false;
 
         }
