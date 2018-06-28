@@ -766,7 +766,9 @@ namespace DMS_Email_Manager
                         var lcaseUnits = delayIntervalUnits.ToLower();
                         NotificationTask.FrequencyInterval intervalUnits;
 
-                        if (lcaseUnits.Contains("minute"))
+                        if (lcaseUnits.Contains("second"))
+                            intervalUnits = NotificationTask.FrequencyInterval.Second;
+                        else if (lcaseUnits.Contains("minute"))
                             intervalUnits = NotificationTask.FrequencyInterval.Minute;
                         else if (lcaseUnits.Contains("hour"))
                             intervalUnits = NotificationTask.FrequencyInterval.Hour;
@@ -781,7 +783,7 @@ namespace DMS_Email_Manager
                         else
                         {
                             ShowWarning(string.Format("Ignoring report definition '{0}'; invalid interval units {1}; should be {2}",
-                                                      reportName, delayInterval, "minutes, hours, days, weeks, months, or years"));
+                                                      reportName, delayInterval, "seconds, minutes, hours, days, weeks, months, or years"));
                             continue;
                         }
 
@@ -1295,7 +1297,7 @@ namespace DMS_Email_Manager
                 return false;
             }
 
-            timeOfDay = new LocalTime(parsedTime.Hour, parsedTime.Minute);
+            timeOfDay = new LocalTime(parsedTime.Hour, parsedTime.Minute, parsedTime.Second);
             return true;
         }
 

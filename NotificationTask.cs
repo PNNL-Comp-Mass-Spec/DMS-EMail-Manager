@@ -40,12 +40,13 @@ namespace DMS_Email_Manager
         public enum FrequencyInterval
         {
             Undefined = 0,
-            Minute = 1,
-            Hour = 2,
-            Day = 3,
-            Week = 4,
-            Month = 5,
-            Year = 6
+            Second = 1,
+            Minute = 2,
+            Hour = 3,
+            Day = 4,
+            Week = 5,
+            Month = 6,
+            Year = 7
         }
 
         #endregion
@@ -254,7 +255,8 @@ namespace DMS_Email_Manager
         private DateTime ConstructTimeForDate(DateTime referenceDate, LocalTime timeOfDay)
         {
             var referenceDateLocal = referenceDate.ToLocalTime();
-            var dateTime = new DateTime(referenceDateLocal.Year, referenceDateLocal.Month, referenceDateLocal.Day, timeOfDay.Hour, timeOfDay.Minute, 0);
+            var dateTime = new DateTime(referenceDateLocal.Year, referenceDateLocal.Month, referenceDateLocal.Day,
+                                        timeOfDay.Hour, timeOfDay.Minute, timeOfDay.Second);
             return dateTime;
         }
 
@@ -298,6 +300,9 @@ namespace DMS_Email_Manager
 
             switch (DelayIntervalUnits)
             {
+                case FrequencyInterval.Second:
+                    frequency = string.Format("every {0} {1}{2}", DelayInterval, "second", plural);
+                    break;
                 case FrequencyInterval.Minute:
                     frequency = string.Format("every {0} {1}{2}", DelayInterval, "minute", plural);
                     break;
@@ -333,6 +338,8 @@ namespace DMS_Email_Manager
             // DelayType is FrequencyDelay.IntervalBased
             switch (intervalUnits)
             {
+                case FrequencyInterval.Second:
+                    return Period.FromSeconds(interval);
                 case FrequencyInterval.Minute:
                     return Period.FromMinutes(interval);
                 case FrequencyInterval.Hour:
