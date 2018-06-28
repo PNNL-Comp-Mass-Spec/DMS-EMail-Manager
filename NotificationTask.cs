@@ -359,6 +359,20 @@ namespace DMS_Email_Manager
         }
 
         /// <summary>
+        /// Get a runtime info object for this task
+        /// </summary>
+        /// <returns></returns>
+        public TaskRuntimeInfo GetRuntimeInfo()
+        {
+            return new TaskRuntimeInfo(LastRun, ExecutionCount)
+            {
+                NextRun = NextRun,
+                SourceType = DataSource.SourceType,
+                SourceDefinition = DataSource.SourceDefinition
+            };
+        }
+
+        /// <summary>
         /// Send the results to the caller via an event
         /// </summary>
         /// <param name="results">Report data</param>

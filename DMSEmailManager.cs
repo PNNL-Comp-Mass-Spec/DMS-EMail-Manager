@@ -121,11 +121,8 @@ namespace DMS_Email_Manager
             }
             else
             {
-                var newRuntimeInfo = new TaskRuntimeInfo(task.Value.LastRun, task.Value.ExecutionCount)
-                {
-                    NextRun = task.Value.NextRun
-                };
-                mRuntimeInfo.Add(task.Key, newRuntimeInfo);
+                var runtimeInfo = task.Value.GetRuntimeInfo();
+                mRuntimeInfo.Add(task.Key, runtimeInfo);
             }
 
             if (updateUnsavedRuntimeInfoCount)
@@ -443,11 +440,30 @@ namespace DMS_Email_Manager
                 }
 
                 var existingTasks = new SortedSet<string>();
-                foreach (var task in mTasks)
+
+                var maxReportNameLength = 0;
+
+                if (mTasks.Count > 0)
                 {
-                    existingTasks.Add(task.Key);
-                    AddUpdateRuntimeInfo(task);
+                    foreach (var task in mTasks)
+                    {
+                        existingTasks.Add(task.Key);
+                        AddUpdateRuntimeInfo(task, false);
+                        if (task.Key.Length > maxReportNameLength)
+                            maxReportNameLength = task.Key.Length;
+                    }
                 }
+                else
+                {
+                    foreach (var runtimeInfo in mRuntimeInfo)
+                    {
+                        if (runtimeInfo.Key.Length > maxReportNameLength)
+                            maxReportNameLength = runtimeInfo.Key.Length;
+                    }
+                }
+
+                if (maxReportNameLength > 40)
+                    maxReportNameLength = 40;
 
                 // Re-populate mTasks every time we read the report definitions file
                 mTasks.Clear();
@@ -1041,9 +1057,23 @@ namespace DMS_Email_Manager
 
             try
             {
-                var reportStatusFileTemp = new FileInfo(Path.Combine(GetAppFolderPath(), REPORT_STATUS_FILE_NAME + ".tmp"));
 
-                currentTask = "Opening the temp status info file for writing";
+                currentTask = "Finding extra runtime info to save";
+
+                // Create a list of runtime info using both mTasks and mRuntimeInfo
+
+                var runtimeInfo = new Dictionary<string, TaskRuntimeInfo>();
+
+                foreach (var task in mTasks)
+                {
+                    runtimeInfo.Add(task.Key, task.Value.GetRuntimeInfo());
+                }
+
+                foreach (var item in mRuntimeInfo)
+                {
+                    if (!runtimeInfo.ContainsKey(item.Key))
+                        runtimeInfo.Add(item.Key, item.Value);
+                }
 
                 // Generate the XML using LINQ to XML https://stackoverflow.com/a/2076568/1179467
 
@@ -1051,20 +1081,25 @@ namespace DMS_Email_Manager
                 // when we use DateTime.ParseExact(dataValue, "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
                 // For more info, seee https://stackoverflow.com/a/12064151/1179467
 
+                currentTask = "Generating the XML";
+
                 var masterDoc = new XDocument(
                     new XDeclaration("1.0", "utf-8", "yes"),
                     new XElement("Reports",
-                        mTasks.Select(task =>
+                        runtimeInfo.OrderBy(task => task.Key).Select(task =>
                             new XElement("Report",
                                 new XAttribute("name", task.Key),
                                 new XElement("LastRunUTC", task.Value.LastRun.ToString("O")),
                                 new XElement("NextRunUTC", task.Value.NextRun.ToString("O")),
                                 new XElement("ExecutionCount", task.Value.ExecutionCount),
-                                new XElement("SourceType", task.Value.DataSource.SourceType),
-                                new XElement("SourceQuery", task.Value.DataSource.SourceDefinition)
+                                new XElement("SourceType", task.Value.SourceType),
+                                new XElement("SourceQuery", task.Value.SourceDefinition)
                                 ))
-                        )
+                         )
                     );
+
+                currentTask = "Opening the temp status info file for writing";
+                var reportStatusFileTemp = new FileInfo(Path.Combine(GetAppFolderPath(), REPORT_STATUS_FILE_NAME + ".tmp"));
 
                 var settings = new XmlWriterSettings
                 {
