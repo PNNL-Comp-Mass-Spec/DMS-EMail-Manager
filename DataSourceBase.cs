@@ -14,6 +14,9 @@ namespace DMS_Email_Manager
             WMI = 2
         }
 
+        /// <summary>
+        /// Data source definition (query or stored procedure name)
+        /// </summary>
         public abstract string SourceDefinition { get; }
 
         /// <summary>

@@ -75,6 +75,7 @@ namespace DMS_Email_Manager
 
                 var converter = new DMSEmailManager(options);
 
+                converter.DebugEvent += DMSEmailManager_DebugEvent;
                 converter.ErrorEvent += DMSEmailManager_ErrorEvent;
                 converter.StatusEvent += DMSEmailManager_StatusEvent;
                 converter.WarningEvent += DMSEmailManager_WarningEvent;
@@ -171,6 +172,13 @@ namespace DMS_Email_Manager
         }
 
         #region "Events"
+
+        private static void DMSEmailManager_DebugEvent(string message)
+        {
+            Console.ForegroundColor = ConsoleMsgUtils.DebugFontColor;
+            Console.WriteLine("  " + message);
+            Console.ResetColor();
+        }
 
         private static void DMSEmailManager_ErrorEvent(string message, Exception ex)
         {

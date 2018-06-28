@@ -213,8 +213,8 @@ namespace DMS_Email_Manager
                     {
                         // Adjust LastRun to be the correct time of day
                         var updatedLastRun = ConstructTimeForDate(LastRun, TimeOfDay).ToUniversalTime();
-                        OnWarningEvent(string.Format("Updating LastRun from {0:g} to {1:g} for report {2}",
-                                                     LastRun.ToLocalTime(), updatedLastRun.ToLocalTime(), TaskID));
+                        OnStatusEvent(string.Format("Updating LastRun from {0:g} to {1:g} for report {2}",
+                                                    LastRun.ToLocalTime(), updatedLastRun.ToLocalTime(), TaskID));
                         LastRun = updatedLastRun;
                     }
                 }
@@ -410,9 +410,12 @@ namespace DMS_Email_Manager
         /// <remarks>This method updates NextRun</remarks>
         public bool RunTaskNow()
         {
-            UpdateNextRuntime();
+            var nextRuntimeMessage = UpdateNextRuntime();
 
             var success = RunTask();
+
+            OnDebugEvent(nextRuntimeMessage);
+
             return success;
         }
 
@@ -421,11 +424,13 @@ namespace DMS_Email_Manager
         /// Send the results to the email addresses in EmailList
         /// </summary>
         /// <returns>True if successful, otherwise false</returns>
-        /// <remarks>This method does not update NextRun</remarks>
+        /// <remarks>This method updates LastRun, but it does not update NextRun</remarks>
         private bool RunTask()
         {
             try
             {
+                Console.WriteLine();
+                OnStatusEvent("Retrieving data for report " + TaskID);
 
                 var results = DataSource.GetData();
                 ExecutionCount++;
@@ -464,9 +469,13 @@ namespace DMS_Email_Manager
             {
                 RunTask();
 
+                OnDebugEvent(nextRuntimeMessage);
+
                 // Return true, even if RunTaskNow returned false
                 return true;
             }
+
+            OnDebugEvent(nextRuntimeMessage);
 
             // Do not run tasks on this day of the week
             // However, do update LastRun
@@ -476,7 +485,7 @@ namespace DMS_Email_Manager
 
         }
 
-        private void UpdateNextRuntime()
+        private string UpdateNextRuntime()
         {
             if (DelayType == FrequencyDelay.AtTimeOfDay)
             {
@@ -496,6 +505,10 @@ namespace DMS_Email_Manager
                     NextRun = DateTime.UtcNow.Add(DelayPeriodAsTimeSpan);
                 }
             }
+
+            var nextRunLocalTime = NextRun.ToLocalTime();
+
+            return string.Format("Report {0} will next run on {1:d} at {2:h:mm:ss tt}", TaskID, nextRunLocalTime, nextRunLocalTime);
         }
 
         /// <summary>
@@ -523,7 +536,7 @@ namespace DMS_Email_Manager
         }
 
         /// <summary>
-        /// Run at a specific time of day, on the specified days, or every day of daysOfWeek is empty
+        /// Run at a specific time of day, on the specified days, or every day if daysOfWeek is empty
         /// </summary>
         /// <param name="timeOfDay"></param>
         /// <param name="daysOfWeek"></param>
@@ -553,7 +566,6 @@ namespace DMS_Email_Manager
 
             ComputeNextRunTime();
         }
-
 
     }
 
