@@ -533,6 +533,8 @@ namespace DMS_Email_Manager
                     {
                         lastRun = DateTime.MinValue;
                         executionCount = 0;
+
+                        // Note that SourceType and SourceDefinition will be updated below via mRuntimeInfo[reportName].UpdateDataSource()
                         mRuntimeInfo.Add(reportName, new TaskRuntimeInfo(lastRun));
                     }
 
@@ -631,6 +633,8 @@ namespace DMS_Email_Manager
                                                       reportName, sourceType, "query, procedure, or wmi"));
                             continue;
                     }
+
+                    mRuntimeInfo[reportName].UpdateDataSource(dataSource);
 
                     var mailRecipients = GetElementAttribValue(mailInfo, "to", string.Empty);
 
@@ -907,7 +911,7 @@ namespace DMS_Email_Manager
 
                 var doc = XDocument.Load(reportStatusFile.FullName);
 
-                mRuntimeInfo.Clear();
+                var loadedTaskNames = new SortedSet<string>();
 
                 currentTask = "Reading XML data";
 
@@ -934,7 +938,7 @@ namespace DMS_Email_Manager
                         continue;
                     }
 
-                    if (mRuntimeInfo.ContainsKey(reportName))
+                    if (mRuntimeInfo.ContainsKey(reportName) && loadedTaskNames.Contains(reportName))
                     {
                         ShowWarning(string.Format("Duplicate report named '{0}' in the report status file; only using the first instance",
                                                   reportName));
@@ -944,11 +948,25 @@ namespace DMS_Email_Manager
                     var lastRunUtc = GetChildElementValue(report, "LastRunUTC", DateTime.MinValue);
                     var nextRunUtc = GetChildElementValue(report, "LastRunUTC", DateTime.MinValue);
                     var executionCount = GetChildElementValue(report, "ExecutionCount", 0);
-                    // var sourceType = GetChildElementValue(report, "SourceType", string.Empty);
-                    // var sourceQuery = GetChildElementValue(report, "SourceQuery", string.Empty);
+                    var sourceType = GetChildElementValue(report, "SourceType", string.Empty);
+                    var sourceQuery = GetChildElementValue(report, "SourceQuery", string.Empty);
 
-                    var runtimeInfo = new TaskRuntimeInfo(lastRunUtc, executionCount) { NextRun = nextRunUtc };
-                    mRuntimeInfo.Add(reportName, runtimeInfo);
+                    var runtimeInfo = new TaskRuntimeInfo(lastRunUtc, executionCount) {
+                        NextRun = nextRunUtc,
+                        SourceDefinition = sourceQuery
+                    };
+
+                    if (Enum.TryParse<DataSourceBase.DataSourceType>(sourceType, true, out var dataSourceType))
+                    {
+                        runtimeInfo.SourceType = dataSourceType;
+                    }
+
+                    if (mRuntimeInfo.ContainsKey(reportName))
+                        mRuntimeInfo[reportName] = runtimeInfo;
+                    else
+                        mRuntimeInfo.Add(reportName, runtimeInfo);
+
+                    loadedTaskNames.Add(reportName);
                 }
             }
             catch (Exception ex)
