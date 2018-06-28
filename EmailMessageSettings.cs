@@ -39,7 +39,7 @@ namespace DMS_Email_Manager
             Recipients = new SortedSet<string>();
             foreach (var mailAddress in emailList.Distinct())
             {
-                Recipients.Add(mailAddress);
+                Recipients.Add(mailAddress.Trim());
             }
 
             Subject = mailSubject;
