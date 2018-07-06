@@ -35,13 +35,13 @@ namespace DMS_Email_Manager
         }
 
 
-        [Option("I", ArgPosition = 1, HelpText = "XML file with report definitions")]
+        [Option("I", ArgPosition = 1, HelpText = "XML file with report definitions", HelpShowsDefault = false)]
         public string ReportDefinitionsFilePath { get; set; }
 
-        [Option("EmailServer", "Server", HelpText = "Email Server")]
+        [Option("EmailServer", "Server", HelpText = "Email Server", HelpShowsDefault = false)]
         public string EmailServer { get; set; }
 
-        [Option("EmailFrom", "From", HelpText = "Sender e-mail address", HelpShowsDefault = true)]
+        [Option("EmailFrom", "From", HelpText = "Sender e-mail address", HelpShowsDefault = false)]
         public string EmailFrom { get; set; }
 
         [Option("FontSizeHeader", "HeaderSize", HelpText = "Header text font size",
@@ -69,10 +69,10 @@ namespace DMS_Email_Manager
         [Option("RunOnce", "Once", HelpText = "Load the report definitions, run each of them once, then exit the program; ignores timeOfDay")]
         public bool RunOnce { get; set; }
 
-        [Option("E", HelpText = "View an example XML report definitions file")]
+        [Option("E", HelpText = "View an example XML report definitions file", HelpShowsDefault = false)]
         public bool ShowExample { get; set; }
 
-        [Option("X", HelpText = "View an extended example XML report definitions file")]
+        [Option("X", HelpText = "View an extended example XML report definitions file", HelpShowsDefault = false)]
         public bool ShowExtendedExample { get; set; }
 
         public static string GetAppVersion()
@@ -105,10 +105,18 @@ namespace DMS_Email_Manager
                 Console.WriteLine();
                 Console.WriteLine(" Running each report once, then exiting");
             }
+            else if (MaxRuntimeHours == 0)
+            {
+                Console.WriteLine();
+                Console.WriteLine(" Running indefinitely (stop with Ctrl+C or using the task manager)");
+            }
+
             else if (MaxRuntimeHours > 0)
             {
                 Console.WriteLine();
-                Console.WriteLine(" Max runtime: {0} hours", MaxRuntimeHours);
+                var runtimeUnits = MaxRuntimeHours == 1 ? "hour" : "hours";
+
+                Console.WriteLine(" Max runtime: {0} {1}", MaxRuntimeHours, runtimeUnits);
             }
 
             if (LogMessages)
@@ -125,6 +133,7 @@ namespace DMS_Email_Manager
 
             if (PreviewMode)
             {
+                Console.WriteLine();
                 Console.WriteLine(" Previewing e-mail messages without actually sending them");
             }
 
