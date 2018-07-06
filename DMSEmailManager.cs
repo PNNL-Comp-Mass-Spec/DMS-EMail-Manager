@@ -482,19 +482,19 @@ namespace DMS_Email_Manager
                 else
                 {
                     // Read the email options
-                    var emailServer = GetElementAttribValue(emailInfo, "Server", DMSEmailManagerOptions.DEFAULT_EMAIL_SERVER);
+                    var emailServer = GetElementAttribValue(emailInfo, "Server", ValidateNotEmpty(Options.EmailServer, DMSEmailManagerOptions.DEFAULT_EMAIL_SERVER));
                     WarnIfOverride(notifySettingOverride, Options.EmailServer, emailServer, "email server name");
                     Options.EmailServer = emailServer;
 
-                    var emailFrom = GetElementAttribValue(emailInfo, "From", DMSEmailManagerOptions.DEFAULT_EMAIL_FROM);
+                    var emailFrom = GetElementAttribValue(emailInfo, "From", ValidateNotEmpty(Options.EmailFrom, DMSEmailManagerOptions.DEFAULT_EMAIL_FROM));
                     WarnIfOverride(notifySettingOverride, Options.EmailFrom, emailFrom, "email sender name");
                     Options.EmailFrom = emailFrom;
 
-                    var fontSizeHeader = GetElementAttribValue(emailInfo, "FontSizeHeader", DMSEmailManagerOptions.DEFAULT_FONT_SIZE_HEADER);
+                    var fontSizeHeader = GetElementAttribValue(emailInfo, "FontSizeHeader", ValidateNotZero(Options.FontSizeHeader, DMSEmailManagerOptions.DEFAULT_FONT_SIZE_HEADER));
                     WarnIfOverride(notifySettingOverride, Options.FontSizeHeader.ToString(), fontSizeHeader.ToString(), "header font size");
                     Options.FontSizeHeader = fontSizeHeader;
 
-                    var fontSizeBody = GetElementAttribValue(emailInfo, "FontSizeBody", DMSEmailManagerOptions.DEFAULT_FONT_SIZE_BODY);
+                    var fontSizeBody = GetElementAttribValue(emailInfo, "FontSizeBody", ValidateNotZero(Options.FontSizeBody, DMSEmailManagerOptions.DEFAULT_FONT_SIZE_BODY));
                     WarnIfOverride(notifySettingOverride, Options.FontSizeBody.ToString(), fontSizeBody.ToString(), "body font size");
                     Options.FontSizeBody = fontSizeBody;
                 }
@@ -502,8 +502,8 @@ namespace DMS_Email_Manager
                 // Validate the e-mail options
                 Options.EmailServer = ValidateNotEmpty(Options.EmailServer, DMSEmailManagerOptions.DEFAULT_EMAIL_SERVER);
                 Options.EmailFrom = ValidateNotEmpty(Options.EmailFrom, DMSEmailManagerOptions.DEFAULT_EMAIL_FROM);
-                Options.FontSizeHeader = ValidateNonZero(Options.FontSizeHeader, DMSEmailManagerOptions.DEFAULT_FONT_SIZE_HEADER);
-                Options.FontSizeBody = ValidateNonZero(Options.FontSizeBody, DMSEmailManagerOptions.DEFAULT_FONT_SIZE_BODY);
+                Options.FontSizeHeader = ValidateNotZero(Options.FontSizeHeader, DMSEmailManagerOptions.DEFAULT_FONT_SIZE_HEADER);
+                Options.FontSizeBody = ValidateNotZero(Options.FontSizeBody, DMSEmailManagerOptions.DEFAULT_FONT_SIZE_BODY);
 
                 var reportDefs = doc.Elements("reports").Elements("report").ToList();
                 foreach (var report in reportDefs)
@@ -880,7 +880,6 @@ namespace DMS_Email_Manager
 
                     RegisterEvents(task);
                     task.TaskResultsAvailable += Task_TaskResultsAvailable;
-
                 }
 
                 foreach (var reportName in existingTasks)
@@ -1350,7 +1349,7 @@ namespace DMS_Email_Manager
             return true;
         }
 
-        private int ValidateNonZero(int value, int defaultValue)
+        private int ValidateNotZero(int value, int defaultValue)
         {
             return value == 0 ? defaultValue : value;
         }
