@@ -25,16 +25,19 @@ namespace DMS_Email_Manager
 
                 var parser = new CommandLineParser<DMSEmailManagerOptions>(asmName.Name, version)
                 {
-                    ProgramInfo = "This program retrieves data from a SQL Server database or from WMI at regular intervals, " +
-                                  "or at a certain time of day, and e-mails that data to a given set of recipients." +
+                    ProgramInfo = "This program obtains data from a SQL Server database using queries " +
+                                  "defined in an XML file, then e-mails the results of those queries to " +
+                                  "one or more addresses.  Reports can be run (and e-mailed) daily, only on " +
+                                  "certain days, or on a set interval, e.g. every 6 hours. The program " +
+                                  "also supports obtaining data via a stored procedure or via WMI. " +
                                   "The first command line argument must be the path to an XML file with the Email options " +
-                                  "and the report definitioins. To see an example Report Definitions file, use /E. " +
-                                  "To see an extended example Report Definitions file, use /X. ",
+                                  "and the report definitioins. To see an example Report Definitions file, use /E; " +
+                                  "to see an extended example Report Definitions file, use /X.",
 
                     ContactInfo = "Program written by Matthew Monroe for the Department of Energy (PNNL, Richland, WA) in 2018" +
                                   Environment.NewLine + Environment.NewLine +
                                   "E-mail: proteomics@pnnl.gov" + Environment.NewLine +
-                                  "Website: https://panomics.pnnl.gov/ or https://omics.pnl.gov or https://github.com/PNNL-Comp-Mass-Spec",
+                                  "Website: https://panomics.pnnl.gov or https://omics.pnl.gov or https://github.com/PNNL-Comp-Mass-Spec",
 
                     UsageExamples = {
                         exeName + " ReportSpecs.xml",

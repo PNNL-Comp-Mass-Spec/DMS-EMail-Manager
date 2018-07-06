@@ -249,7 +249,7 @@ namespace DMS_Email_Manager
                 nextRunUtc = LastRun.Add(DelayPeriodAsTimeSpan);
             }
 
-            // Note that we'll consider the DaysOfWeek filter just prior to actually retrieving the data
+            // We'll consider the DaysOfWeek filter just prior to actually retrieving the data
             NextRun = nextRunUtc.ToUniversalTime();
 
         }

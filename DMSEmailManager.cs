@@ -1078,7 +1078,7 @@ namespace DMS_Email_Manager
 
                 // Use .ToString("O") to guarantee that the correct universal time is loaded in ReadReportStatusFile
                 // when we use DateTime.ParseExact(dataValue, "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-                // For more info, seee https://stackoverflow.com/a/12064151/1179467
+                // For more info, see https://stackoverflow.com/a/12064151/1179467
 
                 currentTask = "Generating the XML";
 
