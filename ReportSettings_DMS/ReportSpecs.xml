@@ -7,18 +7,6 @@
 		<FontSizeBody>12</FontSizeBody>
 	</EmailInfo>
 
-    <report name="Processor Status Warnings">
-        <data source="gigasax" catalog="DMS_Pipeline" type="query">
-		SELECT TOP 500 * FROM V_Processor_Status_Warnings ORDER BY Processor_name
-		</data>
-        <mail to="matthew.monroe@pnnl.gov, bryson.gibbons@pnnl.gov" 
-              subject="DMS: Processor Status Warnings" 
-              title="Processor Status Warnings (DMS)" />
-        <frequency dayofweeklist="Monday,Wednesday,Friday" 
-                   type="TimeOfDay" 
-                   timeOfDay="3:00 pm" />
-    </report>
-
     <report name="Email Alerts">
         <data server="gigasax" database="DMS5" type="query">
 		SELECT TOP 500 * FROM V_Email_Alerts Where alert_state = 1
@@ -27,29 +15,40 @@
               subject="DMS: Alerts" 
               title="DMS Alerts" />
         <frequency type="Interval" 
-                   interval="12"
+                   interval="4"
                    units="hours" />
         <postMailIdListHook server="gigasax" database="DMS5" procedure="AckEmailAlerts" 
                             parameter="alertIDs" varcharlength="4000" />
+    </report>
+
+    <report name="Processor Status Warnings">
+        <data source="gigasax" catalog="DMS_Pipeline" type="query">
+		SELECT TOP 500 * FROM V_Processor_Status_Warnings ORDER BY Processor_name
+		</data>
+        <mail to="proteomics@pnnl.gov, bryson.gibbons@pnnl.gov" 
+              subject="DMS: Processor Status Warnings" 
+              title="Processor Status Warnings (DMS)" />
+        <frequency dayofweeklist="Monday,Wednesday,Friday" 
+                   type="TimeOfDay" 
+                   timeOfDay="3:00 pm" />
     </report>
 
     <report name="Job Steps Stale and Failed">
         <data source="gigasax" catalog="DMS_Pipeline" type="query">
 		SELECT TOP 500 * FROM V_Job_Steps_Stale_and_Failed ORDER BY StateName, Job
 		</data>
-        <mail to="matthew.monroe@pnnl.gov" 
+        <mail to="proteomics@pnnl.gov" 
               subject="DMS: Job Steps Stale and Failed" 
               title="Job Steps Stale and Failed (DMS)" />        
         <frequency dayofweeklist="Monday,Wednesday,Friday" 
                    type="TimeOfDay" 
                    timeOfDay="7:00 am" />
     </report>
-    
     <report name="Datasets Stale and Failed">
         <data source="gigasax" catalog="DMS5" type="query">
 		SELECT TOP 500 * FROM V_Datasets_Stale_and_Failed ORDER BY State, Dataset
 		</data>
-        <mail to="matthew.monroe@pnnl.gov" 
+        <mail to="proteomics@pnnl.gov" 
               subject="DMS: Datasets Stale and Failed" 
               title="Datasets Stale and Failed (DMS)" />
         <frequency dayofweeklist="Monday,Wednesday,Friday" 
@@ -98,7 +97,7 @@
         <data source="gigasax" catalog="DMS5" type="query">
 		SELECT TOP 500 * FROM V_Predefined_Job_Creation_Errors ORDER BY Item
 		</data>
-        <mail to="matthew.monroe@pnnl.gov" 
+        <mail to="proteomics@pnnl.gov" 
               subject="DMS: Predefined Job Creation Errors" 
               title="Predefined Job Creation Errors (DMS)" />
         <frequency dayofweeklist="Thursday" 
@@ -110,7 +109,7 @@
         <data source="gigasax" catalog="DMS5" type="query">
 		SELECT TOP 500 * FROM V_Log_Errors_ProductionDBs ORDER BY DB, Entry_ID
 		</data>
-        <mail to="matthew.monroe@pnnl.gov" 
+        <mail to="proteomics@pnnl.gov" 
               subject="DMS: Production DB Errors" 
               title="Production DB Errors (DMS)" />
         <frequency dayofweeklist="Tuesday,Friday" 
@@ -131,7 +130,7 @@
 		      (DS_created >= DATEADD(month, -1, GETDATE())) AND (DS_state_ID = 3)
 		ORDER BY DS_comment
 		</data>
-        <mail to="matthew.monroe@pnnl.gov" 
+        <mail to="proteomics@pnnl.gov" 
               subject="DMS: Dataset comments to edit" 
               title="Dataset comments to edit" />
         <frequency dayofweeklist="Friday" 
@@ -163,7 +162,7 @@
 		      WHERE is_disabled = 1 ) LookupQ
 		WHERE Disabled_Indices > 0
 		</data>
-        <mail to="matthew.monroe@pnnl.gov" 
+        <mail to="proteomics@pnnl.gov" 
               subject="DMS: Disabled indices" 
               title="Disabled indices on Gigasax" />
         <frequency dayofweeklist="Friday" 
@@ -198,6 +197,53 @@
         <mail to="proteomics@pnnl.gov" 
               subject="ProteinSeqs: Disabled indices" 
               title="Disabled indices on ProteinSeqs" />
+        <frequency dayofweeklist="Thursday" 
+                   type="TimeOfDay" 
+                   timeOfDay="7:00 am" />
+    </report>
+
+
+    <report name="MTS Overdue Database Backups">
+	<data source="pogo" catalog="MTS_Master" type="StoredProcedure">GetOverdueDatabaseBackups</data>
+	<mail to="proteomics@pnnl.gov" 
+	          subject="MTS Overdue Database Backups"
+	          title="Report generated automatically on Pogo" />	    
+        <frequency dayofweeklist="Tuesday,Saturday" 
+                   type="TimeOfDay" 
+                   timeOfDay="7:00 am" />
+    </report>
+	
+    <report name="Disabled Indices on Pogo">
+        <data source="pogo" catalog="MT_Main" type="query">
+		SELECT *
+		FROM (SELECT 'MT_Main' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM MT_Main.sys.indexes
+		      WHERE is_disabled = 1
+		      UNION
+		      SELECT 'MTS_Master' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM MTS_Master.sys.indexes
+		      WHERE is_disabled = 1
+		      UNION
+		      SELECT 'PT_Template_01' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM PT_Template_01.sys.indexes
+		      WHERE is_disabled = 1
+		      UNION
+		      SELECT 'MT_Template_01' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM MT_Template_01.sys.indexes
+		      WHERE is_disabled = 1
+		      UNION
+		      SELECT 'Prism_IFC' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM Prism_IFC.sys.indexes
+		      WHERE is_disabled = 1
+		      UNION
+		      SELECT 'Prism_RPT' AS [DBName], COUNT(*) AS Disabled_Indices
+		      FROM Prism_RPT.sys.indexes
+		      WHERE is_disabled = 1 ) LookupQ
+		WHERE Disabled_Indices >= 0
+		</data>
+        <mail to="matthew.monroe@pnnl.gov; proteomics@pnnl.gov" 
+              subject="Pogo: Disabled indices" 
+              title="Disabled indices on Pogo" />
         <frequency dayofweeklist="Thursday" 
                    type="TimeOfDay" 
                    timeOfDay="7:00 am" />
