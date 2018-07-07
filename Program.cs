@@ -135,6 +135,7 @@ namespace DMS_Email_Manager
             Console.WriteLine("         <mail to=\"proteomics@pnnl.gov; EMSL-Prism.Users.DMS_Monitoring_Admins@pnnl.gov\"  ");
             Console.WriteLine("               subject=\"DMS: Alerts\"  ");
             Console.WriteLine("               title=\"DMS Alerts\" /> ");
+            Console.WriteLine("               mailIfEmpty=\"false\" /> ");
             Console.WriteLine("         <frequency type=\"Interval\"  ");
             Console.WriteLine("                    interval=\"12\" ");
             Console.WriteLine("                    units=\"hours\" /> ");
