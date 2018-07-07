@@ -1205,7 +1205,7 @@ namespace DMS_Email_Manager
                 {
                     ShowWarning(string.Format(
                                     "Skipping sending the results ID list to the post mail stored procedure for report '{0}' " +
-                                    "since the storced procedure parameter name is not defined; " +
+                                    "since the stored procedure parameter name is not defined; " +
                                     "define the first parameter name using parameter in the postMailIdListHook section", results.ReportName));
                     return;
                 }
@@ -1219,6 +1219,15 @@ namespace DMS_Email_Manager
                         continue;
 
                     resultIdList.Add(dataRow[0]);
+                }
+
+                if (resultIdList.Count == 0)
+                {
+                    // No results IDs to send; do not call the stored procedure
+                    ShowDebug(string.Format(
+                                    "Skipping sending the results ID list to the post mail stored procedure for report '{0}' " +
+                                    "since the report had no data", results.ReportName), false);
+                    return;
                 }
 
                 var connStr = string.Format("Data Source={0};Initial Catalog={1};Integrated Security=SSPI;Connection Timeout={2};",
