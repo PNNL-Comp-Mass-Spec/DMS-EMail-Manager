@@ -202,6 +202,7 @@ namespace DMS_Email_Manager
                     Console.WriteLine();
                     Console.WriteLine(reportInfo);
                     Console.WriteLine(dataHtml.ToString());
+                    LogMessage(reportInfo + ": report has no mail recipients", eMessageTypeConstants.Warning);
                     return;
                 }
 
@@ -237,6 +238,7 @@ namespace DMS_Email_Manager
                         Console.WriteLine(titleHtml);
                         Console.WriteLine(dataHtml.ToString());
                     }
+                    LogMessage(reportInfo + ": previewed results", eMessageTypeConstants.Normal);
                     return;
                 }
 
@@ -244,6 +246,7 @@ namespace DMS_Email_Manager
                 {
                     Console.WriteLine();
                     Console.WriteLine(reportAndEmailInfo);
+                    LogMessage(reportInfo + ": report empty; e-mail not sent", eMessageTypeConstants.Normal);
                     return;
                 }
 
