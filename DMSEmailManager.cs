@@ -881,7 +881,16 @@ namespace DMS_Email_Manager
 
                     LogMessage(string.Format("will next run on {0:d} at {1:h:mm:ss tt}", nextRunLocalTime, nextRunLocalTime), eMessageTypeConstants.Debug);
 
-                    RegisterEvents(task);
+                    // Status, Debug, and Progress messages are only shown at the console
+                    task.StatusEvent += this.OnStatusEvent;
+                    task.DebugEvent += this.OnDebugEvent;
+                    task.ProgressUpdate += this.OnProgressUpdate;
+
+                    // Error and Warning messages will be logged if Options.LogMessages is true
+                    // Otherwise, they're shown at console
+                    task.ErrorEvent += Task_ErrorEvent;
+                    task.WarningEvent += Task_WarningEvent;
+
                     task.TaskResultsAvailable += Task_TaskResultsAvailable;
                 }
 
@@ -1396,6 +1405,19 @@ namespace DMS_Email_Manager
             DataSourceSqlStoredProcedure postMailIdListHook)
         {
             EmailResults(results, emailSettings, postMailIdListHook);
+        }
+
+        private void Task_ErrorEvent(string message, Exception ex)
+        {
+            // If logging is disabled, the error message will simply be shown at the console
+            LogMessage(message, eMessageTypeConstants.ErrorMsg);
+            LogMessage(PRISM.clsStackTraceFormatter.GetExceptionStackTrace(ex), eMessageTypeConstants.Warning);
+        }
+
+        private void Task_WarningEvent(string message)
+        {
+            // If logging is disabled, the warning message will simply be shown at the console
+            LogMessage(message, eMessageTypeConstants.Warning);
         }
 
         #endregion
