@@ -605,11 +605,11 @@ namespace DMS_Email_Manager
                             if (sourceTypeLcase == "procedure" || sourceTypeLcase == "storedprocedure" || sourceTypeLcase == "sp" ||
                                 sourceTypeLcase == "sproc")
                             {
-                                dataSource = new DataSourceSqlStoredProcedure(reportName, sourceServer, sourceDB, query);
+                                dataSource = new DataSourceSqlStoredProcedure(reportName, sourceServer, sourceDB, query, Options.Simulate);
                             }
                             else
                             {
-                                dataSource = new DataSourceSqlQuery(reportName, sourceServer, sourceDB, query);
+                                dataSource = new DataSourceSqlQuery(reportName, sourceServer, sourceDB, query, Options.Simulate);
                             }
 
                             break;
@@ -621,7 +621,7 @@ namespace DMS_Email_Manager
                                 continue;
                             }
 
-                            var wmiDataSource = new DataSourceWMI(reportName, sourceServer, query);
+                            var wmiDataSource = new DataSourceWMI(reportName, sourceServer, query, Options.Simulate);
 
                             if (divisorInfo != null)
                             {
@@ -845,7 +845,7 @@ namespace DMS_Email_Manager
                         }
                         else
                         {
-                            var postMailHook = new DataSourceSqlStoredProcedure(reportName, postMailServer, postMailDatabase, postMailProcedure)
+                            var postMailHook = new DataSourceSqlStoredProcedure(reportName, postMailServer, postMailDatabase, postMailProcedure, Options.Simulate)
                             {
                                 StoredProcParameter = paramName
                             };

@@ -76,7 +76,8 @@ The DMS Email Manager is a command line application.  Syntax:
 DMS_EMail_Manager.exe
   ReportDefsFile.xml [/Server:EmailServer] [/From:Sender]
   [/Log] [/LogDir:LogDirectoryPath]
-  [/MaxRuntime:Hours] [/Preview] [/RunOnce] [/E] [/X]
+  [/MaxRuntime:Hours] [/Preview] [/RunOnce] [/Simulate]
+  [/E] [/X]
 ```
 
 The first parameter is the XML file with report definitions.
@@ -97,6 +98,8 @@ Use /Preview to preview the e-mail messages that would be sent
 
 Use /RunOnce to load the report definitions, run each of them once, then exit.
 Reports with a timeOfDay setting will be run immediately, regardless of the current time.
+
+Use /Simulate to simulate running a SQL or WMI query (useful when offline)
 
 ## Contacts
 

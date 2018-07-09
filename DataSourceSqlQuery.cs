@@ -22,15 +22,22 @@ namespace DMS_Email_Manager
         /// Constructor
         /// </summary>
         /// <param name="reportName">Report name (used for logging)</param>
-        /// <param name="serverName"></param>
-        /// <param name="databaseName"></param>
-        /// <param name="query"></param>
-        public DataSourceSqlQuery(string reportName, string serverName, string databaseName, string query)
+        /// <param name="serverName">Sserver name</param>
+        /// <param name="databaseName">Database name</param>
+        /// <param name="query">SQL query to run</param>
+        /// <param name="simulate">When true, simulate contacting the database</param>
+        public DataSourceSqlQuery(
+            string reportName,
+            string serverName,
+            string databaseName,
+            string query,
+            bool simulate)
         {
             ReportName = reportName;
             ServerName = serverName;
             DatabaseName = databaseName;
             Query = query;
+            Simulate = simulate;
             SourceType = DataSourceType.Query;
         }
 

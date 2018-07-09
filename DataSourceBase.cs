@@ -29,6 +29,8 @@ namespace DMS_Email_Manager
         /// </summary>
         public string ReportName { get; internal set; }
 
+        public bool Simulate { get; internal set; }
+
         /// <summary>
         /// Retrieve data from this data source
         /// </summary>

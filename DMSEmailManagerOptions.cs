@@ -6,7 +6,7 @@ namespace DMS_Email_Manager
 {
     public class DMSEmailManagerOptions
     {
-        private const string PROGRAM_DATE = "July 7, 2018";
+        private const string PROGRAM_DATE = "July 9, 2018";
 
         public const string DEFAULT_EMAIL_SERVER = "emailgw.pnl.gov";
         public const string DEFAULT_EMAIL_FROM = "proteomics@pnnl.gov";
@@ -68,6 +68,9 @@ namespace DMS_Email_Manager
 
         [Option("RunOnce", "Once", HelpText = "Load the report definitions, run each of them once, then exit the program; ignores timeOfDay")]
         public bool RunOnce { get; set; }
+
+        [Option("Simulate", "Sim", HelpText = "Simulate contacting the database or running queries")]
+        public bool Simulate { get; set; }
 
         [Option("E", HelpText = "View an example XML report definitions file", HelpShowsDefault = false)]
         public bool ShowExample { get; set; }
@@ -135,6 +138,12 @@ namespace DMS_Email_Manager
             {
                 Console.WriteLine();
                 Console.WriteLine(" Previewing e-mail messages without actually sending them");
+            }
+
+            if (Simulate)
+            {
+                Console.WriteLine();
+                Console.WriteLine(" Simulating database / WMI calls");
             }
 
         }

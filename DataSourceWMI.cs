@@ -48,11 +48,17 @@ namespace DMS_Email_Manager
         /// <param name="reportName">Report name (used for logging)</param>
         /// <param name="wmiHostName"></param>
         /// <param name="query"></param>
-        public DataSourceWMI(string reportName, string wmiHostName, string query)
+        /// <param name="simulate">When true, simulate contacting the database</param>
+        public DataSourceWMI(
+            string reportName,
+            string wmiHostName,
+            string query,
+            bool simulate)
         {
             ReportName = reportName;
             HostName = wmiHostName;
             Query = query;
+            Simulate = simulate;
             SourceType = DataSourceType.WMI;
         }
 
@@ -68,6 +74,13 @@ namespace DMS_Email_Manager
                 var results = new TaskResults(ReportName);
 
                 var wmiPath = @"\\" + HostName + @"\root\cimv2";
+
+                if (Simulate)
+                {
+                    results.DefineColumns(new List<string> { "WMIPath" });
+                    results.AddDataRow(new List<string> { wmiPath });
+                    return results;
+                }
 
                 var oMs = new System.Management.ManagementScope(wmiPath);
                 var oQuery = new System.Management.ObjectQuery(Query);

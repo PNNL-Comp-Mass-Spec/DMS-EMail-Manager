@@ -27,6 +27,25 @@ namespace DMS_Email_Manager
 
             var results = new TaskResults(ReportName);
 
+            if (Simulate)
+            {
+                switch (commandType)
+                {
+                    case CommandType.Text:
+                        results.DefineColumns(new List<string> { "SQL_Query" });
+                        break;
+                    case CommandType.StoredProcedure:
+                        results.DefineColumns(new List<string> { "Stored Procedure" });
+                        break;
+                    default:
+                        results.DefineColumns(new List<string> { commandType.ToString() });
+                        break;
+                }
+
+                results.AddDataRow(new List<string> { queryOrProcedureName.Trim().Replace("\t", " ") });
+                return results;
+            }
+
             using (var dbConn = new SqlConnection(connStr))
             {
                 using (var sqlCmd= new SqlCommand(queryOrProcedureName, dbConn))
