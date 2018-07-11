@@ -1,5 +1,9 @@
 DMS Email Manager Log
 
+Version 1.3.6765; July 10, 2018
+	- Update logging
+	- Add switch /Simulate
+
 Version 1.3.6762; July 7, 2018
 	- Updated PRISM.dll that creates a new log file at midnight
 
