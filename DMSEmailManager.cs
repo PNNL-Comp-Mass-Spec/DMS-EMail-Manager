@@ -1250,6 +1250,8 @@ namespace DMS_Email_Manager
                     CommandType = CommandType.StoredProcedure
                 };
 
+                cmd.Parameters.Add(new SqlParameter("@Return", SqlDbType.Int)).Direction = ParameterDirection.ReturnValue;
+
                 var paramName = "@" + postMailIdListHook.StoredProcParameter;
                 var sqlParam = new SqlParameter(paramName, postMailIdListHook.StoredProcParamType, postMailIdListHook.StoredProcParamLength)
                 {
@@ -1262,6 +1264,7 @@ namespace DMS_Email_Manager
                 {
                     TimeoutSeconds = DataSourceSql.QUERY_TIMEOUT_SECONDS
                 };
+                RegisterEvents(spRunner);
 
                 var errorCode = spRunner.ExecuteSP(cmd, 1);
 
