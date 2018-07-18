@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reports>
+    <EmailInfo>
+        <Server>emailgw.pnl.gov</Server>
+        <From>proteomics@pnnl.gov</From>
+        <FontSizeHeader>20</FontSizeHeader>
+        <FontSizeBody>12</FontSizeBody>
+    </EmailInfo>
+
+    <report name="Processor Status Warnings">
+        <data source="cbdms" catalog="DMS_Pipeline" type="query">
+        SELECT TOP 500 * FROM V_Processor_Status_Warnings ORDER BY Processor_name
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="CBDMS: Processor Status Warnings"
+              title="Processor Status Warnings (CBDMS)"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Monday,Wednesday,Friday"
+                   type="TimeOfDay"
+                   timeOfDay="2:50 pm" />
+    </report>
+
+    <report name="Job Steps Stale and Failed">
+        <data source="cbdms" catalog="DMS_Pipeline" type="query">
+        SELECT TOP 500 * FROM V_Job_Steps_Stale_and_Failed ORDER BY StateName, Job
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="CBDMS: Job Steps Stale and Failed"
+              title="Job Steps Stale and Failed (CBDMS)"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Monday,Wednesday,Friday"
+                   type="TimeOfDay"
+                   timeOfDay="6:50 am" />
+    </report>
+
+    <report name="Datasets Stale and Failed">
+        <data source="cbdms" catalog="DMS5" type="query">
+        SELECT TOP 500 * FROM V_Datasets_Stale_and_Failed ORDER BY State, Dataset
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="CBDMS: Datasets Stale and Failed"
+              title="Datasets Stale and Failed (CBDMS)"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Monday,Wednesday,Friday"
+                   type="TimeOfDay"
+                   timeOfDay="6:50 am" />
+    </report>
+
+    <report name="Predefined Job Creation Errors">
+        <data source="cbdms" catalog="DMS5" type="query">
+        SELECT TOP 500 * FROM V_Predefined_Job_Creation_Errors ORDER BY Item
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="CBDMS: Predefined Job Creation Errors"
+              title="Predefined Job Creation Errors (CBDMS)"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Thursday"
+                   type="TimeOfDay"
+                   timeOfDay="6:50 am" />
+    </report>
+
+    <report name="DMS Production DB Errors">
+        <data source="cbdms" catalog="DMS5" type="query">
+        SELECT TOP 500 * FROM V_Log_Errors_ProductionDBs ORDER BY DB, Entry_ID
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="CBDMS: Production DB Errors"
+              title="Production DB Errors (CBDMS)"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Tuesday,Friday"
+                   type="TimeOfDay"
+                   timeOfDay="6:50 am" />
+    </report>
+
+    <report name="Disabled Indices on CBDMS">
+        <data source="cbdms" catalog="DMS5" type="query">
+        SELECT *
+        FROM (SELECT 'DMS5' AS [DBName], COUNT(*) AS Disabled_Indices
+              FROM DMS5.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'DMS_Capture' AS [DBName], COUNT(*) AS Disabled_Indices
+              FROM DMS_Capture.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'DMS_Pipeline' AS [DBName], COUNT(*) AS Disabled_Indices
+              FROM DMS_Pipeline.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'DMS_Data_Package' AS [DBName], COUNT(*) AS Disabled_Indices
+              FROM DMS_Data_Package.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'Ontology_Lookup' AS [DBName], COUNT(*) AS Disabled_Indices
+              FROM Ontology_Lookup.sys.indexes
+              WHERE is_disabled = 1 ) LookupQ
+        WHERE Disabled_Indices > 0
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="CBDMS: Disabled indices"
+              title="Disabled indices on CBDMS"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Friday"
+                   type="TimeOfDay"
+                   timeOfDay="6:50 am" />
+    </report>
+
+</reports>
