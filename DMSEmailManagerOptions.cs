@@ -6,7 +6,7 @@ namespace DMS_Email_Manager
 {
     public class DMSEmailManagerOptions
     {
-        private const string PROGRAM_DATE = "July 10, 2018";
+        private const string PROGRAM_DATE = "July 18, 2018";
 
         public const string DEFAULT_EMAIL_SERVER = "emailgw.pnl.gov";
         public const string DEFAULT_EMAIL_FROM = "proteomics@pnnl.gov";
