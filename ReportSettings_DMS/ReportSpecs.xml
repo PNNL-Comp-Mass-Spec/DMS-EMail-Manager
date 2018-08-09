@@ -260,7 +260,7 @@
               SELECT 'Prism_RPT' AS [DBName], COUNT(*) AS Disabled_Indices
               FROM Prism_RPT.sys.indexes
               WHERE is_disabled = 1 ) LookupQ
-        WHERE Disabled_Indices >= 0
+        WHERE Disabled_Indices > 0
         </data>
         <mail to="proteomics@pnnl.gov"
               subject="Pogo: Disabled indices"
