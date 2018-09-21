@@ -31,7 +31,7 @@ namespace DMS_Email_Manager
                                   "certain days, or on a set interval, e.g. every 6 hours. The program " +
                                   "also supports obtaining data via a stored procedure or via WMI. " +
                                   "The first command line argument must be the path to an XML file with the Email options " +
-                                  "and the report definitioins. To see an example Report Definitions file, use /E; " +
+                                  "and the report definitions. To see an example Report Definitions file, use /E; " +
                                   "to see an extended example Report Definitions file, use /X.",
 
                     ContactInfo = "Program written by Matthew Monroe for the Department of Energy (PNNL, Richland, WA) in 2018" +

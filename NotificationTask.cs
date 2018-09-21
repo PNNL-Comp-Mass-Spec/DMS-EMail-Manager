@@ -14,7 +14,7 @@ namespace DMS_Email_Manager
     /// Instead, it raises event TaskResultsAvailable with the query results and e-mail recipients,
     /// allowing the calling class to send the e-mail
     /// </remarks>
-    internal class NotificationTask : clsEventNotifier
+    internal class NotificationTask : EventNotifier
     {
         #region "Enums"
 

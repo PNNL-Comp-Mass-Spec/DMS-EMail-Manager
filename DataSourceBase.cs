@@ -5,7 +5,7 @@ namespace DMS_Email_Manager
     /// <summary>
     /// Base class for retrieving data from SQL Server or WMI
     /// </summary>
-    internal abstract class DataSourceBase : clsEventNotifier
+    internal abstract class DataSourceBase : EventNotifier
     {
         public enum DataSourceType
         {

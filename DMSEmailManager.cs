@@ -1260,7 +1260,7 @@ namespace DMS_Email_Manager
 
                 cmd.Parameters.Add(sqlParam);
 
-                var spRunner = new clsExecuteDatabaseSP(connStr)
+                var spRunner = new ExecuteDatabaseSP(connStr)
                 {
                     TimeoutSeconds = DataSourceSql.QUERY_TIMEOUT_SECONDS
                 };
@@ -1414,7 +1414,7 @@ namespace DMS_Email_Manager
         {
             // If logging is disabled, the error message will simply be shown at the console
             LogMessage(message, eMessageTypeConstants.ErrorMsg);
-            LogMessage(PRISM.clsStackTraceFormatter.GetExceptionStackTrace(ex), eMessageTypeConstants.Warning);
+            LogMessage(PRISM.StackTraceFormatter.GetExceptionStackTrace(ex), eMessageTypeConstants.Warning);
         }
 
         private void Task_WarningEvent(string message)
