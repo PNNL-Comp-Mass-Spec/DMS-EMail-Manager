@@ -202,7 +202,7 @@ namespace DMS_Email_Manager
                     Console.WriteLine();
                     Console.WriteLine(reportInfo);
                     Console.WriteLine(dataHtml.ToString());
-                    LogMessage(reportInfo + ": report has no mail recipients", eMessageTypeConstants.Warning);
+                    LogMessage(reportInfo + ": report has no mail recipients", MessageTypeConstants.Warning);
                     return;
                 }
 
@@ -238,7 +238,7 @@ namespace DMS_Email_Manager
                         Console.WriteLine(titleHtml);
                         Console.WriteLine(dataHtml.ToString());
                     }
-                    LogMessage(reportInfo + ": previewed results", eMessageTypeConstants.Normal);
+                    LogMessage(reportInfo + ": previewed results");
                     return;
                 }
 
@@ -246,7 +246,7 @@ namespace DMS_Email_Manager
                 {
                     Console.WriteLine();
                     Console.WriteLine(reportAndEmailInfo);
-                    LogMessage(reportInfo + ": report empty; e-mail not sent", eMessageTypeConstants.Normal);
+                    LogMessage(reportInfo + ": report empty; e-mail not sent");
                     return;
                 }
 
@@ -476,7 +476,7 @@ namespace DMS_Email_Manager
                 var emailInfo = doc.Elements("reports").Elements("EmailInfo").FirstOrDefault();
                 if (emailInfo == null)
                 {
-                    LogMessage("The Report definitions file is missing the <EmailInfo> section; using defaults", eMessageTypeConstants.Debug);
+                    LogMessage("The Report definitions file is missing the <EmailInfo> section; using defaults", MessageTypeConstants.Debug);
                     Options.EmailServer = DMSEmailManagerOptions.DEFAULT_EMAIL_SERVER;
                     Options.EmailFrom = DMSEmailManagerOptions.DEFAULT_EMAIL_FROM;
                     Options.FontSizeHeader = DMSEmailManagerOptions.DEFAULT_FONT_SIZE_HEADER;
@@ -879,7 +879,7 @@ namespace DMS_Email_Manager
 
                     var nextRunLocalTime = task.NextRun.ToLocalTime();
 
-                    LogMessage(string.Format("will next run on {0:d} at {1:h:mm:ss tt}", nextRunLocalTime, nextRunLocalTime), eMessageTypeConstants.Debug);
+                    LogMessage(string.Format("will next run on {0:d} at {1:h:mm:ss tt}", nextRunLocalTime, nextRunLocalTime), MessageTypeConstants.Debug);
 
                     // Status, Debug, and Progress messages are only shown at the console
                     task.StatusEvent += this.OnStatusEvent;
@@ -924,7 +924,7 @@ namespace DMS_Email_Manager
 
             try
             {
-                var reportStatusFile = new FileInfo(Path.Combine(GetAppFolderPath(), REPORT_STATUS_FILE_NAME));
+                var reportStatusFile = new FileInfo(Path.Combine(GetAppDirectoryPath(), REPORT_STATUS_FILE_NAME));
 
                 if (!reportStatusFile.Exists)
                 {
@@ -1110,7 +1110,7 @@ namespace DMS_Email_Manager
                     );
 
                 currentTask = "Opening the temp status info file for writing";
-                var reportStatusFileTemp = new FileInfo(Path.Combine(GetAppFolderPath(), REPORT_STATUS_FILE_NAME + ".tmp"));
+                var reportStatusFileTemp = new FileInfo(Path.Combine(GetAppDirectoryPath(), REPORT_STATUS_FILE_NAME + ".tmp"));
 
                 var settings = new XmlWriterSettings
                 {
@@ -1130,7 +1130,7 @@ namespace DMS_Email_Manager
                 /*
                  * Older style XML generation method using XmlTextWriter
 
-                    var reportStatusFileTemp2 = new FileInfo(Path.Combine(GetAppFolderPath(), REPORT_STATUS_FILE_NAME + ".tmp"));
+                    var reportStatusFileTemp2 = new FileInfo(Path.Combine(GetAppDirectoryPath(), REPORT_STATUS_FILE_NAME + ".tmp"));
 
                     var writer = new XmlTextWriter(reportStatusFileTemp2.FullName, System.Text.Encoding.UTF8);
                     writer.WriteStartDocument(true);
@@ -1174,8 +1174,8 @@ namespace DMS_Email_Manager
 
                 // Backup the current reportStatusFile
                 currentTask = "Preparing to backup the reportStatusFile";
-                var reportStatusFile = new FileInfo(Path.Combine(GetAppFolderPath(), REPORT_STATUS_FILE_NAME));
-                var reportStatusFileOld = new FileInfo(Path.Combine(GetAppFolderPath(), REPORT_STATUS_FILE_NAME + ".old"));
+                var reportStatusFile = new FileInfo(Path.Combine(GetAppDirectoryPath(), REPORT_STATUS_FILE_NAME));
+                var reportStatusFileOld = new FileInfo(Path.Combine(GetAppDirectoryPath(), REPORT_STATUS_FILE_NAME + ".old"));
 
                 if (reportStatusFile.Exists)
                 {
@@ -1413,14 +1413,14 @@ namespace DMS_Email_Manager
         private void Task_ErrorEvent(string message, Exception ex)
         {
             // If logging is disabled, the error message will simply be shown at the console
-            LogMessage(message, eMessageTypeConstants.ErrorMsg);
-            LogMessage(PRISM.StackTraceFormatter.GetExceptionStackTrace(ex), eMessageTypeConstants.Warning);
+            LogMessage(message, MessageTypeConstants.ErrorMsg);
+            LogMessage(StackTraceFormatter.GetExceptionStackTrace(ex), MessageTypeConstants.Warning);
         }
 
         private void Task_WarningEvent(string message)
         {
             // If logging is disabled, the warning message will simply be shown at the console
-            LogMessage(message, eMessageTypeConstants.Warning);
+            LogMessage(message, MessageTypeConstants.Warning);
         }
 
         #endregion
