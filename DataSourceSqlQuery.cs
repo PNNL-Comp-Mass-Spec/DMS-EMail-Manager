@@ -9,7 +9,7 @@ namespace DMS_Email_Manager
     {
 
         /// <summary>
-        /// Query to run against the databsae
+        /// Query to run against the database
         /// </summary>
         public string Query { get; set; }
 
@@ -22,7 +22,7 @@ namespace DMS_Email_Manager
         /// Constructor
         /// </summary>
         /// <param name="reportName">Report name (used for logging)</param>
-        /// <param name="serverName">Sserver name</param>
+        /// <param name="serverName">Server name</param>
         /// <param name="databaseName">Database name</param>
         /// <param name="query">SQL query to run</param>
         /// <param name="simulate">When true, simulate contacting the database</param>
@@ -42,7 +42,7 @@ namespace DMS_Email_Manager
         }
 
         /// <summary>
-        /// Run a query against a SQL Server database to retrieve the resultset
+        /// Run a query against a SQL Server database to retrieve the result set
         /// </summary>
         /// <returns></returns>
         public override TaskResults GetData()

@@ -73,6 +73,7 @@ namespace DMS_Email_Manager
             {
                 var results = new TaskResults(ReportName);
 
+                // ReSharper disable once StringLiteralTypo
                 var wmiPath = @"\\" + HostName + @"\root\cimv2";
 
                 if (Simulate)

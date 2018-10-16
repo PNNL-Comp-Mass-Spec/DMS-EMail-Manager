@@ -40,7 +40,7 @@ namespace DMS_Email_Manager
         /// Constructor
         /// </summary>
         /// <param name="reportName">Report name (used for logging)</param>
-        /// <param name="serverName">Sserver name</param>
+        /// <param name="serverName">Server name</param>
         /// <param name="databaseName">Database name</param>
         /// <param name="storedProcedureName">Stored procedure name</param>
         /// <param name="simulate">When true, simulate contacting the database</param>
@@ -65,7 +65,7 @@ namespace DMS_Email_Manager
         }
 
         /// <summary>
-        /// Call a SQL Server stored procedure to retrieve the resultset (or resultsets)
+        /// Call a SQL Server stored procedure to retrieve the result set (or result sets)
         /// </summary>
         /// <returns></returns>
         public override TaskResults GetData()

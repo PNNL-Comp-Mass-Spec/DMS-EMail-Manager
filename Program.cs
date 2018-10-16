@@ -9,7 +9,7 @@ namespace DMS_Email_Manager
     /// <summary>
     /// This program retrieves data from a database at regular intervals
     /// and e-mails that information to the appropriate people
-    /// Originally concept by Dave Clark and Nate Trimble
+    /// Original concept by Dave Clark and Nate Trimble
     /// Ported to VB.NET in 2010 by Matthew Monroe
     /// Ported to C# in 2018 by Matthew Monroe, including expanding functionality to support running tasks at varying frequencies
     /// </summary>
