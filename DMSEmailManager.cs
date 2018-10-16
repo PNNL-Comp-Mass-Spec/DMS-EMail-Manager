@@ -76,7 +76,7 @@ namespace DMS_Email_Manager
 
             if (!string.IsNullOrWhiteSpace(Options.LogDirPath))
             {
-                LogFolderPath = Options.LogDirPath;
+                LogDirectoryPath = Options.LogDirPath;
             }
 
             mLogFileUsesDateStamp = true;
@@ -583,8 +583,8 @@ namespace DMS_Email_Manager
                     }
 
                     DataSourceBase dataSource;
-                    var sourceTypeLcase = sourceType.ToLower().Trim();
-                    switch (sourceTypeLcase)
+                    var sourceTypeLCase = sourceType.ToLower().Trim();
+                    switch (sourceTypeLCase)
                     {
                         case "query":
                         case "table":
@@ -605,8 +605,8 @@ namespace DMS_Email_Manager
                                 continue;
                             }
 
-                            if (sourceTypeLcase == "procedure" || sourceTypeLcase == "storedprocedure" || sourceTypeLcase == "sp" ||
-                                sourceTypeLcase == "sproc")
+                            if (sourceTypeLCase == "procedure" || sourceTypeLCase == "storedprocedure" || sourceTypeLCase == "sp" ||
+                                sourceTypeLCase == "sproc")
                             {
                                 dataSource = new DataSourceSqlStoredProcedure(reportName, sourceServer, sourceDB, query, Options.Simulate);
                             }
@@ -784,22 +784,22 @@ namespace DMS_Email_Manager
                             continue;
                         }
 
-                        var lcaseUnits = delayIntervalUnits.ToLower();
+                        var unitsLCase = delayIntervalUnits.ToLower();
                         NotificationTask.FrequencyInterval intervalUnits;
 
-                        if (lcaseUnits.Contains("second"))
+                        if (unitsLCase.Contains("second"))
                             intervalUnits = NotificationTask.FrequencyInterval.Second;
-                        else if (lcaseUnits.Contains("minute"))
+                        else if (unitsLCase.Contains("minute"))
                             intervalUnits = NotificationTask.FrequencyInterval.Minute;
-                        else if (lcaseUnits.Contains("hour"))
+                        else if (unitsLCase.Contains("hour"))
                             intervalUnits = NotificationTask.FrequencyInterval.Hour;
-                        else if (lcaseUnits.Contains("daily") || lcaseUnits.Contains("day"))
+                        else if (unitsLCase.Contains("daily") || unitsLCase.Contains("day"))
                             intervalUnits = NotificationTask.FrequencyInterval.Day;
-                        else if (lcaseUnits.Contains("week"))
+                        else if (unitsLCase.Contains("week"))
                             intervalUnits = NotificationTask.FrequencyInterval.Week;
-                        else if (lcaseUnits.Contains("month"))
+                        else if (unitsLCase.Contains("month"))
                             intervalUnits = NotificationTask.FrequencyInterval.Month;
-                        else if (lcaseUnits.Contains("year"))
+                        else if (unitsLCase.Contains("year"))
                             intervalUnits = NotificationTask.FrequencyInterval.Year;
                         else
                         {
@@ -882,9 +882,9 @@ namespace DMS_Email_Manager
                     LogMessage(string.Format("will next run on {0:d} at {1:h:mm:ss tt}", nextRunLocalTime, nextRunLocalTime), MessageTypeConstants.Debug);
 
                     // Status, Debug, and Progress messages are only shown at the console
-                    task.StatusEvent += this.OnStatusEvent;
-                    task.DebugEvent += this.OnDebugEvent;
-                    task.ProgressUpdate += this.OnProgressUpdate;
+                    task.StatusEvent += OnStatusEvent;
+                    task.DebugEvent += OnDebugEvent;
+                    task.ProgressUpdate += OnProgressUpdate;
 
                     // Error and Warning messages will be logged if Options.LogMessages is true
                     // Otherwise, they're shown at console

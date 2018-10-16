@@ -392,8 +392,8 @@ namespace DMS_Email_Manager
 
                 foreach (var dataRow in results.DataRows)
                 {
-                    var dataVals = string.Join("\t", dataRow);
-                    OnStatusEvent(dataVals);
+                    var dataValues = string.Join("\t", dataRow);
+                    OnStatusEvent(dataValues);
                 }
 
                 return;
