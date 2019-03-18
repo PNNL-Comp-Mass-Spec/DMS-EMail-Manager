@@ -28,7 +28,6 @@ namespace DMS_Email_Manager
             ReportName = reportName;
             ColumnNames = new List<string>();
             DataRows = new List<List<string>>();
-
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -18,7 +19,6 @@ namespace DMS_Email_Manager
         /// Database name
         /// </summary>
         public string DatabaseName { get; internal set; }
-
 
         protected TaskResults GetSqlData(CommandType commandType, string queryOrProcedureName)
         {
@@ -48,7 +48,7 @@ namespace DMS_Email_Manager
 
             using (var dbConn = new SqlConnection(connStr))
             {
-                using (var sqlCmd= new SqlCommand(queryOrProcedureName, dbConn))
+                using (var sqlCmd = new SqlCommand(queryOrProcedureName, dbConn))
                 {
                     sqlCmd.CommandType = commandType;
                     sqlCmd.CommandTimeout = QUERY_TIMEOUT_SECONDS;
@@ -69,7 +69,9 @@ namespace DMS_Email_Manager
                         }
 
                         if (resultSets == 1)
+                        {
                             results.DefineColumns(columnNames);
+                        }
                         else
                         {
                             results.ParseColumnsAddnlResultSet(columnNames);
@@ -97,5 +99,6 @@ namespace DMS_Email_Manager
 
             return results;
         }
+
     }
 }
