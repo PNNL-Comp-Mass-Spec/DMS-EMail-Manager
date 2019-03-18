@@ -1,4 +1,6 @@
-﻿using PRISM;
+﻿using System;
+using System.Collections.Generic;
+using PRISM;
 
 namespace DMS_Email_Manager
 {
@@ -37,5 +39,16 @@ namespace DMS_Email_Manager
         /// <returns></returns>
         public abstract TaskResults GetData();
 
+        protected TaskResults FormatExceptionAsResults(string reportName, string errMsg, Exception ex)
+        {
+            var results = new TaskResults(ReportName);
+            results.DefineColumns(new List<string> { "Error" });
+
+            results.AddDataRow(new List<string> { errMsg });
+            results.AddDataRow(new List<string> { ex.Message });
+            results.AddDataRow(new List<string> { PRISM.StackTraceFormatter.GetExceptionStackTrace(ex) });
+
+            return results;
+        }
     }
 }

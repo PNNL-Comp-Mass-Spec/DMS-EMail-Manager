@@ -58,9 +58,7 @@ namespace DMS_Email_Manager
                                            DatabaseName, ReportName);
                 OnErrorEvent(errMsg, ex);
 
-                var results = new TaskResults(ReportName);
-                results.DefineColumns(new List<string> { "Error" });
-                results.AddDataRow(new List<string> { errMsg });
+                var results = FormatExceptionAsResults(ReportName, errMsg, ex);
                 return results;
             }
         }

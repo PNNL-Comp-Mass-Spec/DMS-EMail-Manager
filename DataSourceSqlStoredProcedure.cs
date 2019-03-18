@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.Collections.Generic;
 using System.Data;
 
 namespace DMS_Email_Manager
@@ -81,9 +80,7 @@ namespace DMS_Email_Manager
                                            StoredProcedureName, DatabaseName, ReportName);
                 OnErrorEvent(errMsg, ex);
 
-                var results = new TaskResults(ReportName);
-                results.DefineColumns(new List<string> {"Error"});
-                results.AddDataRow(new List<string> { errMsg });
+                var results = FormatExceptionAsResults(ReportName, errMsg, ex);
                 return results;
             }
         }
