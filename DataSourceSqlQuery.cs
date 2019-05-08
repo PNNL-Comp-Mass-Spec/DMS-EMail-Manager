@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Data;
-using System.Collections.Generic;
 
 namespace DMS_Email_Manager
 {
