@@ -6,7 +6,7 @@ namespace DMS_Email_Manager
 {
     public class DMSEmailManagerOptions
     {
-        private const string PROGRAM_DATE = "March 18, 2019";
+        private const string PROGRAM_DATE = "May 8, 2019";
 
         public const string DEFAULT_EMAIL_SERVER = "emailgw.pnl.gov";
         public const string DEFAULT_EMAIL_FROM = "proteomics@pnnl.gov";
@@ -148,14 +148,15 @@ namespace DMS_Email_Manager
 
         }
 
-        public bool ValidateArgs()
+        public bool ValidateArgs(out string errorMessage)
         {
             if (string.IsNullOrWhiteSpace(ReportDefinitionsFilePath))
             {
-                Console.WriteLine("Report definitions XML file must be defined");
+                errorMessage = "Report definitions XML file must be defined";
                 return false;
             }
 
+            errorMessage = string.Empty;
             return true;
         }
 

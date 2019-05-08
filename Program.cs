@@ -69,9 +69,14 @@ namespace DMS_Email_Manager
                     return 0;
                 }
 
-                if (!options.ValidateArgs())
+                if (!options.ValidateArgs(out var errorMessage))
                 {
                     parser.PrintHelp();
+
+                    Console.WriteLine();
+                    ConsoleMsgUtils.ShowWarning("Validation error:");
+                    ConsoleMsgUtils.ShowWarning(errorMessage);
+
                     Thread.Sleep(1500);
                     return -1;
                 }
