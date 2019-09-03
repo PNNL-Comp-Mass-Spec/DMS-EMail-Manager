@@ -106,7 +106,7 @@
               subject="DMS: Predefined Job Creation Errors"
               title="Predefined Job Creation Errors (DMS)"
               mailIfEmpty="false" />
-        <frequency dayofweeklist="Thursday"
+        <frequency dayofweeklist="Monday,Wednesday,Friday"
                    type="TimeOfDay"
                    timeOfDay="7:00 am" />
     </report>

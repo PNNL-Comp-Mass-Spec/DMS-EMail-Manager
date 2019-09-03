@@ -54,7 +54,7 @@
               subject="CBDMS: Predefined Job Creation Errors"
               title="Predefined Job Creation Errors (CBDMS)"
               mailIfEmpty="false" />
-        <frequency dayofweeklist="Thursday"
+        <frequency dayofweeklist="Monday,Wednesday,Friday"
                    type="TimeOfDay"
                    timeOfDay="6:50 am" />
     </report>
