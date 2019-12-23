@@ -271,25 +271,4 @@
                    timeOfDay="7:00 am" />
     </report>
 
-    <report name="Disabled Indices on ProteinSeqs2">
-        <data source="ProteinSeqs2" catalog="Master_Sequences" type="query">
-        SELECT *
-        FROM (SELECT 'MT_Main' AS [DBName], COUNT(*) AS Disabled_Indices
-              FROM MT_Main.sys.indexes
-              WHERE is_disabled = 1
-              UNION
-              SELECT 'Master_Sequences' AS [DBName], COUNT(*) AS Disabled_Indices
-              FROM Master_Sequences.sys.indexes
-              WHERE is_disabled = 1 ) LookupQ
-        WHERE Disabled_Indices > 0
-        </data>
-        <mail to="proteomics@pnnl.gov"
-              subject="ProteinSeqs2: Disabled indices"
-              title="Disabled indices on ProteinSeqs2"
-              mailIfEmpty="false" />
-        <frequency dayofweeklist="Wednesday"
-                   type="TimeOfDay"
-                   timeOfDay="7:00 am" />
-    </report>
-
 </reports>
