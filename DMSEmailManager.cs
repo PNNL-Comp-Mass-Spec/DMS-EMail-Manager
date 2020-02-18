@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,6 +10,7 @@ using System.Xml.Linq;
 using NodaTime;
 using PRISM;
 using PRISM.FileProcessor;
+using PRISMDatabaseUtils;
 
 namespace DMS_Email_Manager
 {
@@ -856,7 +856,7 @@ namespace DMS_Email_Manager
                             if (varcharLength > 0)
                             {
                                 postMailHook.StoredProcParamLength = varcharLength;
-                                postMailHook.StoredProcParamType = SqlDbType.VarChar;
+                                postMailHook.StoredProcParamType = SqlType.VarChar;
                             }
 
                             task.PostMailIdListHook = postMailHook;
@@ -1197,7 +1197,6 @@ namespace DMS_Email_Manager
 
         private void SendResultIDsToPostMailHook(TaskResults results, DataSourceSqlStoredProcedure postMailIdListHook)
         {
-
             try
             {
                 if (postMailIdListHook == null)
@@ -1222,7 +1221,6 @@ namespace DMS_Email_Manager
                     return;
                 }
 
-
                 var resultIdList = new List<string>();
 
                 foreach (var dataRow in results.DataRows)
@@ -1245,28 +1243,17 @@ namespace DMS_Email_Manager
                 var connStr = string.Format("Data Source={0};Initial Catalog={1};Integrated Security=SSPI;Connection Timeout={2};",
                                             postMailIdListHook.ServerName, postMailIdListHook.DatabaseName, DataSourceSql.CONNECTION_TIMEOUT_SECONDS);
 
-                var cmd = new SqlCommand(postMailIdListHook.StoredProcedureName)
-                {
-                    CommandType = CommandType.StoredProcedure
-                };
+                var dbTools = DbToolsFactory.GetDBTools(connStr, DataSourceSql.QUERY_TIMEOUT_SECONDS);
+                RegisterEvents(dbTools);
+                var cmd = dbTools.CreateCommand(postMailIdListHook.StoredProcedureName, CommandType.StoredProcedure);
 
-                cmd.Parameters.Add(new SqlParameter("@Return", SqlDbType.Int)).Direction = ParameterDirection.ReturnValue;
+                var returnParam = dbTools.AddParameter(cmd, "@Return", SqlType.Int, ParameterDirection.ReturnValue);
 
                 var paramName = "@" + postMailIdListHook.StoredProcParameter;
-                var sqlParam = new SqlParameter(paramName, postMailIdListHook.StoredProcParamType, postMailIdListHook.StoredProcParamLength)
-                {
-                    Value = string.Join(",", resultIdList)
-                };
+                dbTools.AddParameter(cmd, paramName, postMailIdListHook.StoredProcParamType,
+                    postMailIdListHook.StoredProcParamLength, string.Join(",", resultIdList));
 
-                cmd.Parameters.Add(sqlParam);
-
-                var spRunner = new ExecuteDatabaseSP(connStr)
-                {
-                    TimeoutSeconds = DataSourceSql.QUERY_TIMEOUT_SECONDS
-                };
-                RegisterEvents(spRunner);
-
-                var errorCode = spRunner.ExecuteSP(cmd, 1);
+                var errorCode = dbTools.ExecuteSP(cmd, 1);
 
                 if (errorCode != 0)
                 {
@@ -1275,7 +1262,7 @@ namespace DMS_Email_Manager
                                     postMailIdListHook.StoredProcedureName,
                                     postMailIdListHook.DatabaseName,
                                     postMailIdListHook.ServerName,
-                                    errorCode));
+                                    returnParam.Value.CastDBVal<string>()));
                 }
             }
             catch (Exception ex)
@@ -1283,7 +1270,6 @@ namespace DMS_Email_Manager
                 HandleException(string.Format(
                                     "Error sending the results ID list to the post mail stored procedure for report '{0}'", results.ReportName),
                                 ex);
-
             }
         }
 

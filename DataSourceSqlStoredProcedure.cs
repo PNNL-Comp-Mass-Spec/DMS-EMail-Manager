@@ -1,12 +1,11 @@
-﻿
-using System;
+﻿using System;
 using System.Data;
+using PRISMDatabaseUtils;
 
 namespace DMS_Email_Manager
 {
     internal class DataSourceSqlStoredProcedure : DataSourceSql
     {
-
         /// <summary>
         /// The data source for this class is a stored procedure name
         /// </summary>
@@ -33,7 +32,7 @@ namespace DMS_Email_Manager
         /// Field type of the StoredProcParameter (defaults to SqlDbType.VarChar)
         /// </summary>
         /// <remarks>Used by SendResultIDsToPostMailHook</remarks>
-        public SqlDbType StoredProcParamType { get; set; }
+        public SqlType StoredProcParamType { get; set; }
 
         /// <summary>
         /// Constructor
@@ -60,7 +59,7 @@ namespace DMS_Email_Manager
 
             StoredProcParameter = string.Empty;
             StoredProcParamLength = 2000;
-            StoredProcParamType = SqlDbType.VarChar;
+            StoredProcParamType = SqlType.VarChar;
         }
 
         /// <summary>
