@@ -1,5 +1,12 @@
 DMS Email Manager Log
 
+Version 1.3.7447; May 22, 2020
+	- Add MaxRuntimeHours as a synonym for MaxRunTime
+
+Version 1.3.7353; February 18, 2020
+	- Update PRISM-Library and use PRISM-DatabaseUtils
+	- Update to .NET 4.7.2
+
 Version 1.3.7016; March 18, 2019
 	- Include exception details in the e-mail when an error occurs retrieving data
 
