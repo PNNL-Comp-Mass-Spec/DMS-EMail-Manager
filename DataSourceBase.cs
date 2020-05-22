@@ -46,7 +46,7 @@ namespace DMS_Email_Manager
 
             results.AddDataRow(new List<string> { errMsg });
             results.AddDataRow(new List<string> { ex.Message });
-            results.AddDataRow(new List<string> { PRISM.StackTraceFormatter.GetExceptionStackTrace(ex) });
+            results.AddDataRow(new List<string> { StackTraceFormatter.GetExceptionStackTrace(ex) });
 
             return results;
         }

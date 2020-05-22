@@ -34,7 +34,7 @@ namespace DMS_Email_Manager
         /// <param name="mailSubject"></param>
         /// <param name="reportTitle"></param>
         /// <param name="mailIfEmpty"></param>
-        public EmailMessageSettings(ICollection<string> emailList, string mailSubject, string reportTitle, bool mailIfEmpty)
+        public EmailMessageSettings(IEnumerable<string> emailList, string mailSubject, string reportTitle, bool mailIfEmpty)
         {
             Recipients = new SortedSet<string>();
             foreach (var mailAddress in emailList.Distinct())
