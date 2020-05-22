@@ -6,7 +6,7 @@ namespace DMS_Email_Manager
 {
     public class DMSEmailManagerOptions
     {
-        private const string PROGRAM_DATE = "May 9, 2019";
+        private const string PROGRAM_DATE = "May 22, 2020";
 
         public const string DEFAULT_EMAIL_SERVER = "emailgw.pnl.gov";
         public const string DEFAULT_EMAIL_FROM = "proteomics@pnnl.gov";
@@ -58,7 +58,7 @@ namespace DMS_Email_Manager
         [Option("LogDir", HelpText = "Directory to save log files")]
         public string LogDirPath { get; set; }
 
-        [Option("MaxRunTime", "Runtime", "RuntimeHours", "Hours",
+        [Option("MaxRuntimeHours", "MaxRunTime", "Runtime", "RuntimeHours", "Hours",
             HelpText = "Run for this many hours, then exit (0 means run indefinitely)",
             HelpShowsDefault = true, Min = 0, Max = 10000)]
         public int MaxRuntimeHours { get; set; }
