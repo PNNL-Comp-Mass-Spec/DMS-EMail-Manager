@@ -1253,9 +1253,9 @@ namespace DMS_Email_Manager
                 dbTools.AddParameter(cmd, paramName, postMailIdListHook.StoredProcParamType,
                     postMailIdListHook.StoredProcParamLength, string.Join(",", resultIdList));
 
-                var errorCode = dbTools.ExecuteSP(cmd, 1);
+                var returnCode = dbTools.ExecuteSP(cmd, 1);
 
-                if (errorCode != 0)
+                if (returnCode != 0)
                 {
                     ShowWarning(string.Format(
                                     "Procedure {0} in database {1} on server {2} returned error code {3}",
