@@ -81,19 +81,19 @@ namespace DMS_Email_Manager
                     return results;
                 }
 
-                var oMs = new System.Management.ManagementScope(wmiPath);
-                var oQuery = new System.Management.ObjectQuery(Query);
-                var oSearcher = new System.Management.ManagementObjectSearcher(oMs, oQuery);
-                var oReturnCollection = oSearcher.Get();
+                var scope = new System.Management.ManagementScope(wmiPath);
+                var query = new System.Management.ObjectQuery(Query);
+                var searcher = new System.Management.ManagementObjectSearcher(scope, query);
+                var wmiResults = searcher.Get();
 
                 var resultSets = 0;
 
-                foreach (var mo in oReturnCollection)
+                foreach (var wmiValue in wmiResults)
                 {
                     resultSets++;
 
                     var columnNames = new List<string>();
-                    foreach (var prop in mo.Properties)
+                    foreach (var prop in wmiValue.Properties)
                     {
                         columnNames.Add(prop.Name);
                     }
@@ -108,7 +108,7 @@ namespace DMS_Email_Manager
                     }
 
                     var dataValues = new List<string>();
-                    foreach (var prop in mo.Properties)
+                    foreach (var prop in wmiValue.Properties)
                     {
                         try
                         {
