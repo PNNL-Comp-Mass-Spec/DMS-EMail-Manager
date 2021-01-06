@@ -5,7 +5,6 @@ namespace DMS_Email_Manager
 {
     internal class EmailMessageSettings
     {
-
         /// <summary>
         /// List of e-mail addresses to send the query results to
         /// </summary>

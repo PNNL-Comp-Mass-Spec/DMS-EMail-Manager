@@ -139,7 +139,6 @@ namespace DMS_Email_Manager
         {
             try
             {
-
                 var titleHtml = "<h3>" + mailSettings.ReportTitle + "</h3>";
                 var dataHtml = new StringBuilder();
 
@@ -279,7 +278,6 @@ namespace DMS_Email_Manager
                 mailClient.Send(msg);
 
                 LogMessage(reportInfo);
-
             }
             catch (Exception ex)
             {
@@ -302,7 +300,6 @@ namespace DMS_Email_Manager
                 ShowWarning(string.Format("Ignoring report definition '{0}'; missing the {1} element", reportName, childNodeName));
 
             return null;
-
         }
 
         private int GetChildElementValue(XContainer node, string childNodeName, int valueIfMissing)
@@ -327,7 +324,6 @@ namespace DMS_Email_Manager
 
                 try
                 {
-
                     var roundTripBased = DateTime.ParseExact(dataValue, "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
                     return roundTripBased.ToUniversalTime();
                 }
@@ -335,7 +331,6 @@ namespace DMS_Email_Manager
                 {
                     return value.ToUniversalTime();
                 }
-
             }
 
             return value;
@@ -929,8 +924,6 @@ namespace DMS_Email_Manager
                 HandleException("Error reading the report definitions file", ex);
                 return false;
             }
-
-
         }
 
         /// <summary>
@@ -938,7 +931,6 @@ namespace DMS_Email_Manager
         /// </summary>
         private void ReadReportStatusFile()
         {
-
             var currentTask = "Constructing the report status file path";
 
             try
@@ -995,7 +987,8 @@ namespace DMS_Email_Manager
                     var sourceType = GetChildElementValue(report, "SourceType", string.Empty);
                     var sourceQuery = GetChildElementValue(report, "SourceQuery", string.Empty);
 
-                    var runtimeInfo = new TaskRuntimeInfo(lastRunUtc, executionCount) {
+                    var runtimeInfo = new TaskRuntimeInfo(lastRunUtc, executionCount)
+                    {
                         NextRun = nextRunUtc,
                         SourceDefinition = sourceQuery
                     };
@@ -1043,7 +1036,6 @@ namespace DMS_Email_Manager
                 {
                     HandleException(string.Format("Error running task '{0}'", task.Key), ex);
                 }
-
             }
         }
 
@@ -1053,7 +1045,6 @@ namespace DMS_Email_Manager
         /// <returns>The number of tasks that were run</returns>
         private void RunElapsedTasks()
         {
-
             foreach (var task in mTasks)
             {
                 try
@@ -1071,7 +1062,6 @@ namespace DMS_Email_Manager
                 {
                     HandleException(string.Format("Error running task '{0}'", task.Key), ex);
                 }
-
             }
         }
 
@@ -1080,12 +1070,10 @@ namespace DMS_Email_Manager
         /// </summary>
         private void SaveReportStatusFile()
         {
-
             var currentTask = "Constructing the temp file path";
 
             try
             {
-
                 currentTask = "Finding extra runtime info to save";
 
                 // Create a list of runtime info using both mTasks and mRuntimeInfo
@@ -1361,7 +1349,6 @@ namespace DMS_Email_Manager
                 HandleException("Error in main loop", ex);
                 return false;
             }
-
         }
 
         private bool TryParseTimeOfDay(string timeOfDayText, out LocalTime timeOfDay)

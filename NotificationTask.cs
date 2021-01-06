@@ -226,7 +226,6 @@ namespace DMS_Email_Manager
                 {
                     nextRunUtc = nextRunUtc.Add(oneDay);
                 }
-
             }
             else
             {
@@ -251,7 +250,6 @@ namespace DMS_Email_Manager
 
             // We'll consider the DaysOfWeek filter just prior to actually retrieving the data
             NextRun = nextRunUtc.ToUniversalTime();
-
         }
 
         private DateTime ConstructTimeForDate(DateTime referenceDate, LocalTime timeOfDay)
@@ -299,7 +297,6 @@ namespace DMS_Email_Manager
 
             var plural = DelayInterval == 1 ? "" : "s";
 
-
             switch (DelayIntervalUnits)
             {
                 case FrequencyInterval.Second:
@@ -332,7 +329,6 @@ namespace DMS_Email_Manager
                 return frequency;
 
             return string.Format("{0} on {1}", frequency, string.Join(", ", dayNames));
-
         }
 
         private Period GetPeriodForInternal(int interval, FrequencyInterval intervalUnits)
@@ -445,7 +441,6 @@ namespace DMS_Email_Manager
                 OnErrorEvent("Error running notification task " + TaskID, ex);
                 return false;
             }
-
         }
 
         /// <summary>
@@ -482,7 +477,6 @@ namespace DMS_Email_Manager
             LastRun = DateTime.UtcNow;
 
             return false;
-
         }
 
         private string UpdateNextRuntime()
@@ -566,7 +560,5 @@ namespace DMS_Email_Manager
 
             ComputeNextRunTime();
         }
-
     }
-
 }

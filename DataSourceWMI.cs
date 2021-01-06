@@ -5,7 +5,6 @@ namespace DMS_Email_Manager
 {
     internal class DataSourceWMI : DataSourceBase
     {
-
         /// <summary>
         /// WMI host to contact
         /// </summary>
@@ -68,7 +67,6 @@ namespace DMS_Email_Manager
         /// <returns></returns>
         public override TaskResults GetData()
         {
-
             try
             {
                 var results = new TaskResults(ReportName);
@@ -112,7 +110,6 @@ namespace DMS_Email_Manager
                     var dataValues = new List<string>();
                     foreach (var prop in mo.Properties)
                     {
-
                         try
                         {
                             if (prop.Value == null)
@@ -132,7 +129,6 @@ namespace DMS_Email_Manager
                             {
                                 dataValues.Add(valueText);
                             }
-
                         }
                         catch (Exception ex)
                         {
@@ -143,7 +139,6 @@ namespace DMS_Email_Manager
 
                     results.AddDataRow(dataValues);
                 }
-
 
                 return results;
             }

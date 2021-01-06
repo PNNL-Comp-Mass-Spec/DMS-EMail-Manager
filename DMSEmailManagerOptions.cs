@@ -36,7 +36,6 @@ namespace DMS_Email_Manager
             MaxRuntimeHours = 0;
         }
 
-
         [Option("I", ArgPosition = 1, HelpText = "XML file with report definitions", HelpShowsDefault = false)]
         public string ReportDefinitionsFilePath { get; set; }
 
@@ -115,7 +114,6 @@ namespace DMS_Email_Manager
                 Console.WriteLine();
                 Console.WriteLine(" Running indefinitely (stop with Ctrl+C or using the task manager)");
             }
-
             else if (MaxRuntimeHours > 0)
             {
                 Console.WriteLine();
@@ -147,7 +145,6 @@ namespace DMS_Email_Manager
                 Console.WriteLine();
                 Console.WriteLine(" Simulating database / WMI calls");
             }
-
         }
 
         public bool ValidateArgs(out string errorMessage)
@@ -161,6 +158,5 @@ namespace DMS_Email_Manager
             errorMessage = string.Empty;
             return true;
         }
-
     }
 }

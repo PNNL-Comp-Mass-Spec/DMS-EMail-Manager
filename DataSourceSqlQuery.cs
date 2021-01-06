@@ -6,7 +6,6 @@ namespace DMS_Email_Manager
 {
     internal class DataSourceSqlQuery : DataSourceSql
     {
-
         /// <summary>
         /// Query to run against the database
         /// </summary>

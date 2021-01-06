@@ -108,7 +108,6 @@ namespace DMS_Email_Manager
             }
 
             return 0;
-
         }
 
         private static void ShowExampleReportDefinitionsFile(bool showExtendedExample = false)
@@ -150,7 +149,6 @@ namespace DMS_Email_Manager
             Console.WriteLine("                             parameter=\"alertIDs\" varcharlength=\"4000\" /> ");
             Console.WriteLine("     </report> ");
 
-
             if (showExtendedExample)
             {
                 Console.WriteLine();
@@ -179,7 +177,6 @@ namespace DMS_Email_Manager
 
             Console.WriteLine("</reports>");
             Console.WriteLine();
-
         }
 
         #region "Events"

@@ -58,7 +58,6 @@ namespace DMS_Email_Manager
                 {
                     SourceDefinition = dataSource.SourceDefinition;
                 }
-
             }
             catch (Exception ex)
             {

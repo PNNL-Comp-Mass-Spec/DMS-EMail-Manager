@@ -85,7 +85,6 @@ namespace DMS_Email_Manager
                                     dataValues.Add(string.Empty);
                                 else
                                     dataValues.Add(reader.GetValue(i).ToString());
-
                             }
 
                             results.AddDataRow(dataValues);
@@ -98,6 +97,5 @@ namespace DMS_Email_Manager
 
             return results;
         }
-
     }
 }

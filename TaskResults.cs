@@ -73,6 +73,5 @@ namespace DMS_Email_Manager
                 ColumnNames.Add(columns[colIndex]);
             }
         }
-
     }
 }
