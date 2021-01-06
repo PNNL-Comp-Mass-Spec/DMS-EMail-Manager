@@ -6,7 +6,9 @@ namespace DMS_Email_Manager
 {
     public class DMSEmailManagerOptions
     {
-        private const string PROGRAM_DATE = "May 22, 2020";
+        // Ignore Spelling: Ctrl
+
+        private const string PROGRAM_DATE = "January 6, 2021";
 
         public const string DEFAULT_EMAIL_SERVER = "emailgw.pnl.gov";
         public const string DEFAULT_EMAIL_FROM = "proteomics@pnnl.gov";

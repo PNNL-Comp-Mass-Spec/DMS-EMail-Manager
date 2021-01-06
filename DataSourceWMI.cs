@@ -25,7 +25,7 @@ namespace DMS_Email_Manager
         /// Optional value to divide WMI report values by
         /// </summary>
         /// <remarks>
-        /// For example, set ValueDivisor to 1073741824 and set DivisorUnits to "gb"
+        /// For example, set ValueDivisor to 1073741824 and set DivisorUnits to "GB"
         /// to report disk free space and disk usage in gigabytes
         /// </remarks>
         public double ValueDivisor { get; set; }
@@ -37,7 +37,7 @@ namespace DMS_Email_Manager
         public byte DivisorRoundDigits { get; set; }
 
         /// <summary>
-        /// Units for the metric
+        /// Units for the metric (units can be any user-defined string)
         /// </summary>
         /// <remarks>Only used if ValueDivisor is non-zero</remarks>
         public string DivisorUnits { get; set; }

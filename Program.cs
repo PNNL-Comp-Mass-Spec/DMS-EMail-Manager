@@ -16,6 +16,8 @@ namespace DMS_Email_Manager
     class Program
     {
         static int Main(string[] args)
+        // Ignore Spelling: dayofweeklist, varcharlength, AckEmailAlerts
+
         {
             try
             {
