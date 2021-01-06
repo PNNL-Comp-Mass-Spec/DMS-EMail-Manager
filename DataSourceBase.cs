@@ -41,7 +41,7 @@ namespace DMS_Email_Manager
 
         protected TaskResults FormatExceptionAsResults(string reportName, string errMsg, Exception ex)
         {
-            var results = new TaskResults(ReportName);
+            var results = new TaskResults(reportName);
             results.DefineColumns(new List<string> { "Error" });
 
             results.AddDataRow(new List<string> { errMsg });
