@@ -101,7 +101,9 @@ namespace DMS_Email_Manager
                     }
 
                     if (resultSets == 1)
+                    {
                         results.DefineColumns(columnNames);
+                    }
                     else
                     {
                         results.ParseColumnsAddnlResultSet(columnNames);

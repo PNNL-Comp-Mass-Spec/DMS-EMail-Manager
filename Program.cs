@@ -13,11 +13,11 @@ namespace DMS_Email_Manager
     /// Ported to VB.NET in 2010 by Matthew Monroe
     /// Ported to C# in 2018 by Matthew Monroe, including expanding functionality to support running tasks at varying frequencies
     /// </summary>
-    class Program
+    internal class Program
     {
-        static int Main(string[] args)
         // Ignore Spelling: dayofweeklist, varcharlength, AckEmailAlerts
 
+        private static int Main(string[] args)
         {
             try
             {

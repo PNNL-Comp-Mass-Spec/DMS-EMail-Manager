@@ -87,7 +87,7 @@ namespace DMS_Email_Manager
 
             if (string.IsNullOrWhiteSpace(Options.ReportDefinitionsFilePath))
             {
-                var errMsg = "Report definitions file not defined";
+                const string errMsg = "Report definitions file not defined";
                 ShowErrorMessage(errMsg);
                 throw new ArgumentException(errMsg, nameof(Options.ReportDefinitionsFilePath));
             }
@@ -355,8 +355,10 @@ namespace DMS_Email_Manager
             var cssStyle = new StringBuilder();
 
             cssStyle.AppendLine("<style type=\"text/css\" media=\"all\">");
-            cssStyle.AppendLine(string.Format("body {{ font: {0}px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }}", Options.FontSizeBody));
-            cssStyle.AppendLine(string.Format("h3 {{ font: {0}px Verdana, Arial, Helvetica, sans-serif; }}", Options.FontSizeHeader));
+            cssStyle.AppendFormat("body {{ font: {0}px Verdana, Arial, Helvetica, sans-serif; margin: 20px; }}", Options.FontSizeBody);
+            cssStyle.AppendLine();
+            cssStyle.AppendFormat("h3 {{ font: {0}px Verdana, Arial, Helvetica, sans-serif; }}", Options.FontSizeHeader);
+            cssStyle.AppendLine();
             cssStyle.AppendLine("table { margin: 4px; border-style: ridge; border-width: 2px; }");
             cssStyle.AppendLine(".table-header { color: white; background-color: #8080FF; }");
             cssStyle.AppendLine(".table-row { background-color: #D8D8FF; vertical-align:top;}");
@@ -749,7 +751,7 @@ namespace DMS_Email_Manager
                         assumedTimeOfDay = string.Empty;
                     }
 
-                    if (delayTypeText.ToLower().Contains("time") || !string.IsNullOrWhiteSpace(assumedTimeOfDay))
+                    if (delayTypeText.IndexOf("time", StringComparison.OrdinalIgnoreCase) >= 0 || !string.IsNullOrWhiteSpace(assumedTimeOfDay))
                     {
                         // Run a report at a given time, every day, or certain days of the week
 
@@ -773,7 +775,7 @@ namespace DMS_Email_Manager
                             ExecutionCount = executionCount
                         };
                     }
-                    else if (delayTypeText.ToLower().Contains("interval"))
+                    else if (delayTypeText.IndexOf("interval", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         // Run a report on a given interval
 
@@ -791,19 +793,33 @@ namespace DMS_Email_Manager
                         NotificationTask.FrequencyInterval intervalUnits;
 
                         if (unitsLCase.Contains("second"))
+                        {
                             intervalUnits = NotificationTask.FrequencyInterval.Second;
+                        }
                         else if (unitsLCase.Contains("minute"))
+                        {
                             intervalUnits = NotificationTask.FrequencyInterval.Minute;
+                        }
                         else if (unitsLCase.Contains("hour"))
+                        {
                             intervalUnits = NotificationTask.FrequencyInterval.Hour;
+                        }
                         else if (unitsLCase.Contains("daily") || unitsLCase.Contains("day"))
+                        {
                             intervalUnits = NotificationTask.FrequencyInterval.Day;
+                        }
                         else if (unitsLCase.Contains("week"))
+                        {
                             intervalUnits = NotificationTask.FrequencyInterval.Week;
+                        }
                         else if (unitsLCase.Contains("month"))
+                        {
                             intervalUnits = NotificationTask.FrequencyInterval.Month;
+                        }
                         else if (unitsLCase.Contains("year"))
+                        {
                             intervalUnits = NotificationTask.FrequencyInterval.Year;
+                        }
                         else
                         {
                             ShowWarning(string.Format("Ignoring report definition '{0}'; invalid interval units {1}; should be {2}",
@@ -989,10 +1005,8 @@ namespace DMS_Email_Manager
                         runtimeInfo.SourceType = dataSourceType;
                     }
 
-                    if (mRuntimeInfo.ContainsKey(reportName))
-                        mRuntimeInfo[reportName] = runtimeInfo;
-                    else
-                        mRuntimeInfo.Add(reportName, runtimeInfo);
+                    // Add/update the dictionary
+                    mRuntimeInfo[reportName] = runtimeInfo;
 
                     loadedTaskNames.Add(reportName);
                 }
@@ -1140,7 +1154,7 @@ namespace DMS_Email_Manager
                     writer.Formatting = Formatting.Indented;
                     writer.Indentation = 2;
                     writer.WriteStartElement("Reports");
-                    foreach (var task in mTasks)
+                    for each (var task in mTasks)
                     {
                         writer.WriteStartElement("Report");
                         writer.WriteAttributeString("name", task.Key);
