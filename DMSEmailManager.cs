@@ -1130,51 +1130,6 @@ namespace DMS_Email_Manager
                     masterDoc.Save(xmlWriter);
                 }
 
-                /*
-                 * Older style XML generation method using XmlTextWriter
-
-                    var reportStatusFileTemp2 = new FileInfo(Path.Combine(GetAppDirectoryPath(), REPORT_STATUS_FILE_NAME + ".tmp"));
-
-                    var writer = new XmlTextWriter(reportStatusFileTemp2.FullName, System.Text.Encoding.UTF8);
-                    writer.WriteStartDocument(true);
-                    writer.Formatting = Formatting.Indented;
-                    writer.Indentation = 2;
-                    writer.WriteStartElement("Reports");
-                    for each (var task in mTasks)
-                    {
-                        writer.WriteStartElement("Report");
-                        writer.WriteAttributeString("name", task.Key);
-
-                        writer.WriteStartElement("LastRunUTC");
-                        writer.WriteString(task.Value.LastRun.ToString("O"));
-                        writer.WriteEndElement();
-
-                        writer.WriteStartElement("NextRunUTC");
-                        writer.WriteString(task.Value.NextRun.ToString("O"));
-                        writer.WriteEndElement();
-
-                        writer.WriteStartElement("ExecutionCount");
-                        writer.WriteString(task.Value.ExecutionCount.ToString());
-                        writer.WriteEndElement();
-
-                        writer.WriteStartElement("SourceType");
-                        writer.WriteString(task.Value.DataSource.SourceType.ToString());
-                        writer.WriteEndElement();
-
-                        writer.WriteStartElement("SourceQuery");
-                        writer.WriteString(task.Value.DataSource.SourceDefinition);
-                        writer.WriteEndElement();
-
-                        writer.WriteEndElement(); // </Report>
-                    }
-
-                    writer.WriteEndElement();   // </Reports>
-                    writer.WriteEndDocument();
-                    writer.Close();
-
-                 *
-                 */
-
                 // Backup the current reportStatusFile
                 currentTask = "Preparing to backup the reportStatusFile";
                 var reportStatusFile = new FileInfo(Path.Combine(GetAppDirectoryPath(), REPORT_STATUS_FILE_NAME));
