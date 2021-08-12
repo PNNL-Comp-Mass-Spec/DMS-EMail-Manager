@@ -73,7 +73,7 @@ namespace DMS_Email_Manager
         /// Days of the week to retrieve data when the DelayType is AtTimeOfDay
         /// </summary>
         /// <remarks>Will run daily if this list is empty</remarks>
-        public SortedSet<DayOfWeek> DaysOfWeek { get; } = new SortedSet<DayOfWeek>();
+        public SortedSet<DayOfWeek> DaysOfWeek { get; } = new();
 
         /// <summary>
         /// Interval to use when the DelayType is IntervalBased

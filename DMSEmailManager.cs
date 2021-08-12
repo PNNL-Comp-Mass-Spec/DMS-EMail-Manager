@@ -46,7 +46,7 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Keys are task names, values are Notification Tasks
         /// </summary>
-        private readonly Dictionary<string, NotificationTask> mTasks = new Dictionary<string, NotificationTask>();
+        private readonly Dictionary<string, NotificationTask> mTasks = new();
 
         /// <summary>
         /// Tracks the last runtime of each notification task
@@ -56,7 +56,7 @@ namespace DMS_Email_Manager
         /// Once the main loop is entered in Start(), mRuntimeInfo is updated,
         /// but SaveReportStatusFile actually uses mTasks when updating the ReportStatus XML file
         /// </remarks>
-        private readonly Dictionary<string, TaskRuntimeInfo> mRuntimeInfo = new Dictionary<string, TaskRuntimeInfo>();
+        private readonly Dictionary<string, TaskRuntimeInfo> mRuntimeInfo = new();
 
         #endregion
 
