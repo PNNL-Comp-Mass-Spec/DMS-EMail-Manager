@@ -1245,10 +1245,14 @@ namespace DMS_Email_Manager
                     return;
                 }
 
-                var connStr = string.Format("Data Source={0};Initial Catalog={1};Integrated Security=SSPI;Connection Timeout={2};",
+                var connectionString = string.Format("Data Source={0};Initial Catalog={1};Integrated Security=SSPI;Connection Timeout={2};",
                                             postMailIdListHook.ServerName, postMailIdListHook.DatabaseName, DataSourceSql.CONNECTION_TIMEOUT_SECONDS);
 
-                var dbTools = DbToolsFactory.GetDBTools(connStr, DataSourceSql.QUERY_TIMEOUT_SECONDS);
+                var applicationName = string.Format("DMSEmailManager_{0}", postMailIdListHook.ServerName);
+
+                var connectionStringToUse = DbToolsFactory.AddApplicationNameToConnectionString(connectionString, applicationName);
+
+                var dbTools = DbToolsFactory.GetDBTools(connectionStringToUse, DataSourceSql.QUERY_TIMEOUT_SECONDS);
                 RegisterEvents(dbTools);
                 var cmd = dbTools.CreateCommand(postMailIdListHook.StoredProcedureName, CommandType.StoredProcedure);
 

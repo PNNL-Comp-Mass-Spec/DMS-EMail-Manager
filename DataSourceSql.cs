@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using PRISMDatabaseUtils;
 
 namespace DMS_Email_Manager
 {
@@ -21,8 +22,9 @@ namespace DMS_Email_Manager
 
         protected TaskResults GetSqlData(CommandType commandType, string queryOrProcedureName)
         {
-            var connStr = string.Format("Data Source={0};Initial Catalog={1};Integrated Security=SSPI;Connection Timeout={2};",
-                                        ServerName, DatabaseName, CONNECTION_TIMEOUT_SECONDS);
+            var connectionString = string.Format(
+                "Data Source={0};Initial Catalog={1};Integrated Security=SSPI;Connection Timeout={2};",
+                ServerName, DatabaseName, CONNECTION_TIMEOUT_SECONDS);
 
             var results = new TaskResults(ReportName);
 
@@ -45,7 +47,11 @@ namespace DMS_Email_Manager
                 return results;
             }
 
-            using (var dbConn = new SqlConnection(connStr))
+            var applicationName = string.Format("DMSEmailManager_{0}", ServerName);
+
+            var connectionStringToUse = DbToolsFactory.AddApplicationNameToConnectionString(connectionString, applicationName);
+
+            using (var dbConn = new SqlConnection(connectionStringToUse))
             {
                 using (var sqlCmd = new SqlCommand(queryOrProcedureName, dbConn))
                 {
