@@ -95,15 +95,15 @@ namespace DMS_Email_Manager
                 if (!success)
                 {
                     ShowErrorMessage("DMSEmailManager.Start returned false");
-                    clsParseCommandLine.PauseAtConsole(2000, 500);
+                    ConsoleMsgUtils.PauseAtConsole(2000, 500);
                 }
 
-                clsParseCommandLine.PauseAtConsole(750);
+                ConsoleMsgUtils.PauseAtConsole(750);
             }
             catch (Exception ex)
             {
                 ShowErrorMessage("Error occurred in Program->Main", ex);
-                clsParseCommandLine.PauseAtConsole(2000, 500);
+                ConsoleMsgUtils.PauseAtConsole(2000, 500);
                 return -1;
             }
 
