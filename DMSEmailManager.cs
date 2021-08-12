@@ -633,7 +633,7 @@ namespace DMS_Email_Manager
                                 var valueUnits = GetElementAttribValue(divisorInfo, "units", string.Empty);
 
                                 wmiDataSource.ValueDivisor = valueDivisor;
-                                if (roundDigits >= byte.MinValue && roundDigits <= byte.MaxValue)
+                                if (roundDigits is >= byte.MinValue and <= byte.MaxValue)
                                 {
                                     wmiDataSource.DivisorRoundDigits = (byte)roundDigits;
                                 }
