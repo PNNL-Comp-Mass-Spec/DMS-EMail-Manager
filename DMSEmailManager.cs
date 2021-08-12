@@ -1126,10 +1126,8 @@ namespace DMS_Email_Manager
 
                 using (var fileWriter = new StreamWriter(new FileStream(reportStatusFileTemp.FullName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
                 {
-                    using (var xmlWriter = XmlWriter.Create(fileWriter, settings))
-                    {
-                        masterDoc.Save(xmlWriter);
-                    }
+                    using var xmlWriter = XmlWriter.Create(fileWriter, settings);
+                    masterDoc.Save(xmlWriter);
                 }
 
                 /*

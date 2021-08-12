@@ -51,54 +51,51 @@ namespace DMS_Email_Manager
 
             var connectionStringToUse = DbToolsFactory.AddApplicationNameToConnectionString(connectionString, applicationName);
 
-            using (var dbConn = new SqlConnection(connectionStringToUse))
+            using var dbConn = new SqlConnection(connectionStringToUse);
+            using var sqlCmd = new SqlCommand(queryOrProcedureName, dbConn);
+
+            sqlCmd.CommandType = commandType;
+            sqlCmd.CommandTimeout = QUERY_TIMEOUT_SECONDS;
+
+            dbConn.Open();
+            var reader = sqlCmd.ExecuteReader();
+
+            var resultSetAvailable = true;
+            var resultSets = 0;
+            while (resultSetAvailable)
             {
-                using (var sqlCmd = new SqlCommand(queryOrProcedureName, dbConn))
+                resultSets++;
+
+                var columnNames = new List<string>();
+                for (var i = 0; i < reader.FieldCount; i++)
                 {
-                    sqlCmd.CommandType = commandType;
-                    sqlCmd.CommandTimeout = QUERY_TIMEOUT_SECONDS;
-
-                    dbConn.Open();
-                    var reader = sqlCmd.ExecuteReader();
-
-                    var resultSetAvailable = true;
-                    var resultSets = 0;
-                    while (resultSetAvailable)
-                    {
-                        resultSets++;
-
-                        var columnNames = new List<string>();
-                        for (var i = 0; i < reader.FieldCount; i++)
-                        {
-                            columnNames.Add(reader.GetName(i));
-                        }
-
-                        if (resultSets == 1)
-                        {
-                            results.DefineColumns(columnNames);
-                        }
-                        else
-                        {
-                            results.ParseColumnsAddnlResultSet(columnNames);
-                        }
-
-                        while (reader.Read())
-                        {
-                            var dataValues = new List<string>();
-                            for (var i = 0; i < reader.FieldCount; i++)
-                            {
-                                if (reader.IsDBNull(i))
-                                    dataValues.Add(string.Empty);
-                                else
-                                    dataValues.Add(reader.GetValue(i).ToString());
-                            }
-
-                            results.AddDataRow(dataValues);
-                        }
-
-                        resultSetAvailable = reader.NextResult();
-                    }
+                    columnNames.Add(reader.GetName(i));
                 }
+
+                if (resultSets == 1)
+                {
+                    results.DefineColumns(columnNames);
+                }
+                else
+                {
+                    results.ParseColumnsAddnlResultSet(columnNames);
+                }
+
+                while (reader.Read())
+                {
+                    var dataValues = new List<string>();
+                    for (var i = 0; i < reader.FieldCount; i++)
+                    {
+                        if (reader.IsDBNull(i))
+                            dataValues.Add(string.Empty);
+                        else
+                            dataValues.Add(reader.GetValue(i).ToString());
+                    }
+
+                    results.AddDataRow(dataValues);
+                }
+
+                resultSetAvailable = reader.NextResult();
             }
 
             return results;
