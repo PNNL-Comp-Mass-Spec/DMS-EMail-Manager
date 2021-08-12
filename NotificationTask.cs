@@ -334,26 +334,18 @@ namespace DMS_Email_Manager
         private Period GetPeriodForInternal(int interval, FrequencyInterval intervalUnits)
         {
             // DelayType is FrequencyDelay.IntervalBased
-            switch (intervalUnits)
+            return intervalUnits switch
             {
-                case FrequencyInterval.Second:
-                    return Period.FromSeconds(interval);
-                case FrequencyInterval.Minute:
-                    return Period.FromMinutes(interval);
-                case FrequencyInterval.Hour:
-                    return Period.FromHours(interval);
-                case FrequencyInterval.Day:
-                    return Period.FromDays(interval);
-                case FrequencyInterval.Week:
-                    return Period.FromWeeks(interval);
-                case FrequencyInterval.Month:
-                    return Period.FromMonths(interval);
-                case FrequencyInterval.Year:
-                    return Period.FromYears(interval);
-                default:
-                    // Includes FrequencyInterval.Undefined:
-                    return Period.Zero;
-            }
+                FrequencyInterval.Second => Period.FromSeconds(interval),
+                FrequencyInterval.Minute => Period.FromMinutes(interval),
+                FrequencyInterval.Hour => Period.FromHours(interval),
+                FrequencyInterval.Day => Period.FromDays(interval),
+                FrequencyInterval.Week => Period.FromWeeks(interval),
+                FrequencyInterval.Month => Period.FromMonths(interval),
+                FrequencyInterval.Year => Period.FromYears(interval),
+                FrequencyInterval.Undefined => Period.Zero,
+                _ => throw new ArgumentOutOfRangeException(nameof(intervalUnits), intervalUnits, "Missing enum in GetPeriodForInternal")
+            };
         }
 
         /// <summary>
