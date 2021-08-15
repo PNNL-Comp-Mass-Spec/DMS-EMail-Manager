@@ -8,7 +8,7 @@ namespace DMS_Email_Manager
     {
         // Ignore Spelling: Ctrl
 
-        private const string PROGRAM_DATE = "August 12, 2021";
+        private const string PROGRAM_DATE = "August 14, 2021";
 
         public const string DEFAULT_EMAIL_SERVER = "emailgw.pnl.gov";
         public const string DEFAULT_EMAIL_FROM = "proteomics@pnnl.gov";
