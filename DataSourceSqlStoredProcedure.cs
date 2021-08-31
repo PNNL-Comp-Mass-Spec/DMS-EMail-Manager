@@ -67,7 +67,6 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Call a SQL Server stored procedure to retrieve the result set (or result sets)
         /// </summary>
-        /// <returns></returns>
         public override TaskResults GetData()
         {
             try

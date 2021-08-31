@@ -42,7 +42,6 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Run a query against a SQL Server database to retrieve the result set
         /// </summary>
-        /// <returns></returns>
         public override TaskResults GetData()
         {
             try

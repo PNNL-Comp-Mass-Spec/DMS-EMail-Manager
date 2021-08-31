@@ -52,7 +52,6 @@ namespace DMS_Email_Manager
         /// Concatenate the e-mail addresses in Recipients using the specified separator
         /// </summary>
         /// <param name="separator"></param>
-        /// <returns></returns>
         public string GetRecipients(string separator = ", ")
         {
             return string.Join(separator, Recipients);

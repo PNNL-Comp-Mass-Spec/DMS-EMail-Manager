@@ -36,7 +36,6 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Retrieve data from this data source
         /// </summary>
-        /// <returns></returns>
         public abstract TaskResults GetData();
 
         protected TaskResults FormatExceptionAsResults(string reportName, string errMsg, Exception ex)

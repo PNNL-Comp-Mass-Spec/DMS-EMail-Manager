@@ -415,7 +415,6 @@ namespace DMS_Email_Manager
         /// <param name="outputFolderPath">Ignored</param>
         /// <param name="parameterFilePath">Ignored</param>
         /// <param name="resetErrorCode">Ignored</param>
-        /// <returns></returns>
         public override bool ProcessFile(string inputFilePath, string outputFolderPath, string parameterFilePath, bool resetErrorCode)
         {
             Options.ReportDefinitionsFilePath = inputFilePath;
@@ -1238,7 +1237,6 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Read task definitions then monitor the tasks and run them at the specified time
         /// </summary>
-        /// <returns></returns>
         public bool Start()
         {
             var startTime = DateTime.UtcNow;

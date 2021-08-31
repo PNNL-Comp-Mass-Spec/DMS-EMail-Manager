@@ -275,7 +275,6 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Get a human readable description of the frequency delay mode
         /// </summary>
-        /// <returns></returns>
         public string GetFrequencyDescription()
         {
             var dayNames = new List<string>();
@@ -351,7 +350,6 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Get a runtime info object for this task
         /// </summary>
-        /// <returns></returns>
         public TaskRuntimeInfo GetRuntimeInfo()
         {
             return new TaskRuntimeInfo(LastRun, ExecutionCount)
@@ -365,11 +363,11 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Send the results to the caller via an event
         /// </summary>
-        /// <param name="results">Report data</param>
         /// <remarks>
         /// If no listeners are subscribed to event TaskResultsAvailable,
         /// will report the results via event StatusEvent
         /// </remarks>
+        /// <param name="results">Report data</param>
         private void OnResultsAvailable(
             TaskResults results)
         {
@@ -394,8 +392,8 @@ namespace DMS_Email_Manager
         /// Retrieve data from the data source (ignores DaysOfWeek)
         /// Send the results to the email addresses in EmailList
         /// </summary>
-        /// <returns>True if successful, otherwise false</returns>
         /// <remarks>This method updates NextRun</remarks>
+        /// <returns>True if successful, otherwise false</returns>
         public bool RunTaskNow()
         {
             var nextRuntimeMessage = UpdateNextRuntime();
@@ -411,8 +409,8 @@ namespace DMS_Email_Manager
         /// Retrieve data from the data source
         /// Send the results to the email addresses in EmailList
         /// </summary>
-        /// <returns>True if successful, otherwise false</returns>
         /// <remarks>This method updates LastRun, but it does not update NextRun</remarks>
+        /// <returns>True if successful, otherwise false</returns>
         private bool RunTask()
         {
             try
@@ -438,11 +436,11 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Retrieve data from the data source if the NextRun time has been surpassed
         /// </summary>
-        /// <returns>True if data is retrieved, false if it is not retrieved</returns>
         /// <remarks>
         /// Will return false either because NextRun has not been reached
         /// or because data retrieval is disabled on this day of the week
         /// </remarks>
+        /// <returns>True if data is retrieved, false if it is not retrieved</returns>
         public bool RunTaskNowIfRequired()
         {
             if (NextRun > DateTime.UtcNow)

@@ -64,7 +64,6 @@ namespace DMS_Email_Manager
         /// <summary>
         /// Contact WMI to retrieve the data
         /// </summary>
-        /// <returns></returns>
         public override TaskResults GetData()
         {
             try
