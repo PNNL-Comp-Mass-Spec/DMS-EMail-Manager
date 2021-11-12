@@ -41,7 +41,8 @@ namespace DMS_Email_Manager
                                   "E-mail: proteomics@pnnl.gov" + Environment.NewLine +
                                   "Website: https://github.com/PNNL-Comp-Mass-Spec/ or https://panomics.pnnl.gov/ or https://www.pnnl.gov/integrative-omics",
 
-                    UsageExamples = {
+                    UsageExamples =
+                    {
                         exeName + " ReportSpecs.xml",
                         exeName + " ReportSpecs.xml /MaxRuntime:24",
                         exeName + " ReportSpecs.xml /RunOnce",
@@ -50,11 +51,17 @@ namespace DMS_Email_Manager
                     }
                 };
 
-                var parseResults = parser.ParseArgs(args);
-                var options = parseResults.ParsedResults;
+                var result = parser.ParseArgs(args);
+                var options = result.ParsedResults;
 
-                if (!parseResults.Success)
+                if (!result.Success)
                 {
+                    if (parser.CreateParamFileProvided)
+                    {
+                        return 0;
+                    }
+
+                    // Delay for 1500 msec in case the user double clicked this file from within Windows Explorer (or started the program via a shortcut)
                     Thread.Sleep(1500);
                     return -1;
                 }
