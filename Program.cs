@@ -36,10 +36,10 @@ namespace DMS_Email_Manager
                                   "and the report definitions. To see an example Report Definitions file, use /E; " +
                                   "to see an extended example Report Definitions file, use /X.",
 
-                    ContactInfo = "Program written by Matthew Monroe for the Department of Energy (PNNL, Richland, WA) in 2018" +
+                    ContactInfo = "Program written by Matthew Monroe for the Department of Energy (PNNL, Richland, WA)" +
                                   Environment.NewLine + Environment.NewLine +
                                   "E-mail: proteomics@pnnl.gov" + Environment.NewLine +
-                                  "Website: https://panomics.pnnl.gov or https://omics.pnl.gov or https://github.com/PNNL-Comp-Mass-Spec",
+                                  "Website: https://github.com/PNNL-Comp-Mass-Spec/ or https://panomics.pnnl.gov/ or https://www.pnnl.gov/integrative-omics",
 
                     UsageExamples = {
                         exeName + " ReportSpecs.xml",
