@@ -16,8 +16,6 @@ namespace DMS_Email_Manager
     /// </remarks>
     internal class NotificationTask : EventNotifier
     {
-        #region "Enums"
-
         /// <summary>
         /// Options for defining how often to retrieve data
         /// </summary>
@@ -49,20 +47,12 @@ namespace DMS_Email_Manager
             Year = 7
         }
 
-        #endregion
-
-        #region "Events"
-
         public event ResultsAvailableEventEventHandler TaskResultsAvailable;
 
         public delegate void ResultsAvailableEventEventHandler(
             TaskResults results,
             EmailMessageSettings emailSettings,
             DataSourceSqlStoredProcedure postMailIdListHook);
-
-        #endregion
-
-        #region "Properties"
 
         /// <summary>
         /// Data Source
@@ -140,8 +130,6 @@ namespace DMS_Email_Manager
         /// </summary>
         /// <remarks>The first column of data is assumed to have the row ID</remarks>
         public DataSourceSqlStoredProcedure PostMailIdListHook { get; set; }
-
-        #endregion
 
         /// <summary>
         /// Constructor for running a task periodically, using a fixed interval

@@ -19,8 +19,6 @@ namespace DMS_Email_Manager
         // Ignore Spelling: yyyy-MM-dd, hh:mm:ss tt, Defs, px, Verdana, Arial, Helvetica, valuedivisor
         // Ignore Spelling: storedprocedure, sp, sproc, wmi, dayofweeklist, mon, tue, wed, thu, fri, varcharlength, utf
 
-        #region "Constants"
-
         private const string DATE_TIME_FORMAT = "yyyy-MM-dd hh:mm:ss tt";
 
         private const string NO_DATA = "No Data Returned";
@@ -28,10 +26,6 @@ namespace DMS_Email_Manager
         private const int TASK_CHECK_INTERVAL_SECONDS = 15;
 
         private const string REPORT_STATUS_FILE_NAME = "ReportStatusFile.xml";
-
-        #endregion
-
-        #region "Fields"
 
         /// <summary>
         /// mReportDefsWatcher_Changed sets this to true if the ReportDefinitions file is updated
@@ -58,13 +52,7 @@ namespace DMS_Email_Manager
         /// </remarks>
         private readonly Dictionary<string, TaskRuntimeInfo> mRuntimeInfo = new();
 
-        #endregion
-
-        #region "Properties"
-
         public DMSEmailManagerOptions Options { get; }
-
-        #endregion
 
         /// <summary>
         /// Constructor
@@ -1340,8 +1328,6 @@ namespace DMS_Email_Manager
             ShowWarning(warningMsg, false);
         }
 
-        #region "Event Handlers"
-
         private void ReportDefsWatcher_Changed(object sender, FileSystemEventArgs e)
         {
             mReportDefsFileChanged = true;
@@ -1367,7 +1353,5 @@ namespace DMS_Email_Manager
             // If logging is disabled, the warning message will simply be shown at the console
             LogMessage(message, MessageTypeConstants.Warning);
         }
-
-        #endregion
     }
 }

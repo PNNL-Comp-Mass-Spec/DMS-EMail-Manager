@@ -186,8 +186,6 @@ namespace DMS_Email_Manager
             Console.WriteLine();
         }
 
-        #region "Events"
-
         private static void DMSEmailManager_DebugEvent(string message)
         {
             Console.ForegroundColor = ConsoleMsgUtils.DebugFontColor;
@@ -214,7 +212,5 @@ namespace DMS_Email_Manager
         {
             ConsoleMsgUtils.ShowError(message, ex);
         }
-
-        #endregion
     }
 }
