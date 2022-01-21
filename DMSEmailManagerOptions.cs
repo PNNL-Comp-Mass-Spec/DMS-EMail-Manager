@@ -81,9 +81,7 @@ namespace DMS_Email_Manager
 
         public static string GetAppVersion()
         {
-            var version = Assembly.GetExecutingAssembly().GetName().Version + " (" + PROGRAM_DATE + ")";
-
-            return version;
+            return Assembly.GetExecutingAssembly().GetName().Version + " (" + PROGRAM_DATE + ")";
         }
 
         public void OutputSetOptions(bool showVersion = true)
