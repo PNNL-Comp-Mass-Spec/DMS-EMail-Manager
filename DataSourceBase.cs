@@ -9,6 +9,9 @@ namespace DMS_Email_Manager
     /// </summary>
     internal abstract class DataSourceBase : EventNotifier
     {
+        /// <summary>
+        /// Data source type
+        /// </summary>
         public enum DataSourceType
         {
             Query = 0,
@@ -31,6 +34,9 @@ namespace DMS_Email_Manager
         /// </summary>
         public string ReportName { get; internal set; }
 
+        /// <summary>
+        /// When true, simulate database calls
+        /// </summary>
         public bool Simulate { get; internal set; }
 
         /// <summary>

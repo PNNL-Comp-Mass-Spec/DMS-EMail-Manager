@@ -52,6 +52,9 @@ namespace DMS_Email_Manager
         /// </remarks>
         private readonly Dictionary<string, TaskRuntimeInfo> mRuntimeInfo = new();
 
+        /// <summary>
+        /// E-mail manager options
+        /// </summary>
         public DMSEmailManagerOptions Options { get; }
 
         /// <summary>
@@ -391,6 +394,10 @@ namespace DMS_Email_Manager
             return defaultValue;
         }
 
+        /// <summary>
+        /// Required override to obtain an error message
+        /// </summary>
+        /// <remarks>Not used by this program</remarks>
         public override string GetErrorMessage()
         {
             return "GetErrorMessage is not supported";

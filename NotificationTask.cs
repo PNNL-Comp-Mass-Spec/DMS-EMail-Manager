@@ -47,8 +47,17 @@ namespace DMS_Email_Manager
             Year = 7
         }
 
+        /// <summary>
+        /// Task results available event
+        /// </summary>
         public event ResultsAvailableEventEventHandler TaskResultsAvailable;
 
+        /// <summary>
+        /// Results available event handler
+        /// </summary>
+        /// <param name="results"></param>
+        /// <param name="emailSettings"></param>
+        /// <param name="postMailIdListHook"></param>
         public delegate void ResultsAvailableEventEventHandler(
             TaskResults results,
             EmailMessageSettings emailSettings,

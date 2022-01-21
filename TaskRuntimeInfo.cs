@@ -45,6 +45,10 @@ namespace DMS_Email_Manager
             SourceDefinition = string.Empty;
         }
 
+        /// <summary>
+        /// Update the data source type and definition
+        /// </summary>
+        /// <param name="dataSource"></param>
         public void UpdateDataSource(DataSourceBase dataSource)
         {
             try
