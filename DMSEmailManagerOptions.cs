@@ -11,7 +11,7 @@ namespace DMS_Email_Manager
     {
         // Ignore Spelling: Ctrl
 
-        private const string PROGRAM_DATE = "January 20, 2022";
+        private const string PROGRAM_DATE = "April 29, 2022";
 
         /// <summary>
         /// Default e-mail server
