@@ -212,7 +212,6 @@ namespace DMS_Email_Manager
         /// Validate arguments
         /// </summary>
         /// <param name="errorMessage"></param>
-        /// <returns></returns>
         public bool ValidateArgs(out string errorMessage)
         {
             if (string.IsNullOrWhiteSpace(ReportDefinitionsFilePath))
