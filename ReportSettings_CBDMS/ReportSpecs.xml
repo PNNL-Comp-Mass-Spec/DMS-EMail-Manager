@@ -9,7 +9,13 @@
 
     <report name="Processor Status Warnings">
         <data source="cbdms" catalog="DMS_Pipeline" type="query">
-        SELECT TOP 500 * FROM V_Processor_Status_Warnings ORDER BY Processor_name
+        SELECT Processor_Name, Mgr_Status, Task_Status, Last_Status_Hours, Status_Date, Most_Recent_Job_Info, Most_Recent_Log_Message, Most_Recent_Error_Message, Task_Detail_Status
+        FROM ( SELECT Processor_Name, Mgr_Status, Task_Status, Last_Status_Hours, Status_Date, Most_Recent_Job_Info, Most_Recent_Log_Message, Most_Recent_Error_Message, Task_Detail_Status,
+                      row_number() OVER ( ORDER BY Processor_name ) AS RowNum
+               FROM V_Processor_Status_Warnings
+             ) LookupQ
+        WHERE RowNum <= 500
+        ORDER BY RowNum
         </data>
         <mail to="proteomics@pnnl.gov"
               subject="CBDMS: Processor Status Warnings"
@@ -22,7 +28,13 @@
 
     <report name="Job Steps Stale and Failed">
         <data source="cbdms" catalog="DMS_Pipeline" type="query">
-        SELECT TOP 500 * FROM V_Job_Steps_Stale_and_Failed ORDER BY StateName, Job
+        SELECT Warning_Message, Job, Tool, RunTime_Minutes, Job_Progress, RunTime_Predicted_Hours, State_Name, Last_CPU_Status_Hours, Processor, Start, Step, Dataset, Settings_File, Parameter_File, Completion_Message, Evaluation_Message
+        FROM ( SELECT Warning_Message, Job, Tool, RunTime_Minutes, Job_Progress, RunTime_Predicted_Hours, State_Name, Last_CPU_Status_Hours, Processor, Start, Step, Dataset, Settings_File, Parameter_File, Completion_Message, Evaluation_Message, 
+                      row_number() OVER ( ORDER BY State_Name, Job ) AS RowNum
+               FROM V_Job_Steps_Stale_and_Failed
+             ) LookupQ
+        WHERE RowNum <= 500
+        ORDER BY RowNum
         </data>
         <mail to="proteomics@pnnl.gov"
               subject="CBDMS: Job Steps Stale and Failed"
@@ -35,7 +47,13 @@
 
     <report name="Datasets Stale and Failed">
         <data source="cbdms" catalog="DMS5" type="query">
-        SELECT TOP 500 * FROM V_Datasets_Stale_and_Failed ORDER BY State, Dataset
+        SELECT Warning_Message, Dataset, Dataset_ID, Dataset_Created, Instrument, State, State_Date, Script, Tool, RunTime_Minutes, Step_State, Processor, Start, Step, Storage_Path
+        FROM ( SELECT Warning_Message, Dataset, Dataset_ID, Dataset_Created, Instrument, State, State_Date, Script, Tool, RunTime_Minutes, Step_State, Processor, Start, Step, Storage_Path,
+                      row_number() OVER ( ORDER BY State, Dataset) AS RowNum
+               FROM V_Datasets_Stale_and_Failed
+             ) LookupQ
+        WHERE RowNum <= 500
+        ORDER BY RowNum
         </data>
         <mail to="proteomics@pnnl.gov"
               subject="CBDMS: Datasets Stale and Failed"
@@ -48,7 +66,13 @@
 
     <report name="Predefined Job Creation Errors">
         <data source="cbdms" catalog="DMS5" type="query">
-        SELECT TOP 500 * FROM V_Predefined_Job_Creation_Errors ORDER BY Item
+        SELECT Item, Dataset, State, Result_Code, Message, Jobs_Created, Entered, Last_Affected
+        FROM ( SELECT Item, Dataset, State, Result_Code, Message, Jobs_Created, Entered, Last_Affected,
+                      row_number() OVER ( ORDER BY Item) AS RowNum
+               FROM V_Predefined_Job_Creation_Errors
+             ) LookupQ
+        WHERE RowNum <= 500
+        ORDER BY RowNum;
         </data>
         <mail to="proteomics@pnnl.gov"
               subject="CBDMS: Predefined Job Creation Errors"
@@ -61,7 +85,13 @@
 
     <report name="DMS Production DB Errors">
         <data source="cbdms" catalog="DMS5" type="query">
-        SELECT TOP 500 * FROM V_Log_Errors_ProductionDBs ORDER BY DB, Entry_ID
+        SELECT DB, Entry_ID, Posted_By, Entered, Type, Message, Entered_By
+        FROM ( SELECT DB, Entry_ID, Posted_By, Entered, Type, Message, Entered_By,
+                      row_number() OVER ( ORDER BY DB, Entry_ID) AS RowNum
+               FROM V_Log_Errors_Production_DBs
+             ) LookupQ
+        WHERE RowNum <= 500
+        ORDER BY RowNum;
         </data>
         <mail to="proteomics@pnnl.gov"
               subject="CBDMS: Production DB Errors"

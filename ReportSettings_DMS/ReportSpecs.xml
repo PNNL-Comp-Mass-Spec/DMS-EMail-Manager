@@ -9,7 +9,14 @@
 
     <report name="Email Alerts">
         <data server="gigasax" database="DMS5" type="query">
-        SELECT TOP 500 * FROM V_Email_Alerts Where alert_state = 1
+        SELECT ID, Posted_by, Posting_Time, Alert_Type, Message, Recipients, Alert_State, Alert_State_Name, Last_Affected
+        FROM ( SELECT ID, Posted_by, Posting_Time, Alert_Type, Message, Recipients, Alert_State, Alert_State_Name, Last_Affected,
+                      row_number() OVER ( ORDER BY id ) AS RowNum
+               FROM V_Email_Alerts
+               WHERE alert_state = 1 
+             ) LookupQ
+        WHERE RowNum <= 500
+        ORDER BY RowNum
         </data>
         <mail to="proteomics@pnnl.gov, matthew.monroe@pnnl.gov"
               subject="DMS: Alerts"
@@ -24,7 +31,13 @@
 
     <report name="Processor Status Warnings">
         <data source="gigasax" catalog="DMS_Pipeline" type="query">
-        SELECT TOP 500 * FROM V_Processor_Status_Warnings ORDER BY Processor_name
+        SELECT Processor_Name, Mgr_Status, Task_Status, Last_Status_Hours, Status_Date, Most_Recent_Job_Info, Most_Recent_Log_Message, Most_Recent_Error_Message, Task_Detail_Status
+        FROM ( SELECT Processor_Name, Mgr_Status, Task_Status, Last_Status_Hours, Status_Date, Most_Recent_Job_Info, Most_Recent_Log_Message, Most_Recent_Error_Message, Task_Detail_Status,
+                      row_number() OVER ( ORDER BY Processor_name ) AS RowNum
+               FROM V_Processor_Status_Warnings
+             ) LookupQ
+        WHERE RowNum <= 500
+        ORDER BY RowNum
         </data>
         <mail to="proteomics@pnnl.gov, bryson.gibbons@pnnl.gov"
               subject="DMS: Processor Status Warnings"
@@ -37,7 +50,13 @@
 
     <report name="Job Steps Stale and Failed">
         <data source="gigasax" catalog="DMS_Pipeline" type="query">
-        SELECT TOP 500 * FROM V_Job_Steps_Stale_and_Failed ORDER BY StateName, Job
+        SELECT Warning_Message, Job, Tool, RunTime_Minutes, Job_Progress, RunTime_Predicted_Hours, State_Name, Last_CPU_Status_Hours, Processor, Start, Step, Dataset, Settings_File, Parameter_File, Completion_Message, Evaluation_Message
+        FROM ( SELECT Warning_Message, Job, Tool, RunTime_Minutes, Job_Progress, RunTime_Predicted_Hours, State_Name, Last_CPU_Status_Hours, Processor, Start, Step, Dataset, Settings_File, Parameter_File, Completion_Message, Evaluation_Message, 
+                      row_number() OVER ( ORDER BY State_Name, Job ) AS RowNum
+               FROM V_Job_Steps_Stale_and_Failed
+             ) LookupQ
+        WHERE RowNum <= 500
+        ORDER BY RowNum
         </data>
         <mail to="proteomics@pnnl.gov"
               subject="DMS: Job Steps Stale and Failed"
@@ -49,7 +68,13 @@
     </report>
     <report name="Datasets Stale and Failed">
         <data source="gigasax" catalog="DMS5" type="query">
-        SELECT TOP 500 * FROM V_Datasets_Stale_and_Failed ORDER BY State, Dataset
+        SELECT Warning_Message, Dataset, Dataset_ID, Dataset_Created, Instrument, State, State_Date, Script, Tool, RunTime_Minutes, Step_State, Processor, Start, Step, Storage_Path
+        FROM ( SELECT Warning_Message, Dataset, Dataset_ID, Dataset_Created, Instrument, State, State_Date, Script, Tool, RunTime_Minutes, Step_State, Processor, Start, Step, Storage_Path,
+                      row_number() OVER ( ORDER BY State, Dataset) AS RowNum
+               FROM V_Datasets_Stale_and_Failed
+             ) LookupQ
+        WHERE RowNum <= 500
+        ORDER BY RowNum
         </data>
         <mail to="proteomics@pnnl.gov"
               subject="DMS: Datasets Stale and Failed"
@@ -62,32 +87,7 @@
 
     <report name="Datasets With Missing Info">
         <data source="gigasax" catalog="DMS5" type="query">
-        SELECT DS.Dataset_ID As Dataset_ID,
-               DS.Dataset_Num AS Dataset,
-               DS.DS_created AS Created,
-               InstName.IN_name AS Instrument,
-               RR.ID AS RequestedRun_ID,
-               DS.DS_LC_column_ID AS LC_Column_ID,
-               DS.DS_type_ID AS Dataset_Type_ID,
-               DS.DS_sec_sep AS Secondary_Sep,
-               CASE
-                   WHEN RR.ID IS NULL THEN 'Dataset does not have a requested run; create one'
-                   WHEN DS.DS_LC_column_ID IS NULL THEN 'LC Column ID is null'
-                   WHEN DS.DS_type_ID IS NULL THEN 'Dataset Type ID is null'
-                   WHEN DS.DS_sec_sep IS NULL THEN 'Secondary_Sep is null'
-                   ELSE 'Unknown Error'
-               END AS [Warning]
-        FROM T_Dataset DS
-             LEFT OUTER JOIN T_Instrument_Name InstName
-               ON DS.DS_instrument_name_ID = InstName.Instrument_ID
-             LEFT OUTER JOIN T_Requested_Run RR
-               ON DS.Dataset_ID = RR.DatasetID
-        WHERE DS.DS_created >= '1/1/2015' AND
-              (RR.ID IS NULL OR
-               DS.DS_instrument_name_ID IS NULL OR
-               DS.DS_LC_column_ID IS NULL OR
-               DS.DS_type_ID IS NULL OR
-               DS.DS_sec_sep IS NULL)
+        SELECT * FROM V_Dataset_Validation_Warnings
         </data>
         <mail to="proteomics@pnnl.gov"
               subject="DMS: Datasets With Missing Info"
@@ -100,7 +100,13 @@
 
     <report name="Predefined Job Creation Errors">
         <data source="gigasax" catalog="DMS5" type="query">
-        SELECT TOP 500 * FROM V_Predefined_Job_Creation_Errors ORDER BY Item
+        SELECT Item, Dataset, State, Result_Code, Message, Jobs_Created, Entered, Last_Affected
+        FROM ( SELECT Item, Dataset, State, Result_Code, Message, Jobs_Created, Entered, Last_Affected,
+                      row_number() OVER ( ORDER BY Item) AS RowNum
+               FROM V_Predefined_Job_Creation_Errors
+             ) LookupQ
+        WHERE RowNum <= 500
+        ORDER BY RowNum;
         </data>
         <mail to="proteomics@pnnl.gov"
               subject="DMS: Predefined Job Creation Errors"
@@ -113,7 +119,13 @@
 
     <report name="DMS Production DB Errors">
         <data source="gigasax" catalog="DMS5" type="query">
-        SELECT TOP 500 * FROM V_Log_Errors_ProductionDBs ORDER BY DB, Entry_ID
+        SELECT DB, Entry_ID, Posted_By, Entered, Type, Message, Entered_By
+        FROM ( SELECT DB, Entry_ID, Posted_By, Entered, Type, Message, Entered_By,
+                      row_number() OVER ( ORDER BY DB, Entry_ID) AS RowNum
+               FROM V_Log_Errors_Production_DBs
+             ) LookupQ
+        WHERE RowNum <= 500
+        ORDER BY RowNum;
         </data>
         <mail to="proteomics@pnnl.gov"
               subject="DMS: Production DB Errors"
@@ -126,16 +138,19 @@
 
     <report name="Dataset comments to edit">
         <data source="gigasax" catalog="DMS5" type="query">
-        SELECT Dataset_ID, Dataset_Num, DS_comment, DS_state_ID, DS_created FROM T_Dataset
-        WHERE (DS_comment LIKE '%exception%' OR
-               DS_comment LIKE '%not ready%' OR
-               DS_comment LIKE '%Invalid dataset.%' OR
-               DS_comment LIKE '%Dataset not ready%' OR
-               DS_comment LIKE '%Sharing violation while copying%' OR
-               DS_comment LIKE '%NeedToAbortProcessing%' OR
-               DS_comment LIKE '%Error running OpenChrom%') AND
-              (DS_created >= DATEADD(month, -1, GETDATE())) AND (DS_state_ID = 3)
-        ORDER BY DS_comment
+        SELECT Dataset_ID, Dataset, Comment, State_ID, Created, Age_Weeks
+        FROM V_Dataset_Comments_Recent_Datasets
+        WHERE (Comment LIKE '%exception%' OR
+               Comment LIKE '%not ready%' OR
+               Comment LIKE '%Invalid dataset.%' OR
+               Comment LIKE '%Dataset not ready%' OR
+               Comment LIKE '%Sharing violation while copying%' OR
+               Comment LIKE '%NeedToAbortProcessing%' OR
+               Comment LIKE '%Error running OpenChrom%'
+              ) AND
+              Age_Weeks <= 4 AND 
+              State_ID IN (3,5)
+        ORDER BY Comment, Dataset
         </data>
         <mail to="proteomics@pnnl.gov"
               subject="DMS: Dataset comments to edit"
