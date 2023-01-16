@@ -210,8 +210,7 @@ namespace DMS_Email_Manager
                     {
                         // Adjust LastRun to be the correct time of day
                         var updatedLastRun = ConstructTimeForDate(LastRun, TimeOfDay).ToUniversalTime();
-                        OnStatusEvent(string.Format("Updating LastRun from {0:g} to {1:g} for report {2}",
-                                                    LastRun.ToLocalTime(), updatedLastRun.ToLocalTime(), TaskID));
+                        OnStatusEvent("Updating LastRun from {0:g} to {1:g} for report {2}", LastRun.ToLocalTime(), updatedLastRun.ToLocalTime(), TaskID);
                         LastRun = updatedLastRun;
                     }
                 }
@@ -229,8 +228,10 @@ namespace DMS_Email_Manager
                 DelayPeriod = GetPeriodForInternal(DelayInterval, DelayIntervalUnits);
                 if (Equals(DelayPeriod, Period.Zero))
                 {
-                    OnWarningEvent(string.Format("Invalid DelayInterval {0} or DelayIntervalUnits {1} for report {2}; changing to run once a day",
-                                                 DelayInterval, DelayIntervalUnits.ToString(), TaskID));
+                    OnWarningEvent(
+                        "Invalid DelayInterval {0} or DelayIntervalUnits {1} for report {2}; changing to run once a day",
+                        DelayInterval, DelayIntervalUnits.ToString(), TaskID);
+
                     DelayInterval = 1;
                     DelayIntervalUnits = FrequencyInterval.Day;
                     DelayPeriod = Period.FromDays(1);
