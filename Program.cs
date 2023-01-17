@@ -131,7 +131,10 @@ namespace DMS_Email_Manager
             Console.WriteLine();
             Console.WriteLine("    <report name=\"Processor Status Warnings\">");
             Console.WriteLine("        <data source=\"gigasax\" catalog=\"DMS_Pipeline\" type=\"query\">");
-            Console.WriteLine("          SELECT TOP 500 * FROM V_Processor_Status_Warnings ORDER BY Processor_name");
+            Console.WriteLine("            SELECT *");
+            Console.WriteLine("            FROM V_Processor_Status_Warnings ORDER BY Processor_name");
+            Console.WriteLine("            OFFSET 0 ROWS");
+            Console.WriteLine("            FETCH FIRST 500 ROWS ONLY");
             Console.WriteLine("        </data>");
             Console.WriteLine("        <mail to=\"proteomics@pnnl.gov\" ");
             Console.WriteLine("              subject=\"DMS: Processor Status Warnings\" ");
@@ -143,7 +146,14 @@ namespace DMS_Email_Manager
             Console.WriteLine();
             Console.WriteLine("    <report name=\"Email Alerts\"> ");
             Console.WriteLine("         <data server=\"gigasax\" database=\"DMS5\" type=\"query\"> ");
-            Console.WriteLine("             SELECT TOP 500 * FROM V_Email_Alerts Where alert_state = 1 ");
+            Console.WriteLine("             SELECT ID, Posted_by, Posting_Time, Alert_Type, Message, Recipients, Alert_State, Alert_State_Name, Last_Affected");
+            Console.WriteLine("             FROM ( SELECT ID, Posted_by, Posting_Time, Alert_Type, Message, Recipients, Alert_State, Alert_State_Name, Last_Affected,");
+            Console.WriteLine("                           row_number() OVER ( ORDER BY id ) AS RowNum");
+            Console.WriteLine("                    FROM V_Email_Alerts");
+            Console.WriteLine("                    WHERE alert_state = 1 ");
+            Console.WriteLine("                  ) LookupQ");
+            Console.WriteLine("             WHERE RowNum <= 500");
+            Console.WriteLine("             ORDER BY RowNum");
             Console.WriteLine("         </data> ");
             Console.WriteLine("         <mail to=\"proteomics@pnnl.gov; EMSL-Prism.Users.DMS_Monitoring_Admins@pnnl.gov\"  ");
             Console.WriteLine("               subject=\"DMS: Alerts\"  ");
