@@ -15,7 +15,7 @@
                FROM V_Email_Alerts
                WHERE alert_state = 1 
              ) LookupQ
-        WHERE RowNum <= 500
+        WHERE RowNum &lt;= 500
         ORDER BY RowNum;
         </data>
         <mail to="proteomics@pnnl.gov, matthew.monroe@pnnl.gov"
@@ -133,7 +133,7 @@
                Comment LIKE '%NeedToAbortProcessing%' OR
                Comment LIKE '%Error running OpenChrom%'
               ) AND
-              Age_Weeks <= 4 AND 
+              Age_Weeks &lt;= 4 AND 
               State_ID IN (3,5)
         ORDER BY Comment, Dataset;
         </data>
