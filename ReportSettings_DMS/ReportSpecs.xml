@@ -25,7 +25,7 @@
         <frequency type="Interval"
                    interval="4"
                    units="hours" />
-        <postMailIdListHook server="gigasax" database="DMS5" procedure="AckEmailAlerts"
+        <postMailIdListHook server="gigasax" database="DMS5" procedure="ack_email_alerts"
                             parameter="alertIDs" varcharlength="4000" />
     </report>
 

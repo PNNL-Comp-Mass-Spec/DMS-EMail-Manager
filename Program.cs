@@ -162,7 +162,7 @@ namespace DMS_Email_Manager
             Console.WriteLine("         <frequency type=\"Interval\"  ");
             Console.WriteLine("                    interval=\"12\" ");
             Console.WriteLine("                    units=\"hours\" /> ");
-            Console.WriteLine("         <postMailIdListHook server=\"gigasax\" database=\"DMS5\" procedure=\"AckEmailAlerts\"  ");
+            Console.WriteLine("         <postMailIdListHook server=\"gigasax\" database=\"DMS5\" procedure=\"ack_email_alerts\"  ");
             Console.WriteLine("                             parameter=\"alertIDs\" varcharlength=\"4000\" /> ");
             Console.WriteLine("     </report> ");
 
