@@ -84,6 +84,7 @@ namespace DMS_Email_Manager
             }
 
             var reportDefinitionsFile = new FileInfo(Options.ReportDefinitionsFilePath);
+
             if (!reportDefinitionsFile.Exists)
             {
                 var errMsg = "Report definitions file not found: " + Options.ReportDefinitionsFilePath;
@@ -142,6 +143,7 @@ namespace DMS_Email_Manager
                     // Construct the header row
                     dataHtml.AppendLine("<table>");
                     dataHtml.Append("<tr class = table-header>");
+
                     foreach (var headerCol in results.ColumnNames)
                     {
                         dataHtml.Append("<td>");
@@ -161,8 +163,7 @@ namespace DMS_Email_Manager
                             dataHtml.Append("<tr class = table-alternate-row>");
                         }
 
-                        var currentRow = results.DataRows[i];
-                        foreach (var dataVal in currentRow)
+                        foreach (var dataVal in results.DataRows[i])
                         {
                             dataHtml.Append("<td>");
                             dataHtml.Append(dataVal);
@@ -176,6 +177,7 @@ namespace DMS_Email_Manager
                 }
 
                 string reportInfo;
+
                 if (results.DataRows.Count == 0)
                 {
                     // Report 'Processor Status Warnings' had no data
@@ -226,11 +228,13 @@ namespace DMS_Email_Manager
                 {
                     Console.WriteLine();
                     Console.WriteLine(reportAndEmailInfo);
+
                     if (results.DataRows.Count > 0)
                     {
                         Console.WriteLine(titleHtml);
                         Console.WriteLine(dataHtml.ToString());
                     }
+
                     LogMessage(reportInfo + ": previewed results");
                     return;
                 }
@@ -284,6 +288,7 @@ namespace DMS_Email_Manager
         private XElement GetChildElement(string reportName, XContainer report, string childNodeName, bool warnIfMissing = true)
         {
             var childNode = report.Elements(childNodeName).FirstOrDefault();
+
             if (childNode != null)
                 return childNode;
 
@@ -296,6 +301,7 @@ namespace DMS_Email_Manager
         private int GetChildElementValue(XContainer node, string childNodeName, int valueIfMissing)
         {
             var dataValue = GetChildElementValue(node, childNodeName, valueIfMissing.ToString());
+
             if (string.IsNullOrWhiteSpace(dataValue) || !int.TryParse(dataValue, out var value))
                 return valueIfMissing;
 
@@ -330,6 +336,7 @@ namespace DMS_Email_Manager
         private string GetChildElementValue(XContainer node, string childNodeName, string valueIfMissing)
         {
             var childNode = node.Elements(childNodeName).FirstOrDefault();
+
             if (childNode == null)
                 return valueIfMissing;
 
@@ -370,6 +377,7 @@ namespace DMS_Email_Manager
         private int GetElementAttribValue(XElement node, string attribName, int defaultValue)
         {
             var valueText = GetElementAttribValue(node, attribName, defaultValue.ToString());
+
             if (int.TryParse(valueText, out var value))
                 return value;
 
@@ -379,6 +387,7 @@ namespace DMS_Email_Manager
         private long GetElementAttribValue(XElement node, string attribName, long defaultValue)
         {
             var valueText = GetElementAttribValue(node, attribName, defaultValue.ToString());
+
             if (int.TryParse(valueText, out var value))
                 return value;
 
@@ -388,6 +397,7 @@ namespace DMS_Email_Manager
         private bool GetElementAttribValue(XElement node, string attribName, bool defaultValue)
         {
             var valueText = GetElementAttribValue(node, attribName, string.Empty);
+
             if (bool.TryParse(valueText, out var value))
                 return value;
 
@@ -446,6 +456,7 @@ namespace DMS_Email_Manager
                     {
                         existingTasks.Add(task.Key);
                         AddUpdateRuntimeInfo(task, false);
+
                         if (task.Key.Length > maxReportNameLength)
                             maxReportNameLength = task.Key.Length;
                     }
@@ -468,6 +479,7 @@ namespace DMS_Email_Manager
                 var doc = XDocument.Load(Options.ReportDefinitionsFilePath);
 
                 var emailInfo = doc.Elements("reports").Elements("EmailInfo").FirstOrDefault();
+
                 if (emailInfo == null)
                 {
                     LogMessage("The Report definitions file is missing the <EmailInfo> section; using defaults", MessageTypeConstants.Debug);
@@ -503,6 +515,7 @@ namespace DMS_Email_Manager
                 Options.FontSizeBody = ValidateNotZero(Options.FontSizeBody, DMSEmailManagerOptions.DEFAULT_FONT_SIZE_BODY);
 
                 var reportDefs = doc.Elements("reports").Elements("report").ToList();
+
                 foreach (var report in reportDefs)
                 {
                     if (!report.HasAttributes)
@@ -512,6 +525,7 @@ namespace DMS_Email_Manager
                     }
 
                     var reportNameAttrib = report.Attribute("name");
+
                     if (reportNameAttrib == null)
                     {
                         ShowWarning("Ignoring report definition without a 'name' attribute");
@@ -520,6 +534,7 @@ namespace DMS_Email_Manager
 
                     // ReportName is the TaskID
                     var reportName = reportNameAttrib.Value;
+
                     if (string.IsNullOrWhiteSpace(reportName))
                     {
                         ShowWarning("Ignoring report definition with an empty string 'name' attribute");
@@ -535,6 +550,7 @@ namespace DMS_Email_Manager
 
                     DateTime lastRun;
                     int executionCount;
+
                     if (mRuntimeInfo.TryGetValue(reportName, out var taskRuntimeInfo))
                     {
                         lastRun = taskRuntimeInfo.LastRun;
@@ -570,6 +586,7 @@ namespace DMS_Email_Manager
                     var sourceType = GetElementAttribValue(dataSourceInfo, "type", string.Empty);
 
                     var query = dataSourceInfo.Value;
+
                     if (string.IsNullOrWhiteSpace(query))
                     {
                         ShowWarning(string.Format("Ignoring report definition '{0}'; query (or procedure name) not defined in the data element", reportName));
@@ -627,6 +644,7 @@ namespace DMS_Email_Manager
                                 var valueUnits = GetElementAttribValue(divisorInfo, "units", string.Empty);
 
                                 wmiDataSource.ValueDivisor = valueDivisor;
+
                                 if (roundDigits is >= byte.MinValue and <= byte.MaxValue)
                                 {
                                     wmiDataSource.DivisorRoundDigits = (byte)roundDigits;
@@ -651,6 +669,7 @@ namespace DMS_Email_Manager
 
                     var sepChars = new[] { ',', ';' };
                     var emailList = mailRecipients.Split(sepChars);
+
                     if (emailList.Length == 0)
                     {
                         ShowWarning(string.Format("Ignoring report definition '{0}'; invalid to list {1} in the mail element; should be a comma separated list of e-mail addresses",
@@ -669,6 +688,7 @@ namespace DMS_Email_Manager
                     var daysOfWeekText = GetElementAttribValue(frequencyInfo, "dayofweeklist", string.Empty);
 
                     var daysOfWeek = new SortedSet<DayOfWeek>();
+
                     if (legacyFrequencyDaily)
                     {
                         foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
@@ -747,6 +767,7 @@ namespace DMS_Email_Manager
                         var timeOfDayText = GetElementAttribValue(frequencyInfo, "timeOfDay", assumedTimeOfDay);
 
                         LocalTime timeOfDay;
+
                         if (string.IsNullOrWhiteSpace(timeOfDayText))
                         {
                             ShowWarning(string.Format("timeOfDay attribute not found for the frequency element for report '{0}'; will assume {1}", reportName, DEFAULT_TIME_OF_DAY));
@@ -828,6 +849,7 @@ namespace DMS_Email_Manager
                     }
 
                     var postMailHookInfo = GetChildElement(reportName, report, "postMailIdListHook", false);
+
                     if (postMailHookInfo != null)
                     {
                         var postMailServer = GetElementAttribValue(postMailHookInfo, "server", string.Empty);
@@ -876,6 +898,7 @@ namespace DMS_Email_Manager
                     var frequencyDescription = task.GetFrequencyDescription();
 
                     string spacePadding;
+
                     if (reportName.Length < maxReportNameLength)
                         spacePadding = new string(' ', maxReportNameLength - reportName.Length);
                     else
@@ -929,7 +952,7 @@ namespace DMS_Email_Manager
 
             try
             {
-                var reportStatusFile = new FileInfo(Path.Combine(GetAppDirectoryPath(), REPORT_STATUS_FILE_NAME));
+                var reportStatusFile = new FileInfo(Path.Combine(AppUtils.GetAppDirectoryPath(), REPORT_STATUS_FILE_NAME));
 
                 if (!reportStatusFile.Exists)
                 {
@@ -946,6 +969,7 @@ namespace DMS_Email_Manager
                 currentTask = "Reading XML data";
 
                 var reportStatus = doc.Elements("Reports").Elements("Report").ToList();
+
                 foreach (var report in reportStatus)
                 {
                     if (!report.HasAttributes)
@@ -955,6 +979,7 @@ namespace DMS_Email_Manager
                     }
 
                     var reportNameAttrib = report.Attribute("name");
+
                     if (reportNameAttrib == null)
                     {
                         ShowWarning("Ignoring report status without a 'name' attribute");
@@ -962,6 +987,7 @@ namespace DMS_Email_Manager
                     }
 
                     var reportName = reportNameAttrib.Value;
+
                     if (string.IsNullOrWhiteSpace(reportName))
                     {
                         ShowWarning("Ignoring report definition with an empty string 'name' attribute");
@@ -1108,8 +1134,10 @@ namespace DMS_Email_Manager
                          )
                     );
 
+                var appDirectoryPath = AppUtils.GetAppDirectoryPath();
+
                 currentTask = "Opening the temp status info file for writing";
-                var reportStatusFileTemp = new FileInfo(Path.Combine(GetAppDirectoryPath(), REPORT_STATUS_FILE_NAME + ".tmp"));
+                var reportStatusFileTemp = new FileInfo(Path.Combine(appDirectoryPath, REPORT_STATUS_FILE_NAME + ".tmp"));
 
                 var settings = new XmlWriterSettings
                 {
@@ -1126,8 +1154,8 @@ namespace DMS_Email_Manager
 
                 // Backup the current reportStatusFile
                 currentTask = "Preparing to backup the reportStatusFile";
-                var reportStatusFile = new FileInfo(Path.Combine(GetAppDirectoryPath(), REPORT_STATUS_FILE_NAME));
-                var reportStatusFileOld = new FileInfo(Path.Combine(GetAppDirectoryPath(), REPORT_STATUS_FILE_NAME + ".old"));
+                var reportStatusFile = new FileInfo(Path.Combine(appDirectoryPath, REPORT_STATUS_FILE_NAME));
+                var reportStatusFileOld = new FileInfo(Path.Combine(appDirectoryPath, REPORT_STATUS_FILE_NAME + ".old"));
 
                 if (reportStatusFile.Exists)
                 {
@@ -1246,6 +1274,7 @@ namespace DMS_Email_Manager
 
                 mReportDefsFileChanged = false;
                 var success = ReadReportDefsFile(true);
+
                 if (!success)
                     return false;
 

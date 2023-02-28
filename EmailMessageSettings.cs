@@ -36,6 +36,7 @@ namespace DMS_Email_Manager
         public EmailMessageSettings(IEnumerable<string> emailList, string mailSubject, string reportTitle, bool mailIfEmpty)
         {
             Recipients = new SortedSet<string>();
+
             foreach (var mailAddress in emailList.Distinct())
             {
                 Recipients.Add(mailAddress.Trim());

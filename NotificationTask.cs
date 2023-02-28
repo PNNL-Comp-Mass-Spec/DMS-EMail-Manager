@@ -206,6 +206,7 @@ namespace DMS_Email_Manager
                 else
                 {
                     var lastRunLocalTime = LastRun.ToLocalTime();
+
                     if (lastRunLocalTime.Hour != TimeOfDay.Hour || lastRunLocalTime.Minute != TimeOfDay.Minute)
                     {
                         // Adjust LastRun to be the correct time of day
@@ -226,6 +227,7 @@ namespace DMS_Email_Manager
             else
             {
                 DelayPeriod = GetPeriodForInternal(DelayInterval, DelayIntervalUnits);
+
                 if (Equals(DelayPeriod, Period.Zero))
                 {
                     OnWarningEvent(
@@ -276,6 +278,7 @@ namespace DMS_Email_Manager
         public string GetFrequencyDescription()
         {
             var dayNames = new List<string>();
+
             foreach (var dayOfWeek in DaysOfWeek)
             {
                 dayNames.Add(dayOfWeek.ToString());

@@ -42,6 +42,7 @@ namespace DMS_Email_Manager
                 return;
 
             var startColIndex = ColumnNames.Count;
+
             for (var colIndex = startColIndex; colIndex < dataRow.Count; colIndex++)
             {
                 ColumnNames.Add(string.Format("Column{0}", colIndex + 1));
@@ -68,6 +69,7 @@ namespace DMS_Email_Manager
         public void ParseColumnsAddnlResultSet(List<string> columns)
         {
             var startColIndex = ColumnNames.Count;
+
             for (var colIndex = startColIndex; colIndex < columns.Count; colIndex++)
             {
                 ColumnNames.Add(columns[colIndex]);

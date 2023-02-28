@@ -74,6 +74,7 @@ namespace DMS_Email_Manager
                 resultSets++;
 
                 var columnNames = new List<string>();
+
                 for (var i = 0; i < reader.FieldCount; i++)
                 {
                     columnNames.Add(reader.GetName(i));
@@ -91,6 +92,7 @@ namespace DMS_Email_Manager
                 while (reader.Read())
                 {
                     var dataValues = new List<string>();
+
                     for (var i = 0; i < reader.FieldCount; i++)
                     {
                         if (reader.IsDBNull(i))

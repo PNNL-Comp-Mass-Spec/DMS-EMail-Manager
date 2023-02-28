@@ -92,6 +92,7 @@ namespace DMS_Email_Manager
                     resultSets++;
 
                     var columnNames = new List<string>();
+
                     foreach (var prop in wmiValue.Properties)
                     {
                         columnNames.Add(prop.Name);
@@ -107,6 +108,7 @@ namespace DMS_Email_Manager
                     }
 
                     var dataValues = new List<string>();
+
                     foreach (var prop in wmiValue.Properties)
                     {
                         try
@@ -115,10 +117,12 @@ namespace DMS_Email_Manager
                                 continue;
 
                             var valueText = prop.Value.ToString();
+
                             if (Math.Abs(ValueDivisor) > float.Epsilon && double.TryParse(valueText, out var value))
                             {
                                 // The value is a number; round the value and append units
                                 var formattedValue = PRISM.StringUtilities.DblToString(value / ValueDivisor, DivisorRoundDigits);
+
                                 if (string.IsNullOrWhiteSpace(DivisorUnits))
                                     dataValues.Add(formattedValue);
                                 else
