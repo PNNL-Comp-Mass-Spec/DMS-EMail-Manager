@@ -1237,7 +1237,9 @@ namespace DMS_Email_Manager
                 dbTools.AddParameter(cmd, paramName, postMailIdListHook.StoredProcParamType,
                     postMailIdListHook.StoredProcParamLength, string.Join(",", resultIdList));
 
-                var returnCode = dbTools.ExecuteSP(cmd, 1);
+                dbTools.ExecuteSP(cmd, 1);
+
+                var returnCode = DBToolsBase.GetReturnCode(returnParam);
 
                 if (returnCode != 0)
                 {
