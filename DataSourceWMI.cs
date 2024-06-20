@@ -5,6 +5,8 @@ namespace DMS_Email_Manager
 {
     internal class DataSourceWMI : DataSourceBase
     {
+        // Ignore Spelling: DMS, wmi
+
         /// <summary>
         /// WMI host to contact
         /// </summary>

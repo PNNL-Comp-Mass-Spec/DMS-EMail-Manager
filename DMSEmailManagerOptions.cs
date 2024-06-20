@@ -9,7 +9,7 @@ namespace DMS_Email_Manager
     /// </summary>
     public class DMSEmailManagerOptions
     {
-        // Ignore Spelling: Ctrl
+        // Ignore Spelling: app, Ctrl, DMS
 
         private const string PROGRAM_DATE = "May 9, 2023";
 

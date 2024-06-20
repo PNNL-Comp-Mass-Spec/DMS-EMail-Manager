@@ -15,7 +15,7 @@ namespace DMS_Email_Manager
     /// </summary>
     internal class Program
     {
-        // Ignore Spelling: dayofweeklist, varcharlength, AckEmailAlerts
+        // Ignore Spelling: AckEmailAlerts, dayofweeklist, DMS, varcharlength
 
         private static int Main(string[] args)
         {

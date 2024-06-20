@@ -16,6 +16,8 @@ namespace DMS_Email_Manager
     /// </remarks>
     internal class NotificationTask : EventNotifier
     {
+        // Ignore Spelling: DMS
+
         /// <summary>
         /// Options for defining how often to retrieve data
         /// </summary>

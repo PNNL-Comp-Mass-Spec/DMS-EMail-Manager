@@ -16,7 +16,7 @@ namespace DMS_Email_Manager
 {
     public class DMSEmailManager : ProcessFilesBase
     {
-        // Ignore Spelling: yyyy-MM-dd, hh:mm:ss tt, Defs, px, Verdana, Arial, Helvetica, valuedivisor
+        // Ignore Spelling: yyyy-MM-dd, hh:mm:ss tt, Defs, DMS, px, Verdana, Arial, Helvetica, valuedivisor
         // Ignore Spelling: storedprocedure, sp, sproc, wmi, dayofweeklist, mon, tue, wed, thu, fri, varcharlength, utf
 
         private const string DATE_TIME_FORMAT = "yyyy-MM-dd hh:mm:ss tt";
