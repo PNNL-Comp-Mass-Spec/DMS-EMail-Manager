@@ -39,7 +39,7 @@ namespace DMS_Email_Manager
                     ContactInfo = "Program written by Matthew Monroe for the Department of Energy (PNNL, Richland, WA)" +
                                   Environment.NewLine + Environment.NewLine +
                                   "E-mail: proteomics@pnnl.gov" + Environment.NewLine +
-                                  "Website: https://github.com/PNNL-Comp-Mass-Spec/ or https://panomics.pnnl.gov/ or https://www.pnnl.gov/integrative-omics",
+                                  "Website: https://github.com/PNNL-Comp-Mass-Spec/ or https://www.pnnl.gov/integrative-omics",
 
                     UsageExamples =
                     {
