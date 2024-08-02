@@ -147,7 +147,7 @@
     </report>
 
     <report name="Disabled Indices on Gigasax">
-        <data source="gigasax" catalog="DMS5" type="query">
+        <data source="gigasax" servertype="MSSQLServer" database="DMS5" type="query">
         SELECT *
         FROM (SELECT 'DMS5' AS DBName, COUNT(*) AS Disabled_Indices
               FROM DMS5.sys.indexes
@@ -180,7 +180,7 @@
     </report>
 
     <report name="Disabled Indices on ProteinSeqs">
-        <data source="proteinseqs" catalog="Manager_Control" type="query">
+        <data source="proteinseqs" servertype="MSSQLServer" database="Manager_Control" type="query">
         SELECT *
         FROM (SELECT 'MT_Main' AS DBName, COUNT(*) AS Disabled_Indices
               FROM MT_Main.sys.indexes
@@ -213,7 +213,7 @@
     </report>
 
     <report name="MTS Error Report">
-        <data source="pogo" catalog="MTS_Master" type="StoredProcedure">GetErrorsFromActiveDBLogs</data>
+        <data source="pogo" servertype="MSSQLServer" database="MTS_Master" type="StoredProcedure">GetErrorsFromActiveDBLogs</data>
         <mail to="proteomics@pnnl.gov"
               subject="MTS Error Report - Previous 24 hour summary"
               title="Report generated automatically on Pogo:"
@@ -224,7 +224,7 @@
     </report>
 
     <report name="MTS Overdue Database Backups">
-    <data source="pogo" catalog="MTS_Master" type="StoredProcedure">GetOverdueDatabaseBackups</data>
+    <data source="pogo" servertype="MSSQLServer" database="MTS_Master" type="StoredProcedure">GetOverdueDatabaseBackups</data>
     <mail to="proteomics@pnnl.gov"
               subject="MTS Overdue Database Backups"
               title="Overdue MTS Backups"
@@ -235,7 +235,7 @@
     </report>
 
     <report name="Disabled Indices on Pogo">
-        <data source="pogo" catalog="MT_Main" type="query">
+        <data source="pogo" servertype="MSSQLServer" database="MT_Main" type="query">
         SELECT *
         FROM (SELECT 'MT_Main' AS DBName, COUNT(*) AS Disabled_Indices
               FROM MT_Main.sys.indexes
