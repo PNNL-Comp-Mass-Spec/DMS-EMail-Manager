@@ -7,6 +7,8 @@ namespace DMS_Email_Manager
 {
     internal abstract class DataSourceSql : DataSourceBase
     {
+        // Ignore Spelling: DMS, Sql
+
         /// <summary>
         /// Database connection timeout, in seconds
         /// </summary>

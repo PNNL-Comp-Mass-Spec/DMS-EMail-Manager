@@ -6,7 +6,7 @@ namespace DMS_Email_Manager
 {
     internal class DataSourceSqlStoredProcedure : DataSourceSql
     {
-        // Ignore Spelling: StoredProc
+        // Ignore Spelling: DMS, Sql, StoredProc
 
         /// <summary>
         /// The data source for this class is a stored procedure name

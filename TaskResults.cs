@@ -4,6 +4,8 @@ namespace DMS_Email_Manager
 {
     internal class TaskResults
     {
+        // Ignore Spelling: Addnl, DMS, Sql
+
         /// <summary>
         /// Column names
         /// </summary>
@@ -62,8 +64,8 @@ namespace DMS_Email_Manager
 
         /// <summary>
         /// Call this method when a report includes results from multiple result sets
-        /// Send the columns for the new result set (all of the columns)
-        /// New columns will be appended to ColumnNames if and only if ColumnNames has fewer columns than columns)
+        /// Provide the column names for the new result set
+        /// New columns will be appended to ColumnNames if and only if ColumnNames has fewer columns than columns
         /// </summary>
         /// <param name="columns"></param>
         public void ParseColumnsAddnlResultSet(List<string> columns)

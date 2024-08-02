@@ -9,6 +9,8 @@ namespace DMS_Email_Manager
     /// </summary>
     internal abstract class DataSourceBase : EventNotifier
     {
+        // Ignore Spelling: DMS
+
         /// <summary>
         /// Data source type
         /// </summary>
