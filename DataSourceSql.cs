@@ -90,25 +90,26 @@ namespace DMS_Email_Manager
             // dbTools.AddParameter(cmd, "@argumentName", SqlType.VarChar, 128, "ArgumentValue");
             // var jobNumberParam = dbTools.AddParameter(cmd, "@jobNumber", SqlType.Int, 0, ParameterDirection.InputOutput);
             // var messageParam = dbTools.AddParameter(cmd, "@message", SqlType.VarChar, 512, string.Empty, ParameterDirection.InputOutput);
-            var returnCodeParam = dbTools.AddParameter(cmd, "@returnCode", SqlType.VarChar, 64, string.Empty, ParameterDirection.InputOutput);
+            // var returnCodeParam = dbTools.AddParameter(cmd, "@returnCode", SqlType.VarChar, 64, string.Empty, ParameterDirection.InputOutput);
 
             // Execute the SP
             var resCode = dbTools.ExecuteSPDataTable(cmd, out var resultSetSP);
 
-            var returnCode = DBToolsBase.GetReturnCode(returnCodeParam);
+            // var returnCode = DBToolsBase.GetReturnCode(returnCodeParam);
 
-            if (resCode == 0 && returnCode == 0)
+            // if (resCode == 0 && returnCode == 0)
+            if (resCode == 0)
             {
                 StoreResults(results, resultSetSP);
             }
-            else if (resCode != 0)
+            else
             {
                 OnWarningEvent("Procedure {0} returned a non-zero result code: {1}", queryOrProcedureName, resCode);
             }
-            else
-            {
-                OnWarningEvent("Procedure {0} returned a non-zero return code: {1}", queryOrProcedureName, returnCode);
-            }
+            // else if (returnCode != 0)
+            // {
+            //     OnWarningEvent("Procedure {0} returned a non-zero return code: {1}", queryOrProcedureName, returnCode);
+            // }
 
             return results;
 
