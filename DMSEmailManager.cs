@@ -580,14 +580,21 @@ namespace DMS_Email_Manager
                     var sourceServer = GetElementAttribValue(dataSourceInfo, "server", sourceServerLegacy);
                     var sourceHost = GetElementAttribValue(dataSourceInfo, "host", sourceServer);
 
-                    var sourceDBLegacy = GetElementAttribValue(dataSourceInfo, "catalog", string.Empty);
-                    var sourceDB = GetElementAttribValue(dataSourceInfo, "database", sourceDBLegacy);
+                    // ReSharper disable once StringLiteralTypo
+                    var serverTypeName = GetElementAttribValue(dataSourceInfo, "servertype", "MSSQLServer");
+
+                    var serverType = ResolveDbServerType(serverTypeName);
+
+                    var databaseNameLegacy = GetElementAttribValue(dataSourceInfo, "catalog", string.Empty);
+                    var databaseName = GetElementAttribValue(dataSourceInfo, "database", databaseNameLegacy);
+
+                    var databaseUser = GetElementAttribValue(dataSourceInfo, "user", string.Empty);
 
                     var sourceType = GetElementAttribValue(dataSourceInfo, "type", string.Empty);
 
-                    var query = dataSourceInfo.Value;
+                    var queryOrProcedureName = dataSourceInfo.Value;
 
-                    if (string.IsNullOrWhiteSpace(query))
+                    if (string.IsNullOrWhiteSpace(queryOrProcedureName))
                     {
                         ShowWarning(string.Format("Ignoring report definition '{0}'; query (or procedure name) not defined in the data element", reportName));
                         continue;
@@ -610,20 +617,33 @@ namespace DMS_Email_Manager
                                 continue;
                             }
 
-                            if (string.IsNullOrWhiteSpace(sourceDB))
+                            if (string.IsNullOrWhiteSpace(databaseName))
                             {
                                 ShowWarning(string.Format("Ignoring report definition '{0}'; database not defined in the data element", reportName));
                                 continue;
                             }
 
-                            if (sourceTypeLCase == "procedure" || sourceTypeLCase == "storedprocedure" || sourceTypeLCase == "sp" ||
-                                sourceTypeLCase == "sproc")
+                            if (sourceTypeLCase is "procedure" or "storedprocedure" or "sp" or "sproc")
                             {
-                                dataSource = new DataSourceSqlStoredProcedure(reportName, sourceServer, sourceDB, query, Options.Simulate);
+                                dataSource = new DataSourceSqlStoredProcedure(
+                                    reportName,
+                                    sourceServer,
+                                    serverType,
+                                    databaseName,
+                                    databaseUser,
+                                    queryOrProcedureName,
+                                    Options.Simulate);
                             }
                             else
                             {
-                                dataSource = new DataSourceSqlQuery(reportName, sourceServer, sourceDB, query, Options.Simulate);
+                                dataSource = new DataSourceSqlQuery(
+                                    reportName,
+                                    sourceServer,
+                                    serverType,
+                                    databaseName,
+                                    databaseUser,
+                                    queryOrProcedureName,
+                                    Options.Simulate);
                             }
 
                             break;
@@ -635,7 +655,7 @@ namespace DMS_Email_Manager
                                 continue;
                             }
 
-                            var wmiDataSource = new DataSourceWMI(reportName, sourceServer, query, Options.Simulate);
+                            var wmiDataSource = new DataSourceWMI(reportName, sourceServer, queryOrProcedureName, Options.Simulate);
 
                             if (divisorInfo != null)
                             {
@@ -735,9 +755,7 @@ namespace DMS_Email_Manager
                                     continue;
                             }
 
-                            if (daysOfWeek.Contains(dayOfWeek))
-                                continue;
-
+                            // Add the day if not yet present
                             daysOfWeek.Add(dayOfWeek);
                         }
                     }
@@ -853,7 +871,16 @@ namespace DMS_Email_Manager
                     if (postMailHookInfo != null)
                     {
                         var postMailServer = GetElementAttribValue(postMailHookInfo, "server", string.Empty);
+
+                        // ReSharper disable once StringLiteralTypo
+                        var postMailServerTypeName = GetElementAttribValue(postMailHookInfo, "servertype", string.Empty);
+
+                        var postMailServerType = ResolveDbServerType(postMailServerTypeName);
+
                         var postMailDatabase = GetElementAttribValue(postMailHookInfo, "database", string.Empty);
+
+                        var postMailDatabaseUser = GetElementAttribValue(postMailHookInfo, "user", string.Empty);
+
                         var postMailProcedure = GetElementAttribValue(postMailHookInfo, "procedure", string.Empty);
 
                         // This is the name of the first parameter of the stored procedure
@@ -878,7 +905,13 @@ namespace DMS_Email_Manager
                         }
                         else
                         {
-                            var postMailHook = new DataSourceSqlStoredProcedure(reportName, postMailServer, postMailDatabase, postMailProcedure, Options.Simulate)
+                            var postMailHook = new DataSourceSqlStoredProcedure(
+                                reportName,
+                                postMailServer,
+                                postMailServerType,
+                                postMailDatabase,
+                                postMailDatabaseUser,
+                                postMailProcedure, Options.Simulate)
                             {
                                 StoredProcParameter = paramName
                             };
@@ -1028,6 +1061,18 @@ namespace DMS_Email_Manager
             {
                 HandleException("Error reading the report status file, current task " + currentTask, ex);
             }
+        }
+
+        /// <summary>
+        /// Determine the database server type from the server type name
+        /// </summary>
+        /// <param name="serverTypeName">Server type name</param>
+        /// <returns>If serverTypeName starts with "postgres", return DbServerTypes.PostgreSQL; otherwise, return DbServerTypes.MSSQLServer</returns>
+        private DbServerTypes ResolveDbServerType(string serverTypeName)
+        {
+            return serverTypeName.StartsWith("postgres", StringComparison.OrdinalIgnoreCase)
+                ? DbServerTypes.PostgreSQL
+                : DbServerTypes.MSSQLServer;
         }
 
         /// <summary>
@@ -1220,8 +1265,12 @@ namespace DMS_Email_Manager
                     return;
                 }
 
-                var connectionString = string.Format("Data Source={0};Initial Catalog={1};Integrated Security=SSPI;Connection Timeout={2};",
-                                            postMailIdListHook.ServerName, postMailIdListHook.DatabaseName, DataSourceSql.CONNECTION_TIMEOUT_SECONDS);
+                var connectionString = DbToolsFactory.GetConnectionString(
+                    postMailIdListHook.ServerType,
+                    postMailIdListHook.ServerName,
+                    postMailIdListHook.DatabaseName,
+                    postMailIdListHook.DatabaseUser,
+                    string.Empty);
 
                 var applicationName = string.Format("DMSEmailManager_{0}", postMailIdListHook.ServerName);
 
@@ -1229,6 +1278,7 @@ namespace DMS_Email_Manager
 
                 var dbTools = DbToolsFactory.GetDBTools(connectionStringToUse, DataSourceSql.QUERY_TIMEOUT_SECONDS);
                 RegisterEvents(dbTools);
+
                 var cmd = dbTools.CreateCommand(postMailIdListHook.StoredProcedureName, CommandType.StoredProcedure);
 
                 var returnParam = dbTools.AddParameter(cmd, "@Return", SqlType.Int, ParameterDirection.ReturnValue);

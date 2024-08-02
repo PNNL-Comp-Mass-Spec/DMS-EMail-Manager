@@ -41,19 +41,25 @@ namespace DMS_Email_Manager
         /// </summary>
         /// <param name="reportName">Report name (used for logging)</param>
         /// <param name="serverName">Server name</param>
+        /// <param name="serverType">Server type</param>
         /// <param name="databaseName">Database name</param>
+        /// <param name="databaseUser">Database user (empty string if using integrated authentication)</param>
         /// <param name="storedProcedureName">Stored procedure name</param>
         /// <param name="simulate">When true, simulate contacting the database</param>
         public DataSourceSqlStoredProcedure(
             string reportName,
             string serverName,
+            DbServerTypes serverType,
             string databaseName,
+            string databaseUser,
             string storedProcedureName,
             bool simulate)
         {
             ReportName = reportName;
             ServerName = serverName;
+            ServerType = serverType;
             DatabaseName = databaseName;
+            DatabaseUser = databaseUser;
             StoredProcedureName = storedProcedureName;
             Simulate = simulate;
 
@@ -71,8 +77,7 @@ namespace DMS_Email_Manager
         {
             try
             {
-                var results = GetSqlData(CommandType.StoredProcedure, StoredProcedureName);
-                return results;
+                return GetSqlData(CommandType.StoredProcedure, StoredProcedureName);
             }
             catch (Exception ex)
             {
@@ -80,8 +85,7 @@ namespace DMS_Email_Manager
                                            StoredProcedureName, DatabaseName, ReportName);
                 OnErrorEvent(errMsg, ex);
 
-                var results = FormatExceptionAsResults(ReportName, errMsg, ex);
-                return results;
+                return FormatExceptionAsResults(ReportName, errMsg, ex);
             }
         }
     }

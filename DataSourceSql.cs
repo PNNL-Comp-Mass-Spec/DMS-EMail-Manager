@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using PRISMDatabaseUtils;
 
 namespace DMS_Email_Manager
@@ -10,30 +9,33 @@ namespace DMS_Email_Manager
         // Ignore Spelling: DMS, Sql
 
         /// <summary>
-        /// Database connection timeout, in seconds
-        /// </summary>
-        public const int CONNECTION_TIMEOUT_SECONDS = 120;
-
-        /// <summary>
         /// Query timeout, in seconds
         /// </summary>
         public const int QUERY_TIMEOUT_SECONDS = 600;
 
         /// <summary>
-        /// SQL Server name
+        /// Server name
         /// </summary>
         public string ServerName { get; internal set; }
+
+        /// <summary>
+        /// Server type
+        /// </summary>
+        public DbServerTypes ServerType { get; internal set; }
 
         /// <summary>
         /// Database name
         /// </summary>
         public string DatabaseName { get; internal set; }
 
+        /// <summary>
+        /// Database user
+        /// </summary>
+        public string DatabaseUser { get; internal set; }
+
         protected TaskResults GetSqlData(CommandType commandType, string queryOrProcedureName)
         {
-            var connectionString = string.Format(
-                "Data Source={0};Initial Catalog={1};Integrated Security=SSPI;Connection Timeout={2};",
-                ServerName, DatabaseName, CONNECTION_TIMEOUT_SECONDS);
+            var connectionString = DbToolsFactory.GetConnectionString(ServerType, ServerName, DatabaseName, DatabaseUser, string.Empty);
 
             var results = new TaskResults(ReportName);
 
@@ -44,9 +46,11 @@ namespace DMS_Email_Manager
                     case CommandType.Text:
                         results.DefineColumns(new List<string> { "SQL_Query" });
                         break;
+
                     case CommandType.StoredProcedure:
                         results.DefineColumns(new List<string> { "Stored Procedure" });
                         break;
+
                     default:
                         results.DefineColumns(new List<string> { commandType.ToString() });
                         break;
@@ -60,6 +64,55 @@ namespace DMS_Email_Manager
 
             var connectionStringToUse = DbToolsFactory.AddApplicationNameToConnectionString(connectionString, applicationName);
 
+            var dbTools = DbToolsFactory.GetDBTools(connectionStringToUse, QUERY_TIMEOUT_SECONDS, debugMode: false);
+            RegisterEvents(dbTools);
+
+            if (commandType != CommandType.StoredProcedure)
+            {
+                var success = dbTools.GetQueryResultsDataTable(queryOrProcedureName, out var resultSet);
+
+                if (success)
+                {
+                    StoreResults(results, resultSet);
+                }
+                else
+                {
+                    OnWarningEvent("GetQueryResultsDataTable returned false for query: {0}", queryOrProcedureName);
+                }
+
+                return results;
+            }
+
+            var cmd = dbTools.CreateCommand(queryOrProcedureName, CommandType.StoredProcedure);
+
+            // Optionally add procedure arguments
+
+            // dbTools.AddParameter(cmd, "@argumentName", SqlType.VarChar, 128, "ArgumentValue");
+            // var jobNumberParam = dbTools.AddParameter(cmd, "@jobNumber", SqlType.Int, 0, ParameterDirection.InputOutput);
+            // var messageParam = dbTools.AddParameter(cmd, "@message", SqlType.VarChar, 512, string.Empty, ParameterDirection.InputOutput);
+            var returnCodeParam = dbTools.AddParameter(cmd, "@returnCode", SqlType.VarChar, 64, string.Empty, ParameterDirection.InputOutput);
+
+            // Execute the SP
+            var resCode = dbTools.ExecuteSPDataTable(cmd, out var resultSetSP);
+
+            var returnCode = DBToolsBase.GetReturnCode(returnCodeParam);
+
+            if (resCode == 0 && returnCode == 0)
+            {
+                StoreResults(results, resultSetSP);
+            }
+            else if (resCode != 0)
+            {
+                OnWarningEvent("Procedure {0} returned a non-zero result code: {1}", queryOrProcedureName, resCode);
+            }
+            else
+            {
+                OnWarningEvent("Procedure {0} returned a non-zero return code: {1}", queryOrProcedureName, returnCode);
+            }
+
+            return results;
+
+            /*
             using var dbConn = new SqlConnection(connectionStringToUse);
             using var sqlCmd = new SqlCommand(queryOrProcedureName, dbConn);
 
@@ -110,6 +163,35 @@ namespace DMS_Email_Manager
             }
 
             return results;
+
+            */
+        }
+
+        private void StoreResults(TaskResults results, DataTable dataTable)
+        {
+            var columnNames = new List<string>();
+
+            foreach (DataColumn column in dataTable.Columns)
+            {
+                columnNames.Add(column.ColumnName);
+            }
+
+            results.DefineColumns(columnNames);
+
+            var rowValues = new List<string>();
+            var columnCount = columnNames.Count;
+
+            foreach (DataRow resultRow in dataTable.Rows)
+            {
+                rowValues.Clear();
+
+                for (var i = 0; i < columnCount; i++)
+                {
+                    rowValues.Add(resultRow[i].CastDBVal<string>());
+                }
+
+                results.AddDataRow(rowValues);
+            }
         }
     }
 }

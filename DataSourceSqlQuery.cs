@@ -1,4 +1,5 @@
 ﻿
+using PRISMDatabaseUtils;
 using System;
 using System.Data;
 
@@ -23,19 +24,25 @@ namespace DMS_Email_Manager
         /// </summary>
         /// <param name="reportName">Report name (used for logging)</param>
         /// <param name="serverName">Server name</param>
+        /// <param name="serverType">Server type</param>
         /// <param name="databaseName">Database name</param>
+        /// <param name="databaseUser">Database user (empty string if using integrated authentication)</param>
         /// <param name="query">SQL query to run</param>
         /// <param name="simulate">When true, simulate contacting the database</param>
         public DataSourceSqlQuery(
             string reportName,
             string serverName,
+            DbServerTypes serverType,
             string databaseName,
+            string databaseUser,
             string query,
             bool simulate)
         {
             ReportName = reportName;
             ServerName = serverName;
+            ServerType = serverType;
             DatabaseName = databaseName;
+            DatabaseUser = databaseUser;
             Query = query;
             Simulate = simulate;
             SourceType = DataSourceType.Query;
@@ -48,8 +55,7 @@ namespace DMS_Email_Manager
         {
             try
             {
-                var results = GetSqlData(CommandType.Text, Query);
-                return results;
+                return GetSqlData(CommandType.Text, Query);
             }
             catch (Exception ex)
             {
@@ -57,8 +63,7 @@ namespace DMS_Email_Manager
                                            DatabaseName, ReportName);
                 OnErrorEvent(errMsg, ex);
 
-                var results = FormatExceptionAsResults(ReportName, errMsg, ex);
-                return results;
+                return FormatExceptionAsResults(ReportName, errMsg, ex);
             }
         }
     }
