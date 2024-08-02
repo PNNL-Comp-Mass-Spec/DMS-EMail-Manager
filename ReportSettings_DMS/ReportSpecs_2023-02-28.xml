@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reports>
+    <EmailInfo>
+        <Server>emailgw.pnl.gov</Server>
+        <From>proteomics@pnnl.gov</From>
+        <FontSizeHeader>20</FontSizeHeader>
+        <FontSizeBody>12</FontSizeBody>
+    </EmailInfo>
+
+    <report name="Email Alerts">
+        <data server="gigasax" database="DMS5" type="query">
+        SELECT ID, Posted_by, Posting_Time, Alert_Type, Message, Recipients, Alert_State, Alert_State_Name, Last_Affected
+        FROM ( SELECT ID, Posted_by, Posting_Time, Alert_Type, Message, Recipients, Alert_State, Alert_State_Name, Last_Affected,
+                      row_number() OVER ( ORDER BY id ) AS RowNum
+               FROM V_Email_Alerts
+               WHERE alert_state = 1 
+             ) LookupQ
+        WHERE RowNum &lt;= 500
+        ORDER BY RowNum;
+        </data>
+        <mail to="proteomics@pnnl.gov, matthew.monroe@pnnl.gov"
+              subject="DMS: Alerts"
+              title="DMS Alerts"
+              mailIfEmpty="false" />
+        <frequency type="Interval"
+                   interval="4"
+                   units="hours" />
+        <postMailIdListHook server="gigasax" database="DMS5" procedure="ack_email_alerts"
+                            parameter="alertIDs" varcharlength="4000" />
+    </report>
+
+    <report name="Processor Status Warnings">
+        <data source="gigasax" catalog="DMS_Pipeline" type="query">
+        SELECT * 
+        FROM V_Processor_Status_Warnings ORDER BY Processor_name
+        OFFSET 0 ROWS
+        FETCH FIRST 500 ROWS ONLY;
+        </data>
+        <mail to="proteomics@pnnl.gov, bryson.gibbons@pnnl.gov"
+              subject="DMS: Processor Status Warnings"
+              title="Processor Status Warnings (DMS)"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Monday,Wednesday,Friday"
+                   type="TimeOfDay"
+                   timeOfDay="3:00 pm" />
+    </report>
+
+    <report name="Job Steps Stale and Failed">
+        <data source="gigasax" catalog="DMS_Pipeline" type="query">
+        SELECT * 
+        FROM V_Job_Steps_Stale_and_Failed ORDER BY State_Name, Job
+        OFFSET 0 ROWS
+        FETCH FIRST 500 ROWS ONLY;
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="DMS: Job Steps Stale and Failed"
+              title="Job Steps Stale and Failed (DMS)"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Monday,Wednesday,Friday"
+                   type="TimeOfDay"
+                   timeOfDay="7:00 am" />
+    </report>
+    <report name="Datasets Stale and Failed">
+        <data source="gigasax" catalog="DMS5" type="query">
+        SELECT * 
+        FROM V_Datasets_Stale_and_Failed ORDER BY State, Dataset
+        OFFSET 0 ROWS
+        FETCH FIRST 500 ROWS ONLY;     
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="DMS: Datasets Stale and Failed"
+              title="Datasets Stale and Failed (DMS)"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Monday,Wednesday,Friday"
+                   type="TimeOfDay"
+                   timeOfDay="7:00 am" />
+    </report>
+
+    <report name="Datasets With Missing Info">
+        <data source="gigasax" catalog="DMS5" type="query">
+        SELECT * FROM V_Dataset_Validation_Warnings
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="DMS: Datasets With Missing Info"
+              title="Datasets With Missing Info"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Monday,Wednesday,Friday"
+                   type="TimeOfDay"
+                   timeOfDay="7:00 am" />
+    </report>
+
+    <report name="Predefined Job Creation Errors">
+        <data source="gigasax" catalog="DMS5" type="query">
+        SELECT * 
+        FROM V_Predefined_Job_Creation_Errors ORDER BY Item
+        OFFSET 0 ROWS
+        FETCH FIRST 500 ROWS ONLY;
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="DMS: Predefined Job Creation Errors"
+              title="Predefined Job Creation Errors (DMS)"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Monday,Wednesday,Friday"
+                   type="TimeOfDay"
+                   timeOfDay="7:00 am" />
+    </report>
+
+    <report name="DMS Production DB Errors">
+        <data source="gigasax" catalog="DMS5" type="query">
+        SELECT * 
+        FROM V_Log_Errors_Production_DBs ORDER BY DB, Entry_ID
+        OFFSET 0 ROWS
+        FETCH FIRST 500 ROWS ONLY;
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="DMS: Production DB Errors"
+              title="Production DB Errors (DMS)"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Tuesday,Friday"
+                   type="TimeOfDay"
+                   timeOfDay="7:00 am" />
+    </report>
+
+    <report name="Dataset comments to edit">
+        <data source="gigasax" catalog="DMS5" type="query">
+        SELECT Dataset_ID, Dataset, Comment, State_ID, Created, Age_Weeks
+        FROM V_Dataset_Comments_Recent_Datasets
+        WHERE (Comment LIKE '%exception%' OR
+               Comment LIKE '%not ready%' OR
+               Comment LIKE '%Invalid dataset.%' OR
+               Comment LIKE '%Dataset not ready%' OR
+               Comment LIKE '%Sharing violation while copying%' OR
+               Comment LIKE '%NeedToAbortProcessing%' OR
+               Comment LIKE '%Error running OpenChrom%'
+              ) AND
+              Age_Weeks &lt;= 4 AND 
+              State_ID IN (3,5)
+        ORDER BY Comment, Dataset;
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="DMS: Dataset comments to edit"
+              title="Dataset comments to edit"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Friday"
+                   type="TimeOfDay"
+                   timeOfDay="7:00 am" />
+    </report>
+
+    <report name="Disabled Indices on Gigasax">
+        <data source="gigasax" catalog="DMS5" type="query">
+        SELECT *
+        FROM (SELECT 'DMS5' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM DMS5.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'DMS_Capture' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM DMS_Capture.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'DMS_Pipeline' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM DMS_Pipeline.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'DMS_Data_Package' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM DMS_Data_Package.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'Ontology_Lookup' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM Ontology_Lookup.sys.indexes
+              WHERE is_disabled = 1 ) LookupQ
+        WHERE Disabled_Indices > 0
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="DMS: Disabled indices"
+              title="Disabled indices on Gigasax"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Friday"
+                   type="TimeOfDay"
+                   timeOfDay="7:00 am" />
+    </report>
+
+    <report name="Disabled Indices on ProteinSeqs">
+        <data source="proteinseqs" catalog="Manager_Control" type="query">
+        SELECT *
+        FROM (SELECT 'MT_Main' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM MT_Main.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'Manager_Control' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM Manager_Control.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'Protein_Sequences' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM Protein_Sequences.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'PT_Human_sp_A335' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM PT_Human_sp_A335.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'MT_Human_PVN_Q_P1299' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM MT_Human_PVN_Q_P1299.sys.indexes
+              WHERE is_disabled = 1 ) LookupQ
+        WHERE Disabled_Indices > 0
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="ProteinSeqs: Disabled indices"
+              title="Disabled indices on ProteinSeqs"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Thursday"
+                   type="TimeOfDay"
+                   timeOfDay="7:00 am" />
+    </report>
+
+    <report name="MTS Error Report">
+        <data source="pogo" catalog="MTS_Master" type="StoredProcedure">GetErrorsFromActiveDBLogs</data>
+        <mail to="proteomics@pnnl.gov"
+              subject="MTS Error Report - Previous 24 hour summary"
+              title="Report generated automatically on Pogo:"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Tuesday,Friday"
+                   type="TimeOfDay"
+                   timeOfDay="7:00 am" />
+    </report>
+
+    <report name="MTS Overdue Database Backups">
+    <data source="pogo" catalog="MTS_Master" type="StoredProcedure">GetOverdueDatabaseBackups</data>
+    <mail to="proteomics@pnnl.gov"
+              subject="MTS Overdue Database Backups"
+              title="Overdue MTS Backups"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Tuesday,Saturday"
+                   type="TimeOfDay"
+                   timeOfDay="7:00 am" />
+    </report>
+
+    <report name="Disabled Indices on Pogo">
+        <data source="pogo" catalog="MT_Main" type="query">
+        SELECT *
+        FROM (SELECT 'MT_Main' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM MT_Main.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'MTS_Master' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM MTS_Master.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'PT_Template_01' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM PT_Template_01.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'MT_Template_01' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM MT_Template_01.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'Prism_IFC' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM Prism_IFC.sys.indexes
+              WHERE is_disabled = 1
+              UNION
+              SELECT 'Prism_RPT' AS DBName, COUNT(*) AS Disabled_Indices
+              FROM Prism_RPT.sys.indexes
+              WHERE is_disabled = 1 ) LookupQ
+        WHERE Disabled_Indices > 0
+        </data>
+        <mail to="proteomics@pnnl.gov"
+              subject="Pogo: Disabled indices"
+              title="Disabled indices on Pogo"
+              mailIfEmpty="false" />
+        <frequency dayofweeklist="Thursday"
+                   type="TimeOfDay"
+                   timeOfDay="7:00 am" />
+    </report>
+
+</reports>
