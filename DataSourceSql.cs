@@ -69,6 +69,8 @@ namespace DMS_Email_Manager
 
             if (commandType != CommandType.StoredProcedure)
             {
+                OnDebugEvent("Running query on server {0}, database {1}:\n{2}", ServerName, DatabaseName, queryOrProcedureName);
+
                 var success = dbTools.GetQueryResultsDataTable(queryOrProcedureName, out var resultSet);
 
                 if (success)
@@ -82,6 +84,8 @@ namespace DMS_Email_Manager
 
                 return results;
             }
+
+            OnDebugEvent("Calling procedure on server {0}, database {1}: {2}", ServerName, DatabaseName, queryOrProcedureName);
 
             var cmd = dbTools.CreateCommand(queryOrProcedureName, CommandType.StoredProcedure);
 
