@@ -8,7 +8,7 @@
     </EmailInfo>
 
     <report name="Email Alerts">
-        <data server="gigasax" database="DMS5" type="query">
+        <data server="prismdb2" servertype="postgres" database="dms" user="dmsreader" type="query">
         SELECT ID, Posted_by, Posting_Time, Alert_Type, Message, Recipients, Alert_State, Alert_State_Name, Last_Affected
         FROM ( SELECT ID, Posted_by, Posting_Time, Alert_Type, Message, Recipients, Alert_State, Alert_State_Name, Last_Affected,
                       row_number() OVER ( ORDER BY id ) AS RowNum
@@ -25,12 +25,12 @@
         <frequency type="Interval"
                    interval="4"
                    units="hours" />
-        <postMailIdListHook server="gigasax" database="DMS5" procedure="ack_email_alerts"
+        <postMailIdListHook server="prismdb2" servertype="postgres" database="dms" user="dmsreader" procedure="ack_email_alerts"
                             parameter="alertIDs" varcharlength="4000" />
     </report>
 
     <report name="Processor Status Warnings">
-        <data source="gigasax" catalog="DMS_Pipeline" type="query">
+        <data source="prismdb2" servertype="postgres" database="dms" user="dmsreader" type="query">
         SELECT * 
         FROM V_Processor_Status_Warnings ORDER BY Processor_name
         OFFSET 0 ROWS
@@ -46,7 +46,7 @@
     </report>
 
     <report name="Job Steps Stale and Failed">
-        <data source="gigasax" catalog="DMS_Pipeline" type="query">
+        <data source="prismdb2" servertype="postgres" database="dms" user="dmsreader" type="query">
         SELECT * 
         FROM V_Job_Steps_Stale_and_Failed ORDER BY State_Name, Job
         OFFSET 0 ROWS
@@ -61,7 +61,7 @@
                    timeOfDay="7:00 am" />
     </report>
     <report name="Datasets Stale and Failed">
-        <data source="gigasax" catalog="DMS5" type="query">
+        <data source="prismdb2" servertype="postgres" database="dms" user="dmsreader" type="query">
         SELECT * 
         FROM V_Datasets_Stale_and_Failed ORDER BY State, Dataset
         OFFSET 0 ROWS
@@ -77,7 +77,7 @@
     </report>
 
     <report name="Datasets With Missing Info">
-        <data source="gigasax" catalog="DMS5" type="query">
+        <data source="prismdb2" servertype="postgres" database="dms" user="dmsreader" type="query">
         SELECT * FROM V_Dataset_Validation_Warnings
         </data>
         <mail to="proteomics@pnnl.gov"
@@ -90,7 +90,7 @@
     </report>
 
     <report name="Predefined Job Creation Errors">
-        <data source="gigasax" catalog="DMS5" type="query">
+        <data source="prismdb2" servertype="postgres" database="dms" user="dmsreader" type="query">
         SELECT * 
         FROM V_Predefined_Job_Creation_Errors ORDER BY Item
         OFFSET 0 ROWS
@@ -106,7 +106,7 @@
     </report>
 
     <report name="DMS Production DB Errors">
-        <data source="gigasax" catalog="DMS5" type="query">
+        <data source="prismdb2" servertype="postgres" database="dms" user="dmsreader" type="query">
         SELECT * 
         FROM V_Log_Errors_Production_DBs ORDER BY DB, Entry_ID
         OFFSET 0 ROWS
@@ -122,7 +122,7 @@
     </report>
 
     <report name="Dataset comments to edit">
-        <data source="gigasax" catalog="DMS5" type="query">
+        <data source="prismdb2" servertype="postgres" database="dms" user="dmsreader" type="query">
         SELECT Dataset_ID, Dataset, Comment, State_ID, Created, Age_Weeks
         FROM V_Dataset_Comments_Recent_Datasets
         WHERE (Comment LIKE '%exception%' OR
